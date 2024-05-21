@@ -1,0 +1,410 @@
+.my-extension-resultPage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #111827;
+}
+
+.my-extension-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #111827;
+    color: white;
+    padding: 8px;
+    display: flex;
+    justify-content: end;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 9999999;
+}
+
+.my-extension-settings-btn, .my-extension-share-btn {
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.my-extension-settings-btn {
+  margin-right: 15px;
+}
+
+.my-extension-content {
+    display: block;
+    padding-right: 10px;
+    padding-left: 10px;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 25px;
+    bottom: 100px;
+    background-color: #111827;
+    overflow-x: auto; 
+    overflow-y: auto; 
+    line-height: 1.6;
+    color: white;
+}
+
+.my-extension-content h1 {
+  color: #28a745;
+  font-size: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 10px 0;
+  display: block;
+}
+
+.my-extension-content h2,h3,h4 {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 17px;
+  padding: 10px 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  margin: 10px 0 10px;
+  font-family: 'Arial', sans-serif;
+  display: block;
+}
+
+.my-extension-content h3 {
+  font-size: 15px;
+}
+
+.my-extension-content h4 {
+  font-size: 12px;
+}
+
+.my-extension-content a {
+  color: white;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.my-extension-content ul, .my-extension-content ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.my-extension-content ul {
+  list-style-type: disc;
+}
+
+.my-extension-content ol {
+  list-style-type: decimal;
+}
+
+.my-extension-content li {
+  display: list-item;
+  padding-left: 5px;
+  color: white;
+  font-size: 15px;
+}
+
+.my-extension-content pre, .my-extension-content code {
+  background-color: #282c34;
+  color: #fff;
+  overflow-x: auto;
+  max-width: 100%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  border-radius: 2px;
+  padding: 0.1em;
+  font-family: 'Consolas', 'Monaco', 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+  font-size: 0.85em;
+}
+
+.my-extension-content p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: white;
+}
+
+.my-extension-dialogue {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #111827;
+  border-top: 1px solid #111827;
+  box-sizing: border-box;
+}
+
+.my-extension-dialogue input {
+  flex-grow: 1;
+  padding: 15px;
+  margin-right: 5px;
+  border: 1px solid #3C3C3C;
+  background-color: #111827;
+  color: white;
+  font-size: 15px;
+  border-radius: 5px;
+}
+
+.my-extension-dialogue-submit, .my-extension-dialogue-generate {
+  padding: 5px;
+  background-color: #3C3C3C;
+  color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  margin-left: 5px;
+}
+
+.my-extension-dialogue-submit.disabled {
+  cursor: not-allowed;
+}
+
+.my-extension-dialogue-generate {
+  display: none;
+}
+
+.ai-message {
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.user-message:not(:first-of-type) {
+  border-top: 1px solid #3C3C3C;
+  padding-top: 20px;
+}
+
+.my-extension-loading {
+  position: fixed;
+  bottom: 95px;
+  right: 40%;
+  display: none;
+  z-index: 100000;
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  color: #333
+}
+
+.my-extension-slogan {
+  font-size: 20px;
+  margin-top: 20px;
+  margin-left: 10px;
+  color: #28a745
+}
+
+.my-extension-note {
+  font-size: 12px;
+  color: #9E9E9E;
+  margin-top: 20px;
+}
+
+.chat-content {
+  max-height: 100%; 
+  overflow-y: auto; 
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.chat-content img {
+  max-width:100%;
+  display: block;
+}
+
+.feature-container {
+  margin-top: 20px;
+  font-family: Arial, sans-serif;
+
+}
+
+.feature-title {
+  font-size: 12px;
+  color: #6f6f6f;
+  margin: 20px 0;
+  margin-top: 40px;
+}
+
+.feature-item {
+  background-color: #2c2f33;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.feature-item a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.feature-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-name {
+  font-size: 14px;
+}
+
+.feature-desc {
+  font-size: 12px;
+  color: #6f6f6f;
+  margin-top: 5px;
+}
+
+.navigation-bar {
+  position:fixed;
+  bottom: 50px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  padding: 10px;
+  background-color: #111827;
+}
+
+.navigation-bar > div {
+  margin-right: 10px;
+}
+
+#model-selection {
+  padding: 5px 10px;
+  border: 1px solid #3C3C3C;
+  border-radius: 5px;
+  background-color: #111827;
+  color: white;
+}
+
+#image-upload-label, #newchat-label, #crop-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #7c7a7a;
+}
+
+#newChat-div {
+  right:10px !important;
+}
+
+.icon-copy {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  right: 5px;
+  padding-bottom: 5px;
+}
+
+.icon-copy:hover {
+  color: white;
+}
+
+.image-preview-area {
+  display: flex;
+  flex-wrap: wrap;
+  position: fixed;
+  bottom: 90px;
+  left: 0;
+  right: 0;
+  padding: 0px 10px;
+  background-color: #111827;
+  z-index: 1000;
+}
+
+.img-container {
+  position: relative;
+  margin-right: 3px;
+  margin-bottom: 3px;
+}
+
+.uploaded-image-preview {
+  max-width: 100px;
+  height: auto;
+  max-height: 100px;
+}
+
+.delete-image-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  fill: red;
+  stroke: red; /* 确保线条颜色也是红色 */
+  opacity: 0; /* 默认不显示 */
+  transition: opacity 0.3s ease; 
+}
+
+.delete-image-btn:hover {
+  opacity: 1; /* 鼠标悬停时显示 */
+  cursor: pointer;
+}
+
+/* 加载指示器样式 */
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  z-index: 1;
+}
+
+.shortcut-menu {
+  display: none;
+  position: fixed;
+  background-color: #111827;
+  border: 1px solid #3C3C3C;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 200px;
+  left: 10px;
+  bottom: 95px;
+  color: white;
+}
+.shortcut-menu div {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex; 
+  align-items: center;
+}
+.shortcut-menu div:hover {
+  background-color: #3C3C3C;
+}
+
+.shortcut-menu svg {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.shortcut-text-span {
+  line-height: 1; 
+  margin-left: 8px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}

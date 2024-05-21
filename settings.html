@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FisherAI Settings</title>
+    <link rel="stylesheet" href="css/settings.css">
+    <script src="scripts/constants.js"></script>
+    <script src="scripts/settings.js"></script>
+</head>
+<body>
+<div class="settings-container">
+    <div class="tab-list">
+        <div class="my-extension-header">
+            <img src="images/logo_48.png" class="my-extension-logo" alt="Fisher AI Logo"/>
+            <h1 class="my-extension-brand">FisherAI Settings</h1>
+        </div>
+        <button class="tab-link active" data-tab="general">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings2"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>
+            <span>功能介绍</span>
+        </button>
+        <button class="tab-link" data-tab="gpt">
+            <svg class="w-[1.60625rem] m:w-[1.375rem] h-auto" width="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M26.153 11.46a6.888 6.888 0 0 0-.608-5.73 7.117 7.117 0 0 0-3.29-2.93 7.238 7.238 0 0 0-4.41-.454 7.065 7.065 0 0 0-2.41-1.742A7.15 7.15 0 0 0 12.514 0a7.216 7.216 0 0 0-4.217 1.346 7.061 7.061 0 0 0-2.603 3.539 7.12 7.12 0 0 0-2.734 1.188A7.012 7.012 0 0 0 .966 8.268a6.979 6.979 0 0 0 .88 8.273 6.89 6.89 0 0 0 .607 5.729 7.117 7.117 0 0 0 3.29 2.93 7.238 7.238 0 0 0 4.41.454 7.061 7.061 0 0 0 2.409 1.742c.92.404 1.916.61 2.923.604a7.215 7.215 0 0 0 4.22-1.345 7.06 7.06 0 0 0 2.605-3.543 7.116 7.116 0 0 0 2.734-1.187 7.01 7.01 0 0 0 1.993-2.196 6.978 6.978 0 0 0-.884-8.27Zm-10.61 14.71c-1.412 0-2.505-.428-3.46-1.215.043-.023.119-.064.168-.094l5.65-3.22a.911.911 0 0 0 .464-.793v-7.86l2.389 1.36a.087.087 0 0 1 .046.065v6.508c0 2.952-2.491 5.248-5.257 5.248ZM4.062 21.354a5.17 5.17 0 0 1-.635-3.516c.042.025.115.07.168.1l5.65 3.22a.928.928 0 0 0 .928 0l6.898-3.93v2.72a.083.083 0 0 1-.034.072l-5.711 3.255a5.386 5.386 0 0 1-4.035.522 5.315 5.315 0 0 1-3.23-2.443ZM2.573 9.184a5.283 5.283 0 0 1 2.768-2.301V13.515a.895.895 0 0 0 .464.793l6.897 3.93-2.388 1.36a.087.087 0 0 1-.08.008L4.52 16.349a5.262 5.262 0 0 1-2.475-3.185 5.192 5.192 0 0 1 .527-3.98Zm19.623 4.506-6.898-3.93 2.388-1.36a.087.087 0 0 1 .08-.008l5.713 3.255a5.28 5.28 0 0 1 2.054 2.118 5.19 5.19 0 0 1-.488 5.608 5.314 5.314 0 0 1-2.39 1.742v-6.633a.896.896 0 0 0-.459-.792Zm2.377-3.533a7.973 7.973 0 0 0-.168-.099l-5.65-3.22a.93.93 0 0 0-.928 0l-6.898 3.93V8.046a.083.083 0 0 1 .034-.072l5.712-3.251a5.375 5.375 0 0 1 5.698.241 5.262 5.262 0 0 1 1.865 2.28c.39.92.506 1.93.335 2.913ZM9.631 15.009l-2.39-1.36a.083.083 0 0 1-.046-.065V7.075c.001-.997.29-1.973.832-2.814a5.297 5.297 0 0 1 2.231-1.935 5.382 5.382 0 0 1 5.659.72 4.89 4.89 0 0 0-.168.093l-5.65 3.22a.913.913 0 0 0-.465.793l-.003 7.857Zm1.297-2.76L14 10.5l3.072 1.75v3.5L14 17.499l-3.072-1.75v-3.5Z" fill="currentColor"></path></svg>
+            <span>OpenAI</span>
+        </button>
+        <button class="tab-link" data-tab="gemini">
+            <svg fill="none" xmlns="http://www.w3.org/2000/svg" width="28" viewBox="0 0 16 16"><path d="M16 8.016A8.522 8.522 0 008.016 16h-.032A8.521 8.521 0 000 8.016v-.032A8.521 8.521 0 007.984 0h.032A8.522 8.522 0 0016 7.984v.032z" fill="url(#prefix__paint0_radial_980_20147)"/><defs><radialGradient id="prefix__paint0_radial_980_20147" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(16.1326 5.4553 -43.70045 129.2322 1.588 6.503)"><stop offset=".067" stop-color="#9168C0"/><stop offset=".343" stop-color="#5684D1"/><stop offset=".672" stop-color="#1BA1E3"/></radialGradient></defs></svg>
+            <span>Google Gemini</span>
+        </button>
+        <button class="tab-link" data-tab="groq">
+            <svg fill="currentColor" fill-rule="evenodd" height="20" viewBox="0 0 64 24" xmlns="http://www.w3.org/2000/svg" color="#ffffff" style="flex: 0 0 auto; line-height: 1; width: fit-content;"><title>Groq</title><path d="M37.925 2.039c4.142 0 7.509 3.368 7.509 7.528l-.004.244c-.128 4.047-3.437 7.284-7.505 7.284-4.15 0-7.509-3.368-7.509-7.528s3.36-7.528 7.509-7.528zm-11.144-.023c.26 0 .522.015.775.046l.015-.008a7.464 7.464 0 012.922.969L29.09 5.468a4.619 4.619 0 00-2.309-.6h-.253l-.253.016c-.338.03-.66.092-.982.177-.621.169-1.196.469-1.703.869a4.062 4.062 0 00-1.418 2.322l-.04.234-.03.235c-.007.077-.023.161-.023.238l-.014 2.713v2.593l-.016 2.522h-2.815l-.03-4.973V8.852c0-.139.015-.262.022-.392.023-.262.062-.523.115-.777.1-.523.269-1.03.491-1.515a6.998 6.998 0 011.948-2.484 7.465 7.465 0 012.754-1.391c.49-.131.99-.216 1.495-.254.123-.008.253-.023.376-.023h.376zM37.925 4.86a4.7 4.7 0 00-4.694 4.706 4.7 4.7 0 004.694 4.706 4.7 4.7 0 004.694-4.706l-.005-.216a4.7 4.7 0 00-4.689-4.49zM9.578 2C5.428 1.96 2.038 5.298 2 9.458c-.038 4.16 3.29 7.559 7.44 7.597h2.608v-2.822h-2.47c-2.592.031-4.717-2.053-4.748-4.652a4.7 4.7 0 014.64-4.76h.108c2.52 0 4.577 1.992 4.696 4.49l.005.216v6.936c0 2.576-2.093 4.676-4.655 4.706a4.663 4.663 0 01-3.267-1.376l-1.994 2A7.46 7.46 0 009.57 24h.1c4.096-.062 7.386-3.391 7.409-7.497V9.35c-.1-4.09-3.428-7.35-7.501-7.35zm44.929.038c-4.15 0-7.509 3.368-7.509 7.528s3.36 7.528 7.509 7.528h2.57v-2.822h-2.57a4.7 4.7 0 01-4.694-4.706 4.7 4.7 0 014.694-4.706A4.707 4.707 0 0159.16 8.94l.024.22v14.456H62V9.566c-.008-4.152-3.352-7.527-7.493-7.527z"></path></svg>
+        </button>
+        <button class="tab-link" data-tab="open-mixtral">
+            <img src="images/mistral.png" height="24" alt="mistral Icon" class="tab-icon">
+            <span>&nbsp;&nbsp;Mistral AI</span>
+        </button>
+        <button class="tab-link" data-tab="moonshot">
+            <svg fill="currentColor" fill-rule="evenodd" height="22" viewBox="0 0 24 24" width="22" xmlns="http://www.w3.org/2000/svg" style="flex: 0 0 auto; line-height: 1; margin-right: 8.8px;"><title>MoonshotAI</title><path d="M1.052 16.916l9.539 2.552a21.007 21.007 0 00.06 2.033l5.956 1.593a11.997 11.997 0 01-5.586.865l-.18-.016-.044-.004-.084-.009-.094-.01a11.605 11.605 0 01-.157-.02l-.107-.014-.11-.016a11.962 11.962 0 01-.32-.051l-.042-.008-.075-.013-.107-.02-.07-.015-.093-.019-.075-.016-.095-.02-.097-.023-.094-.022-.068-.017-.088-.022-.09-.024-.095-.025-.082-.023-.109-.03-.062-.02-.084-.025-.093-.028-.105-.034-.058-.019-.08-.026-.09-.031-.066-.024a6.293 6.293 0 01-.044-.015l-.068-.025-.101-.037-.057-.022-.08-.03-.087-.035-.088-.035-.079-.032-.095-.04-.063-.028-.063-.027a5.655 5.655 0 01-.041-.018l-.066-.03-.103-.047-.052-.024-.096-.046-.062-.03-.084-.04-.086-.044-.093-.047-.052-.027-.103-.055-.057-.03-.058-.032a6.49 6.49 0 01-.046-.026l-.094-.053-.06-.034-.051-.03-.072-.041-.082-.05-.093-.056-.052-.032-.084-.053-.061-.039-.079-.05-.07-.047-.053-.035a7.785 7.785 0 01-.054-.036l-.044-.03-.044-.03a6.066 6.066 0 01-.04-.028l-.057-.04-.076-.054-.069-.05-.074-.054-.056-.042-.076-.057-.076-.059-.086-.067-.045-.035-.064-.052-.074-.06-.089-.073-.046-.039-.046-.039a7.516 7.516 0 01-.043-.037l-.045-.04-.061-.053-.07-.062-.068-.06-.062-.058-.067-.062-.053-.05-.088-.084a13.28 13.28 0 01-.099-.097l-.029-.028-.041-.042-.069-.07-.05-.051-.05-.053a6.457 6.457 0 01-.168-.179l-.08-.088-.062-.07-.071-.08-.042-.049-.053-.062-.058-.068-.046-.056a7.175 7.175 0 01-.027-.033l-.045-.055-.066-.082-.041-.052-.05-.064-.02-.025a11.99 11.99 0 01-1.44-2.402zm-1.02-5.794l11.353 3.037a20.468 20.468 0 00-.469 2.011l10.817 2.894a12.076 12.076 0 01-1.845 2.005L.657 15.923l-.016-.046-.035-.104a11.965 11.965 0 01-.05-.153l-.007-.023a11.896 11.896 0 01-.207-.741l-.03-.126-.018-.08-.021-.097-.018-.081-.018-.09-.017-.084-.018-.094c-.026-.141-.05-.283-.071-.426l-.017-.118-.011-.083-.013-.102a12.01 12.01 0 01-.019-.161l-.005-.047a12.12 12.12 0 01-.034-2.145zm1.593-5.15l11.948 3.196c-.368.605-.705 1.231-1.01 1.875l11.295 3.022c-.142.82-.368 1.612-.668 2.365l-11.55-3.09L.124 10.26l.015-.1.008-.049.01-.067.015-.087.018-.098c.026-.148.056-.295.088-.442l.028-.124.02-.085.024-.097c.022-.09.045-.18.07-.268l.028-.102.023-.083.03-.1.025-.082.03-.096.026-.082.031-.095a11.896 11.896 0 011.01-2.232zm4.442-4.4L17.352 4.59a20.77 20.77 0 00-1.688 1.721l7.823 2.093c.267.852.442 1.744.513 2.665L2.106 5.213l.045-.065.027-.04.04-.055.046-.065.055-.076.054-.072.064-.086.05-.065.057-.073.055-.07.06-.074.055-.069.065-.077.054-.066.066-.077.053-.06.072-.082.053-.06.067-.074.054-.058.073-.078.058-.06.063-.067.168-.17.1-.098.059-.056.076-.071a12.084 12.084 0 012.272-1.677zM12.017 0h.097l.082.001.069.001.054.002.068.002.046.001.076.003.047.002.06.003.054.002.087.005.105.007.144.011.088.007.044.004.077.008.082.008.047.005.102.012.05.006.108.014.081.01.042.006.065.01.207.032.07.012.065.011.14.026.092.018.11.022.046.01.075.016.041.01L14.7.3l.042.01.065.015.049.012.071.017.096.024.112.03.113.03.113.032.05.015.07.02.078.024.073.023.05.016.05.016.076.025.099.033.102.036.048.017.064.023.093.034.11.041.116.045.1.04.047.02.06.024.041.018.063.026.04.018.057.025.11.048.1.046.074.035.075.036.06.028.092.046.091.045.102.052.053.028.049.026.046.024.06.033.041.022.052.029.088.05.106.06.087.051.057.034.053.032.096.059.088.055.098.062.036.024.064.041.084.056.04.027.062.042.062.043.023.017c.054.037.108.075.161.114l.083.06.065.048.056.043.086.065.082.064.04.03.05.041.086.069.079.065.085.071c.712.6 1.353 1.283 1.909 2.031L7.222.994l.062-.027.065-.028.081-.034.086-.035c.113-.045.227-.09.341-.131l.096-.035.093-.033.084-.03.096-.031c.087-.03.176-.058.264-.085l.091-.027.086-.025.102-.03.085-.023.1-.026L9.04.37l.09-.023.091-.022.095-.022.09-.02.098-.021.091-.02.095-.018.092-.018.1-.018.091-.016.098-.017.092-.014.097-.015.092-.013.102-.013.091-.012.105-.012.09-.01.105-.01c.093-.01.186-.018.28-.024l.106-.008.09-.005.11-.006.093-.004.1-.004.097-.002.099-.002.197-.002z"></path></svg>
+            <svg fill="currentColor" fill-rule="evenodd" height="16.5" viewBox="0 0 171 24" xmlns="http://www.w3.org/2000/svg" style="flex: 0 0 auto; line-height: 1; width: fit-content;"><title>MoonshotAI</title><path d="M165.484 2H169v19.507h-3.516V2zm-35.707 0v5.26h2.186v3.507h-3.186v10.74h-3.516v-10.74h-2.966V7.26h2.966V2h2.516zm-24.598 11.023v8.498h-3.345v-8.804c.008-2.1-2.109-2.895-3.109-2.895l-.064.001c-1.073.026-3.521.694-3.54 3.863v7.835h-3.468V2.014L95.14 2v6.918c1.228-1.986 3.93-2.243 4.755-2.243.926 0 1.768.155 2.525.465.757.31 1.378.783 1.864 1.42.413.54.665 1.096.757 1.667.092.571.138 1.503.138 2.796zM89.29 9.507l-2.362 2.41c-2.911-2.41-6.647-2.136-7.196-.93-.55 1.205 2.444 1.484 4.734 1.98l.634.146c1.731.408 4.603 1.274 4.52 4.12-.11 3.78-4.23 4.767-6.867 4.767-2.637 0-5.933-1.808-7.636-3.342l2.527-2.63c2.582 2.63 7.142 2.958 7.856 1.534.714-1.425-1.263-1.48-4.834-1.973-3.175-.438-4.837-2.85-4.813-4.13.034-1.843 1.543-4.85 6.31-4.886 3.227-.025 5.425.961 7.127 2.934zm-22.617.386l-.033.001c-1.905.083-3.443 1.453-3.458 3.746v7.867h-3.83V7.185h2.702v2.061l.088-.12c.591-.8 2.07-2.555 4.796-2.523 2.675.032 5.696 1.95 5.696 5.17v9.734H69.69v-8.813c-.01-2.197-2.102-2.824-3.016-2.8zm-33.14-3.29c4.247 0 7.69 3.434 7.69 7.671s-3.443 7.671-7.69 7.671c-4.248 0-7.692-3.434-7.692-7.671s3.444-7.671 7.691-7.671zm0 3.726a3.95 3.95 0 00-3.956 3.945 3.95 3.95 0 003.955 3.945 3.95 3.95 0 003.956-3.945 3.95 3.95 0 00-3.956-3.945zm16.7-3.726c4.247 0 7.69 3.434 7.69 7.671s-3.443 7.671-7.69 7.671c-4.248 0-7.692-3.434-7.692-7.671s3.444-7.671 7.691-7.671zm0 3.726a3.95 3.95 0 00-3.956 3.945 3.95 3.95 0 003.955 3.945 3.95 3.95 0 003.956-3.945 3.95 3.95 0 00-3.956-3.945zm64.382-3.726c4.248 0 7.69 3.434 7.69 7.671s-3.442 7.671-7.69 7.671c-4.247 0-7.69-3.434-7.69-7.671s3.443-7.671 7.69-7.671zm0 3.726a3.95 3.95 0 00-3.955 3.945 3.95 3.95 0 003.955 3.945 3.95 3.95 0 003.955-3.945 3.95 3.95 0 00-3.955-3.945zM2 21.616V2l10.987 7.89L23.919 2v19.616h-3.79V9.452l-7.17 5.26-7.169-5.26v12.164H2zM153.344 2l10.492 19.507h-4.138l-1.833-3.288h-5.235l-1.789-3.46-3.632 6.748h-4.358L153.344 2zm0 8.11l-2.478 4.602h5.044l-2.566-4.602z"></path></svg>
+        </button>
+        <button class="tab-link" data-tab="yi">
+            <svg fill="currentColor" fill-rule="evenodd" height="20" viewBox="0 0 88 24" xmlns="http://www.w3.org/2000/svg" style="flex: 0 0 auto; line-height: 1; width: fit-content;"><title>01.AI</title><path d="M45.502 4.144h4.81l.014.448c.036 2.124-.12 11.282-5.306 15.896l1.409 1.4.186-.12.162-.115c1.146-.85 4.78-4.157 5.792-12.516h7.455l-.01 2.091-.024 1.855c-.03 1.85-.089 3.83-.199 4.663-.245 1.81-2.07 1.78-2.32 1.768l-2.473-.163.449 1.992c1.098.137 2.206.185 3.312.144 3.76-.086 3.72-4.137 3.72-4.137l.212-9.72h-9.975c.085-1.086.125-2.245.115-3.486h11.047V2.71H45.502v1.434zm-2.079 6.658H25.047v1.435h18.376v-1.435zM21.107 2v1.435h-7.501v.714h8.397l.022.227.014.206c.05.861.057 2.86-.713 4.752l-1.79-.323c.168-1.136.23-2.285.188-3.432h-6.118v3.634h-2.394V5.579H5.435a10.913 10.913 0 01-1.453 3.523L2.29 8.427c.5-1.383.833-2.82.993-4.283h7.929v-.71H3.71V2h17.396zM10.442 8.23v.983H5.753v-.984h4.689zm8.493 0v.983h-4.689v-.984h4.69zm-8.493-1.661v.983H5.753V6.57h4.689zm8.493 0v.983h-4.689V6.57h4.69zm-5.65 5.992l.185 1.654h4.08v1.44l-.087.17c-.28.516-1.294 2.13-3.772 3.856.385.332.752.685 1.1 1.056l-1.042 1.056a47.585 47.585 0 00-6-3.915l1.094-1.753.444.289a52.17 52.17 0 012.94 2.087 13.41 13.41 0 002.617-2.844H6.948V14.22h4.62l-.62-1.452 2.337-.207zm1.208-2.523c2.114 1.518 4.955 2.766 8.453 2.27l-.073 1.38-.156.042c-.859.213-5.163 1.043-9.935-2.21h-.617c-5.34 3.639-10.091 2.168-10.091 2.168L2 12.308c3.498.496 6.336-.752 8.454-2.27h4.039zm57.552-8.005v4.985h2.5v1.44h-2.5v3.708a20.898 20.898 0 012.385-1.056l.738 1.497-.942.544c-.557.327-1.32.785-2.18 1.325V22h-2.392v-5.955a46.133 46.133 0 00-2.19 1.598l-1.485-2.019 1.356-.824.51-.302c.54-.318 1.16-.677 1.813-1.043V8.453H68.52l-.11.648c-.189 1.073-.412 2.094-.665 2.84l-1.697-.348.093-.561c.201-1.27.658-4.485.658-7.502l2.329.063-.124 1.216-.098.859c-.05.416-.108.873-.173 1.35h.921V2.033h2.391zm3.422 0l2.334.065-.11 1.056-.094.795c-.037.29-.079.603-.125.93L86 4.878l-.215 12.684-.01.184c-.075.925-.557 3.78-3.707 3.851a20.348 20.348 0 01-2.743-.21l-.422-1.961 1.889.2h.152l.149-.007c.605-.046 1.806-.319 2.002-1.763l.022-.198.025-.31c.073-1.036.117-2.963.144-4.918l.034-3.794.007-2.278h-.682c-.69 10.837-5.617 14.292-6.25 14.693l-.067.04-.913-.963c4.115-3.658 5.065-10.17 5.264-13.77h-.692c-1.052 10.532-6.213 13.45-6.213 13.45l-.914-.964c3.66-3.255 4.814-8.774 5.164-12.486h-.79a20.988 20.988 0 01-.696 2.904l-1.696-.351c.417-2.269.626-4.571.625-6.878z"></path></svg>
+        </button>
+        <button class="tab-link" data-tab="deepseek">
+            <img src="images/deepseek.webp" height="24" alt="deepseek Icon" class="tab-icon">
+        </button>
+        <button class="tab-link" data-tab="quick-trans">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>划词翻译</span>
+        </button>
+        <button class="tab-link" data-tab="about">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+            <span>关于</span>
+        </button>
+        <!-- Add more tabs here -->
+    </div>
+    <div class="tab-content active" id="general">
+        <h2>包含功能</h2>
+        <ul>
+            <li>智能摘要（支持网页、PDF、youtube、bilibili）</li>
+            <br/>
+            <li>全文翻译（支持网页、PDF）</li>
+            <br/>
+            <li>对话问答（快捷入口请在对话框中输入 / 进行唤起，支持摘要、翻译、润色、代码解释、图像转文本）</li>
+            <br/>
+            <li>划词翻译</li>
+            <br/>
+            <li>右键复制网页正文（纯文本、HTML格式）</li>
+            <br/>
+            <li>右键下载视频 SRT 字幕文件</li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="gpt">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://platform.openai.com/api-keys"> https://platform.openai.com/api-keys </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>gpt-3.5-turbo</li>
+            <li>gpt-4-turbo</li>
+            <li>gpt-4o</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div>
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.openai.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+    
+    <div class="tab-content" id="gemini">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://aistudio.google.com/app/apikey"> https://aistudio.google.com/app/apikey </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>gemini-1.0-pro-latest</li>
+            <li>gemini-1.0-pro-vision-latest</li>
+            <li>gemini-1.5-pro-latest</li>
+            <li>gemini-1.5-flash-latest</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div> 
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://generativelanguage.googleapis.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="groq">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://console.groq.com/keys"> https://console.groq.com/keys </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>llama3-70b-8192</li>
+            <li>llama3-8b-8192</li>
+            <li>mixtral-8x7b-32768</li>
+            <li>gemma-7b-it</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div> 
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.groq.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="open-mixtral">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://console.mistral.ai/api-keys"> https://console.mistral.ai/api-keys </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>open-mixtral-8x22b</li>
+            <li>open-mixtral-8x7b</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div> 
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.mistral.ai">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="moonshot">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://platform.moonshot.cn/console/api-keys"> https://platform.moonshot.cn/console/api-keys </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>moonshot-v1-128k</li>
+            <li>moonshot-v1-32k</li>
+            <li>moonshot-v1-8k</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div>
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.moonshot.cn">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="yi">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://platform.lingyiwanwu.com/apikeys"> https://platform.lingyiwanwu.com/apikeys</a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>yi-34b-chat-0205</li>
+            <li>yi-34b-chat-200k</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div>
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.lingyiwanwu.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="deepseek">
+        <h2>申请 API Key 官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://platform.deepseek.com/api_keys"> https://platform.deepseek.com/api_keys </a>
+            </li>
+        </ul>
+        <h2>模型列表</h2>
+        <ul>
+            <li>deepseek-chat</li>
+            <li>deepseek-coder</li>
+        </ul>
+        <h2>API Key</h2>
+        <div class="password-wrapper">
+            <input type="password" class="api-key-input" placeholder="Enter your API Key">
+            <button class="toggle-password">
+                <!-- 眼睛开，表示密码可见 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye" style="display: none;" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <!-- 眼睛关，表示密码隐藏 -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="bi bi-eye-slash" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+        </div>
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="https://api.deepseek.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="quick-trans">
+        <h2>划词翻译</h2>
+        <img src="/images/quicktrans.png" alt="说明什么是快捷翻译" class="explanation-image">
+
+        <div class="toggle-container">
+            <span class="toggle-label">开启划词翻译: </span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="quickTransToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="model-selection-container">
+            <label for="model-select"><span class="select-label">选择模型:</span></label>
+            <select id="model-select" class="model-select">
+                <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                <option value="gpt-4-turbo">gpt-4-turbo</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gemini-1.0-pro-latest">gemini-1.0-pro-latest</option>
+                <option value="gemini-1.0-pro-vision-latest">gemini-1.0-pro-vision-latest</option>
+                <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
+                <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
+                <option value="llama3-70b-8192-groq">llama3-70b-groq</option>
+                <option value="llama3-8b-8192-groq">llama3-8b-groq</option>
+                <option value="llama2-70b-4096-groq">llama2-70b-groq</option>
+                <option value="moonshot-v1-128k">moonshot-v1-128k</option>
+                <option value="moonshot-v1-8k">moonshot-v1-32k</option>
+                <option value="moonshot-v1-8k">moonshot-v1-8k</option>
+                <option value="deepseek-chat">deepseek-chat-32k</option>
+                <option value="deepseek-coder">deepseek-coder-16k</option>
+                <option value="yi-34b-chat-0205">yi-34b-chat-0205</option>
+                <option value="yi-34b-chat-200k">yi-34b-chat-200k</option>
+                <option value="open-mixtral-8x22b">mixtral-8x22b</option>
+                <option value="open-mixtral-8x7b">mixtral-8x7b</option>
+                <option value="mixtral-8x7b-32768-groq">mixtral-8x7b-groq</option>
+                <option value="gemma-7b-it-groq">gemma-7b-groq</option>
+                <!-- 其他模型选项可以在此添加 -->
+            </select>
+        </div>
+        <button class="quicktrans-save-btn">保存</button>
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+    <div class="tab-content" id="about">
+        <h2>FisherAI </h2>
+        <ul>
+            <li>
+            Your Best Summary Copilot
+            </li>
+        </ul>
+        <div style="margin-top:20px;">
+            <!-- Twitter 链接 -->
+            <a href="https://twitter.com/fun000001" target="_blank" class="social-link twitter-link">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="twitter-svg"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+            </a>
+            <!-- github 链接 -->
+            <a href="https://github.com/fisherdaddy" target="_blank" class="social-link blog-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="github-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            </a>
+        </div>
+    </div>
+    <!-- Add more content divs here -->
+</div>
+</body>
+</html>

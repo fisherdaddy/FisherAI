@@ -1,0 +1,273 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #111827;
+  color: white;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.settings-container {
+  width: 90%;
+  height: 90%;
+  display: flex;
+  flex-direction: row;
+  background-color: #2D3748; /* 可以设置一个背景色区分容器和页面背景 */
+  padding: 20px; /* 容器内边距 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* 可选，为容器添加阴影效果 */
+}
+
+.tab-list {
+  width: 250px;
+  background-color: #1f2937;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.my-extension-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 20px; /* 在标题和选项卡之间添加间隙 */
+}
+
+.my-extension-logo {
+  height: 48px;
+  width: 48px;
+}
+
+.my-extension-brand {
+  font-size: 20px;
+  color: white;
+  margin-top: 10px;
+}
+
+.tab-link {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: none;
+  margin-bottom: 5px;
+}
+
+.tab-link:hover, .tab-link.active {
+  background-color: #374151;
+}
+
+.tab-link svg {
+  margin-right: 8px;
+}
+
+.tab-link span {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.tab-content {
+  flex-grow: 1;
+  padding: 20px;
+  display: none;
+  background-color: #1A202C; /* 深色背景，与边栏颜色一致 */
+  color: #CBD5E0; /* 提高对比度的文字颜色 */
+  border-radius: 8px; /* 轻微的边框圆角 */
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.tab-content h3 {
+  margin-top: 0;
+  color: #E2E8F0; /* 浅灰色的标题颜色 */
+}
+
+.tab-content ul {
+  list-style-type: none; /* 移除列表点 */
+  padding: 0;
+}
+
+.tab-content li {
+  background-color: #2D3748; /* 为列表项添加背景色 */
+  padding: 8px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.tab-content li a {
+  color: #28a745;
+  text-decoration: none;
+}
+
+.tab-content li a:hover {
+  text-decoration: underline;
+}
+
+.save-button, .quicktrans-save-btn, .checkapi-button {
+  padding: 8px 16px;
+  background-color: #4A5568;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 30px;
+}
+
+.checkapi-button {
+  margin-left: 10px;
+}
+
+
+.save-button:hover, .quicktrans-save-btn:hover, .checkapi-button:hover {
+  background-color: #4caf50;
+}
+
+.hidden {
+  display: none;
+}
+
+.save-message, .checkapi-message{
+  color: #38A169;
+  margin-top: 10px;
+}
+
+.password-wrapper, .baseurl-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  width: 50%;
+}
+
+.api-key-input, .baseurl-input {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  padding-right: 40px;
+}
+
+.toggle-password {
+  background: none;
+  border: none;
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  height: 100%; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.toggle-password svg {
+  width: 16px;
+  height: 16px;
+}
+
+
+.social-link {
+  display: inline-block;
+  margin: 5px;
+  width: 40px;
+  height: 40px;
+}
+
+.social-link:hover svg {
+  transform: scale(1.2);  /* 鼠标悬停时图标放大 */
+}
+
+.twitter-svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease; 
+  fill: white;
+}
+
+.github-svg {
+  fill: #333;
+  stroke: white;
+  width: 24px;
+  height: 24px; 
+}
+
+.explanation-image {
+  width: 100%;
+  height: auto;
+  max-width: 600px;
+  margin-top: 30px;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  margin-top: 20px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #2196F3;
+}
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.toggle-label, .select-label {
+  font-size: 16px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.model-selection-container {
+  margin-top: 20px;
+}
+
+.model-select {
+  width: 30%;
+  padding: 5px;
+  font-size: 16px;
+}

@@ -1,0 +1,61 @@
+{
+    "manifest_version": 3,
+    "name": "FisherAI - Your Best Summary Copilot, Supporting ChatGPT & Gemini",
+    "version": "1.1.7",
+    "description": "Your Best Summary Copilot",
+    "icons": {
+      "16": "images/logo_16.png",
+      "32": "images/logo_32.png",
+      "48": "images/logo_48.png",
+      "128": "images/logo_128.png"
+    },
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "action": {
+        "default_popup": "",
+        "default_title": "FisherAI",
+        "default_icon": {
+          "16": "images/logo_16.png",
+          "32": "images/logo_32.png",
+          "48": "images/logo_48.png",
+          "128": "images/logo_128.png"
+        }
+    },
+    "background": {
+      "service_worker": "./background.js"
+    },
+    "permissions": [
+        "storage", 
+        "sidePanel",
+        "tabs",
+        "activeTab",
+        "contextMenus",
+        "clipboardWrite"
+    ],
+    "minimum_chrome_version":"114",
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": [
+          "scripts/third/Readability.js", 
+          "scripts/third/youtube-transcript.js", 
+          "scripts/third/marked.min.js", 
+          "scripts/third/pdf.worker.min.js", 
+          "scripts/third/pdf.min.js", 
+          "scripts/constants.js", 
+          "scripts/utils.js", 
+          "scripts/llm.js",
+          "scripts/content.js" ]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+        "images/logo_48.png",
+        "scripts/third/pdf.worker.min.js"
+      ],
+        "matches": ["<all_urls>"]
+      }
+    ]
+}
