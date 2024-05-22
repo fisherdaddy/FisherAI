@@ -84,11 +84,12 @@ function togglePasswordVisibility(button) {
 }
 
 
-
-
 /**
- * 获取模型基础信息
+ * 获取模型基础信息，以便于检查模型接口配置的可用性
+ * @param {string} baseUrl 
  * @param {string} model 
+ * @param {string} apiKey 
+ * @returns 
  */
 function getModelBaseParamForCheck(baseUrl, model, apiKey) {
   let body = '';
@@ -108,6 +109,18 @@ function getModelBaseParamForCheck(baseUrl, model, apiKey) {
             }]
           }]
         });
+      } else if(model.includes(AZURE_MODEL)) {
+        apiUrl = apiUrl.replace('{MODEL_NAME}', defaultModel);
+        body = JSON.stringify({
+          stream: true,
+          messages: [
+            {
+              "role": "user",
+              "content": "hi"
+            }
+          ]
+        });
+
       } else {
         body = JSON.stringify({
           model: defaultModel,
@@ -140,7 +153,9 @@ function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
     'Content-Type': 'application/json'
   };
 
-  if (!model.includes(GEMINI_MODEL)) {
+  if (model.includes(AZURE_MODEL)) {
+    headers['api-key'] = apiKey;
+  } else if(!model.includes(GEMINI_MODEL)) {
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 

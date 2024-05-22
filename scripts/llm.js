@@ -99,12 +99,17 @@ function createRequestParams(additionalHeaders, body) {
  * @param {string} type 
  */
 async function chatWithLLM(model, contentObj, type) {
-  const {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
+  var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
   const realModelName = model.replace(/-groq/g, "");
 
   // 如果是划词或划句场景，把system prompt置空
   if(type == TRANS_TYPE) {
     dialogueHistory[0].content = '';
+  }
+
+   // 特殊处理一下 azure OpenAI 的 baseurl
+  if(realModelName.includes(AZURE_MODEL)) {
+    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
   }
 
   let completeText = '';
@@ -150,6 +155,14 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, contentObj, type
   let additionalHeaders = {
     'Authorization': 'Bearer ' + apiKey,
   };
+
+  // 特殊处理一下 azure OpenAI的参数
+  if(modelName.includes(AZURE_MODEL)) {
+    additionalHeaders = {
+      'api-key': apiKey,
+    };
+  }
+
   const params = createRequestParams(additionalHeaders, body);
 
   console.log(baseUrl);

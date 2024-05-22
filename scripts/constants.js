@@ -27,6 +27,9 @@ SHORTCUT_IMAGE2TEXT = "图像转文本：";
 const OPENAI_CHAT_BASE_URL = "https://api.openai.com";
 const OPENAI_CHAT_API_PATH = "/v1/chat/completions";
 
+const AZURE_OPENAI_CHAT_BASE_URL = "https://{YOUR_RESOURCE_NAME}.openai.azure.com";
+const AZURE_OPENAI_CHAT_API_PATH = "/openai/deployments/{MODEL_NAME}/chat/completions?api-version=2024-04-01-preview";
+
 const GEMINI_CHAT_BASE_URL = "https://generativelanguage.googleapis.com";
 const GEMINI_CHA_API_PAH = "/v1beta/models/{MODEL_NAME}:streamGenerateContent?alt=sse&key={API_KEY}";
 
@@ -48,6 +51,7 @@ const YI_CHAT_API_PATH = "/v1/chat/completions";
 
 // 模型名称包含的关键字
 const GPT_MODEL = "gpt";
+const AZURE_MODEL = "azure";
 const GEMINI_MODEL = 'gemini';
 const GROQ_MODEL = "groq";
 const MISTRAL_MODEL = "open-mixtral";
@@ -57,6 +61,7 @@ const YI_MODEL = "yi";
 
 // 默认模型
 const GPT_DEFAULT_MODEL = "gpt-3.5-turbo";
+const AZURE_GPT_DEFAULT_MODEL = "azure-gpt-35-turbo";
 const GEMINI_DEFAULT_MODEL = "gemini-1.0-pro-latest";
 const GROQ_DEFAULT_MODEL = "gemma-7b-it";
 const MISTRA_DEFAULTL_MODEL = "open-mixtral-8x7b";
@@ -67,6 +72,7 @@ const YI_DEFAULT_MODEL = "yi-34b-chat-0205";
 
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
+  { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_CHAT_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
   { key: GPT_MODEL, baseUrl: OPENAI_CHAT_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
   { key: GEMINI_MODEL, baseUrl: GEMINI_CHAT_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
   { key: GROQ_MODEL, baseUrl: GROQ_CHAT_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
