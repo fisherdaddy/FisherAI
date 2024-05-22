@@ -7,7 +7,7 @@
 - [x] 一键自动摘要
 - [x] 一键网页翻译
 - [x] 一键视频翻译
-- [x] 自定义模型和API密钥
+- [x] 自定义模型/API密钥/API代理地址
 - [x] 支持常见LLM系列模型
 - [x] 支持多轮对话
 - [x] 支持图片分享
@@ -18,16 +18,20 @@
 <img src="public/home.png" alt="" style="max-width: 80%;">
 </a>
 
+<a target="_blank" href="https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj">
+<img src="public/settings.png" alt="" style="max-width: 80%;">
+</a>
+
 ## 安装指南
 安装 FisherAI 插件非常简单：
 1. 访问已上架 Chrome应用商店的 [FisherAI](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj)，并点击安装。
 2. 或者，下载源代码，然后在Chrome扩展程序页面 (`chrome://extensions/`) 中加载已解压的扩展程序。
 
 ## 使用说明
-安装插件后，您可以通过点击浏览器右上角的FisherAI图标，访问所有功能。具体功能使用如下：
-- **自动摘要**：在任何网页上选择文本，点击右键选择“生成摘要”。
-- **网页翻译**：点击插件图标，选择“翻译此页”。
-- **视频翻译**：在视频页面点击插件图标，选择“翻译视频”。
+安装插件后，您可以通过点击浏览器右上角的 FisherAI 图标，访问所有功能。具体功能使用如下：
+- **自动摘要**
+- **网页翻译**
+- **视频翻译**
 - 其他功能请参阅以下更新记录。
 
 ## 贡献指南
