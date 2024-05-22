@@ -34,14 +34,6 @@
 - **视频翻译**
 - 其他功能请参阅以下更新记录。
 
-## 贡献指南
-欢迎社区成员贡献代码、文档或反馈！请遵循以下步骤贡献：
-1. Fork本项目。
-2. 创建您的分支 (`git checkout -b feature-branch`).
-3. 提交您的更改 (`git commit -am 'Add some feature'`).
-4. 推送到分支 (`git push origin feature-branch`).
-5. 创建一个新的Pull Request。
-
 ## 更新记录
 ### 2024-05-19
 新增功能和改进包括：
