@@ -530,6 +530,8 @@ function initResultPage() {
             let newInputText = '';
             if(inputText.startsWith(SHORTCUT_SUMMAY)) {
               newInputText = SUMMARY_PROMPT + inputText.replace(SHORTCUT_SUMMAY, '') ;
+            } else if(inputText.startsWith(SHORTCUT_DICTION)) {
+              newInputText = DICTION_PROMPT + inputText.replace(SHORTCUT_DICTION, '') ;
             } else if(inputText.startsWith(SHORTCUT_TRANSLATION)) {
               newInputText = TRANSLATION_PROMPT + inputText.replace(SHORTCUT_TRANSLATION, '') ;
             } else if(inputText.startsWith(SHORTCUT_POLISH)) {
