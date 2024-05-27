@@ -49,16 +49,23 @@ const DEEPSEEK_CHAT_API_PATH = "/chat/completions";
 const YI_CHAT_BASE_URL = "https://api.lingyiwanwu.com";
 const YI_CHAT_API_PATH = "/v1/chat/completions";
 
+const OLLAMA_CHAT_BASE_URL = "http://127.0.0.1:11434";
+const OLLAMA_CHAT_API_PATH = "/api/chat";
+const OLLAMA_LIST_MODEL_PATH = "/api/tags";
+
 
 // 模型名称包含的关键字
 const GPT_MODEL = "gpt";
 const AZURE_MODEL = "azure";
 const GEMINI_MODEL = 'gemini';
 const GROQ_MODEL = "groq";
+const GROQ_MODEL_POSTFIX = "-" + GROQ_MODEL;
 const MISTRAL_MODEL = "open-mixtral";
 const MOONSHOT_MODEL = "moonshot";
 const DEEPSEEK_MODEL = 'deepseek';
 const YI_MODEL = "yi";
+const OLLAMA_MODEL = "ollama";
+const OLLAMA_MODEL_POSTFIX = "-" + OLLAMA_MODEL;
 
 // 默认模型
 const GPT_DEFAULT_MODEL = "gpt-3.5-turbo";
@@ -77,6 +84,7 @@ const DEFAULT_LLM_URLS = [
   { key: GPT_MODEL, baseUrl: OPENAI_CHAT_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
   { key: GEMINI_MODEL, baseUrl: GEMINI_CHAT_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
   { key: GROQ_MODEL, baseUrl: GROQ_CHAT_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
+  { key: OLLAMA_MODEL, baseUrl: OLLAMA_CHAT_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, defaultModel: '' },
   { key: MISTRAL_MODEL, baseUrl: MISTRAL_CHAT_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, defaultModel: MISTRA_DEFAULTL_MODEL },
   { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_CHAT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
   { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_CHAT_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },

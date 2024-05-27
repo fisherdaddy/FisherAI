@@ -120,7 +120,9 @@ function getModelBaseParamForCheck(baseUrl, model, apiKey) {
             }
           ]
         });
-
+      } else if(model.includes(OLLAMA_MODEL)) {
+        apiUrl = baseUrl || defaultBaseUrl;
+        apiUrl += OLLAMA_LIST_MODEL_PATH;
       } else {
         body = JSON.stringify({
           model: defaultModel,
@@ -159,11 +161,19 @@ function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  fetch(apiUrl, {
-      method: 'POST',
-      headers: headers,
-      body: body
-  })
+  let params = {
+    method: "POST",
+    headers: headers,
+    body: body
+  };
+
+  if(model.includes(OLLAMA_MODEL)) {
+    params = {
+      method: "GET"
+    }
+  }
+
+  fetch(apiUrl, params)
   .then(response => {
       if (response.ok) {
         resultElement.textContent = '检查通过';
@@ -212,7 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 获取api key
         var input = tabContent.querySelector('.api-key-input');
-        var apiKey = input.value; 
+        var apiKey = ''; 
+        if(input) {
+          apiKey = input.value;
+        }
 
         // api 代理地址
         var baseUrlInput = tabContent.querySelector('.baseurl-input');
@@ -236,7 +249,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // 获取api key
       var input = tabContent.querySelector('.api-key-input');
-      var apiKey = input.value; 
+      var apiKey = '';
+      if(input) {
+        apiKey = input.value;
+      } 
 
       // api 代理地址
       var baseUrlInput = tabContent.querySelector('.baseurl-input');

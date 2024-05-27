@@ -11,7 +11,7 @@ async function verifyApiKeyConfigured(model) {
   const {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
   // console.log('baseulr', baseUrl);
   // console.log('apiKey', apiKey);
-  if(baseUrl == null || apiKey == null) {
+  if(baseUrl == null || (!model.includes(OLLAMA_MODEL) && apiKey == null)) {
     // 隐藏初始推荐内容
     const sloganDiv = document.querySelector('.my-extension-slogan');
     sloganDiv.style.display = 'none';
@@ -262,22 +262,67 @@ function handleUploadFiles(event) {
 }
 
 
+// 检测是否启用ollama，拉去ollama模型列表并追加到模型选择列表中
+function loadOllamaModels(callback) {
+  chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
+    const modelInfo = result[OLLAMA_MODEL];
+    if (modelInfo) {
+      const baseUrl = modelInfo.baseUrl || OLLAMA_CHAT_BASE_URL;
+      const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
+      fetch(apiUrl)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Network response was not ok.');
+          }
+        })
+        .then(data => {
+          const models = data.models;
+          const selection = document.getElementById('model-selection');
+          models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.model + OLLAMA_MODEL_POSTFIX;
+            option.textContent = model.name + OLLAMA_MODEL_POSTFIX;
+            selection.appendChild(option);
+          });
+          if (callback) callback();
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+    } else {
+      if (callback) callback();
+    }
+  });
+}
+
+
+// 模型选择变更逻辑
+function handleModelSelection() {
+  const modelSelection = document.getElementById('model-selection');
+  chrome.storage.sync.get(['selectedModel'], function(result) {
+    if (result.selectedModel) {
+      modelSelection.value = result.selectedModel;
+    }
+    toggleImageUpload(modelSelection.value);
+  });
+
+  modelSelection.addEventListener('change', function() {
+    toggleImageUpload(this.value);
+    chrome.storage.sync.set({'selectedModel': this.value});
+  });
+}
+
+
+
 /**
  * 初始化结果页面
  */
 function initResultPage() {
-    // 模型选择变更逻辑
-    const modelSelection = document.getElementById('model-selection');
-    chrome.storage.sync.get(['selectedModel'], function(result) {
-      if (result.selectedModel) {
-          modelSelection.value = result.selectedModel;
-      }
-      toggleImageUpload(modelSelection.value);
-    });
-    modelSelection.addEventListener('change', function() {
-        toggleImageUpload(this.value);
-        chrome.storage.sync.set({'selectedModel': this.value});
-    });
+
+    // 加载 Ollama 模型并处理模型选择
+    loadOllamaModels(handleModelSelection);
 
     // 初始化按钮状态
     updateSubmitButton();
@@ -351,6 +396,7 @@ function initResultPage() {
     // 摘要逻辑
     var summaryButton = document.querySelector('#my-extension-summary-btn');
     summaryButton.addEventListener('click', async function() {
+      const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
       const apiKeyValid = await verifyApiKeyConfigured(model);
       if(!apiKeyValid) {
@@ -378,6 +424,7 @@ function initResultPage() {
     // 网页翻译
     var translateButton = document.querySelector('#my-extension-translate-btn');
     translateButton.addEventListener('click', async function() {
+      const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
       const apiKeyValid = await verifyApiKeyConfigured(model);
       if(!apiKeyValid) {
@@ -405,6 +452,7 @@ function initResultPage() {
     // 视频翻译
     var videoTranslateButton = document.querySelector('#my-extension-videotrans-btn');
     videoTranslateButton.addEventListener('click', async function() {
+      const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
       const apiKeyValid = await verifyApiKeyConfigured(model);
       if(!apiKeyValid) {
@@ -489,6 +537,7 @@ function initResultPage() {
     var submitButton = document.getElementById('my-extension-submit-btn');
     if (submitButton) {
         submitButton.addEventListener('click', async function() {
+          const modelSelection = document.getElementById('model-selection');
           const model = modelSelection.value;
           const apiKeyValid = await verifyApiKeyConfigured(model);
           if(!apiKeyValid) {

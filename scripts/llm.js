@@ -25,13 +25,17 @@ async function getBaseUrlAndApiKey(model) {
   for (const { key, baseUrl, apiPath } of DEFAULT_LLM_URLS) {
     if (model.includes(key)) {
       const modelInfo = await getModelInfoFromChromeStorage(key);
+      let domain = baseUrl;
+      let apiKey = '';
       if (modelInfo) {
-        let domain = baseUrl;
         if(modelInfo.baseUrl) {
           domain  = modelInfo.baseUrl;
         }
-        return { baseUrl: `${domain}${apiPath}`, apiKey: modelInfo.apiKey };
+        if(modelInfo.apiKey) {
+          apiKey = modelInfo.apiKey;
+        }
       }
+      return { baseUrl: `${domain}${apiPath}`, apiKey: apiKey};
     }
   }
   return { baseUrl: null, apiKey: null };;
@@ -46,6 +50,8 @@ async function getModelInfoFromChromeStorage(modelKey) {
         const modelInfo = result[modelKey];
         if (modelInfo && modelInfo.baseUrl && modelInfo.apiKey) {
           resolve({ baseUrl: modelInfo.baseUrl, apiKey: modelInfo.apiKey });
+        } else if (modelInfo && modelInfo.baseUrl) {
+          resolve({ baseUrl: modelInfo.baseUrl });
         } else if (modelInfo && modelInfo.apiKey) {
           resolve({ apiKey: modelInfo.apiKey });
         } else {
@@ -94,29 +100,22 @@ function createRequestParams(additionalHeaders, body) {
 /**
  * AI 对话逻辑
  * @param {string} model 
- * @param {string} api_key 
- * @param {string} content 
+ * @param {object} contentObj 
  * @param {string} type 
  */
 async function chatWithLLM(model, contentObj, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
-  const realModelName = model.replace(/-groq/g, "");
 
   // 如果是划词或划句场景，把system prompt置空
   if(type == TRANS_TYPE) {
     dialogueHistory[0].content = '';
   }
 
-   // 特殊处理一下 azure OpenAI 的 baseurl
-  if(realModelName.includes(AZURE_MODEL)) {
-    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
-  }
-
   let completeText = '';
-  if(realModelName.includes(GEMINI_MODEL)) {
-    completeText = await chatWithGemini(baseUrl, apiKey, realModelName, contentObj, type);
+  if(model.includes(GEMINI_MODEL)) {
+    completeText = await chatWithGemini(baseUrl, apiKey, model, contentObj, type);
   } else {
-    completeText = await chatWithOpenAIFormat(baseUrl, apiKey, realModelName, contentObj, type);
+    completeText = await chatWithOpenAIFormat(baseUrl, apiKey, model, contentObj, type);
   }
   return completeText;
 }
@@ -144,10 +143,13 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, contentObj, type
   if(dialogueHistory.length > MAX_DIALOG_LEN) {
     dialogueHistory = dialogueHistory.slice(-MAX_DIALOG_LEN);
   }
+
+  let realModelName = modelName.replace(new RegExp(GROQ_MODEL_POSTFIX, 'g'), "");
+  realModelName = realModelName.replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "");
   
   // 模型参数
   const body = {
-    model: modelName,
+    model: realModelName,
     temperature: 0.7,
     stream: true,
     messages: dialogueHistory
@@ -158,6 +160,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, contentObj, type
 
   // 特殊处理一下 azure OpenAI的参数
   if(modelName.includes(AZURE_MODEL)) {
+    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
     additionalHeaders = {
       'api-key': apiKey,
     };
@@ -357,7 +360,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
   
         // 处理接收到的数据
         buffer += new TextDecoder().decode(value);
-        // console.log('buffer...', buffer);
+        console.log('buffer...', buffer);
         let position = 0;
         while (position < buffer.length) {
           let start = buffer.indexOf('{', position);
@@ -373,11 +376,13 @@ async function parseAndUpdateChatContent(response, modelName, type) {
           // 尝试解析找到的JSON对象
           let jsonText = buffer.substring(start, end + 1);
           try {
-            // console.log(jsonText);
+            // console.log('jsonText...', jsonText);
             const jsonData = JSON.parse(jsonText);
             let content = '';
             if(modelName.includes(GEMINI_MODEL)) {
               content = jsonData.candidates[0].content.parts[0].text;
+            } else if(modelName.includes(OLLAMA_MODEL)) {
+              content = jsonData.message.content;
             } else {
               content = jsonData.choices.map(choice => choice.delta.content).join('');
             }

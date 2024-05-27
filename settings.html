@@ -53,6 +53,10 @@
         <button class="tab-link" data-tab="deepseek">
             <img src="images/deepseek.webp" height="24" alt="deepseek Icon" class="tab-icon">
         </button>
+        <button class="tab-link" data-tab="ollama">
+            <img src="images/ollama.png" height="28" alt="ollama Icon" class="tab-icon">
+            <span>&nbsp;&nbsp;Ollama</span>
+        </button>
         <button class="tab-link" data-tab="quick-trans">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             <span>划词翻译</span>
@@ -355,6 +359,34 @@
         <h2>API 代理地址</h2>
         <div class="baseurl-wrapper">
             <input type="input" class="baseurl-input" placeholder="https://api.deepseek.com">
+        </div>
+        <div class="button-group">
+            <button class="save-button">保存</button>
+            <button class="checkapi-button">连通性测试</button>
+        </div>
+        <div class="checkapi-message" style="display:none;">检查通过</div> 
+        <div class="save-message" style="display:none;">保存成功！</div> 
+    </div>
+
+
+    <div class="tab-content" id="ollama">
+        <h2>官方地址</h2>
+        <ul>
+            <li>
+                <a href="https://ollama.com"> https://ollama.com </a>
+            </li>
+        </ul>
+        <h2>支持模型列表</h2>
+        <ul>
+            <li>Llama 3</li>
+            <li>Phi 3</li>
+            <li>Mistral</li>
+            <li>Gemma</li>
+            <li>other models</li>
+        </ul>
+        <h2>API 代理地址</h2>
+        <div class="baseurl-wrapper">
+            <input type="input" class="baseurl-input" placeholder="http://127.0.0.1:11434">
         </div>
         <div class="button-group">
             <button class="save-button">保存</button>
