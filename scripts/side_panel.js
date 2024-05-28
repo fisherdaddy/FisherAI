@@ -289,7 +289,7 @@ function loadOllamaModels(callback) {
           if (callback) callback();
         })
         .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
+          if (callback) callback();
         });
     } else {
       if (callback) callback();
