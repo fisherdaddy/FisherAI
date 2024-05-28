@@ -360,7 +360,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
   
         // 处理接收到的数据
         buffer += new TextDecoder().decode(value);
-        console.log('buffer...', buffer);
+        // console.log('buffer...', buffer);
         let position = 0;
         while (position < buffer.length) {
           let start = buffer.indexOf('{', position);
