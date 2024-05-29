@@ -21,9 +21,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, info, tab) => {
 
 chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
+    id: "mainMenu",
+    title: "FisherAI",
+    contexts: ["all"]
+  });
+  
+  chrome.contextMenus.create({
     id: "downloadSubtitles",
     title: "下载视频字幕文件(SRT)",
     contexts: ["all"],
+    parentId: "mainMenu",
     documentUrlPatterns: [
       "*://*.youtube.com/watch*",
       "*://*.bilibili.com/video/*",
@@ -33,12 +40,14 @@ chrome.runtime.onInstalled.addListener(function() {
   chrome.contextMenus.create({
     id: "copyPurePageContent",
     title: "复制网页正文(纯文本)",
-    contexts: ["all"]
+    contexts: ["all"],
+    parentId: "mainMenu"
   });
   chrome.contextMenus.create({
     id: "copyPageContent",
     title: "复制网页正文(HTML)",
-    contexts: ["all"]
+    contexts: ["all"],
+    parentId: "mainMenu"
   });
   
 });
