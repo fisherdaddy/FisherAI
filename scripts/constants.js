@@ -78,6 +78,13 @@ const DEEPSEEK_DEFAULT_MODEL = 'deepseek-chat';
 const YI_DEFAULT_MODEL = "yi-34b-chat-0205";
 
 
+// 支持图像的模型
+const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'azure-gpt-4-turbo', 'azure-gpt-4o', 'gemini-1.0-pro-vision-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
+const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
+const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
+
+
+
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
   { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_CHAT_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
@@ -90,6 +97,7 @@ const DEFAULT_LLM_URLS = [
   { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_CHAT_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
   { key: YI_MODEL, baseUrl: YI_CHAT_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL }
 ];
+
 
 // 任务类型
 const CHAT_TYPE = "chat";
@@ -245,5 +253,12 @@ const IMAGE2TEXT_PROMPT = "你是一个图像识别助手，你的任务是将�
                     "请记住，回答时一定要用中文回答。";
 
 
-// 历史记录中最大对话长度
-const MAX_DIALOG_LEN = 3 * 2; 
+// 对话时取的最大历史对话长度
+const MAX_DIALOG_LEN = 3 * 2;
+
+// 模型参数默认值
+const DEFAULT_TEMPERATURE = 0.3;
+const DEFAULT_TOP_P = 0.7;
+const DEFAULT_MAX_TOKENS = 1024;
+const DEFAULT_PRESENCE_PENALTY = 0.2;
+const DEFAULT_FREQUENCY_PENALTY = 0.3;

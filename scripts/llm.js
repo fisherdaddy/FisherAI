@@ -7,6 +7,17 @@ let dialogueHistory = [{
 // 对话历史数组（gemini）
 let geminiDialogueHistory = []
 
+// 用于控制主动关闭请求
+let currentController = null;
+
+
+function cancelRequest() {
+  if (currentController) {
+    currentController.abort();
+    currentController = null;
+  }
+}
+
 function initChatHistory() {
   dialogueHistory = [{
     "role": "system",
@@ -62,15 +73,21 @@ async function getModelInfoFromChromeStorage(modelKey) {
   });
 }
 
-
-// 用于控制主动关闭请求
-let currentController = null;  // 用于保存当前活跃的 AbortController
-
-function cancelRequest() {
-  if (currentController) {
-    currentController.abort();
-    currentController = null;
-  }
+async function getValueFromChromeStorage(key) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(key, function(result) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        const value = result[key];
+        if (value) {
+          resolve(value);
+        } else {
+          resolve(null);
+        }
+      }
+    });
+  });
 }
 
 /**
@@ -148,9 +165,19 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, contentObj, type
   realModelName = realModelName.replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "");
   
   // 模型参数
+  const temperature = Number(await getValueFromChromeStorage('temperature') || DEFAULT_TEMPERATURE);
+  const topP = Number(await getValueFromChromeStorage('top_p') || DEFAULT_TOP_P);
+  const maxTokens = Number(await getValueFromChromeStorage('max_tokens') || DEFAULT_MAX_TOKENS);
+  const frequencyPenalty =  Number(await getValueFromChromeStorage('frequency_penalty') || DEFAULT_FREQUENCY_PENALTY);
+  const presencePenalty =  Number(await getValueFromChromeStorage('presence_penalty') || DEFAULT_PRESENCE_PENALTY);
+
   const body = {
     model: realModelName,
-    temperature: 0.7,
+    temperature: temperature,
+    top_p: topP,
+    max_tokens: maxTokens,
+    frequency_penalty: frequencyPenalty,
+    presence_penalty: presencePenalty,
     stream: true,
     messages: dialogueHistory
   }

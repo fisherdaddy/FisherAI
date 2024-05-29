@@ -1,8 +1,3 @@
-// 支持图像的模型
-const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gemini-1.0-pro-vision-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
-const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
-const DEFAULT_LOGO_PATH = "/images/file.png";
-
 /**
  * 判断是否设置api key
  * @returns
@@ -240,7 +235,7 @@ function handleUploadFiles(event) {
       if (file.type.startsWith('image/')) {
         img.src = e.target.result;
       } else {
-        img.src = DEFAULT_LOGO_PATH;
+        img.src = DEFAULT_FILE_LOGO_PATH;
       }
       img.setAttribute('data-base64', e.target.result);
       uploadCount--;
@@ -315,6 +310,47 @@ function handleModelSelection() {
 }
 
 
+// 保存自定义模型参数
+function saveModelParams() {
+  const temperature = document.getElementById('temperature').value;
+  const top_p = document.getElementById('top_p').value;
+  const max_tokens = document.getElementById('max_tokens').value;
+  const frequency_penalty = document.getElementById('frequency_penalty').value;
+  const presence_penalty = document.getElementById('presence_penalty').value;
+
+  chrome.storage.sync.set({
+      temperature: temperature,
+      top_p: top_p,
+      max_tokens: max_tokens,
+      frequency_penalty: frequency_penalty,
+      presence_penalty: presence_penalty
+  }, function() {
+      // console.log('model params saved');
+  });
+}
+
+
+// 从chrome storage 加载自定义的模型参数
+function loadModelParams() {
+  chrome.storage.sync.get(['temperature', 'top_p', 'max_tokens'], function(items) {
+      if (items.temperature !== undefined) {
+          document.getElementById('temperature').value = items.temperature;
+      }
+      if (items.top_p !== undefined) {
+          document.getElementById('top_p').value = items.top_p;
+      }
+      if (items.max_tokens !== undefined) {
+          document.getElementById('max_tokens').value = items.max_tokens;
+      }
+      if (items.frequency_penalty !== undefined) {
+        document.getElementById('frequency_penalty').value = items.frequency_penalty;
+      }
+      if (items.max_tokens !== undefined) {
+        document.getElementById('presence_penalty').value = items.presence_penalty;
+      }
+  });
+}
+
 
 /**
  * 初始化结果页面
@@ -323,6 +359,9 @@ function initResultPage() {
 
     // 加载 Ollama 模型并处理模型选择
     loadOllamaModels(handleModelSelection);
+
+    // 加载模型参数
+    loadModelParams();
 
     // 初始化按钮状态
     updateSubmitButton();
@@ -336,19 +375,16 @@ function initResultPage() {
     userInput.addEventListener('input', function(e) {
       toggleShortcutMenu(userInput, shortcutMenu);
     });
-
     userInput.addEventListener('keydown', function(e) {
       if (e.key === '/' && userInput.value.length === 0) {
         toggleShortcutMenu(userInput, shortcutMenu);
       }
     });
-
     userInput.addEventListener('blur', function() {
       setTimeout(() => {
           shortcutMenu.style.display = 'none';
       }, 200); // delay to allow click event on menu items
     });
-
     const menuItems = shortcutMenu.querySelectorAll('div');
     menuItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -358,6 +394,29 @@ function initResultPage() {
         });
     });
 
+    // 设置模型参数
+    const paramsDiv = document.getElementById('params-div');
+    const modelParams = document.getElementById('model-params');
+    paramsDiv.addEventListener('click', function(event) {
+      event.stopPropagation();
+      modelParams.style.display = 'block';
+    });
+    modelParams.addEventListener('click', function(event) {
+      event.stopPropagation(); // Prevent this click from triggering the document click event
+    });
+
+    // 保存模型参数设置
+    document.getElementById('temperature').addEventListener('change', saveModelParams);
+    document.getElementById('top_p').addEventListener('change', saveModelParams);
+    document.getElementById('max_tokens').addEventListener('change', saveModelParams);
+
+    // 点击事件
+    document.addEventListener('click', function(event) {
+      if (!modelParams.contains(event.target) && event.target !== paramsDiv) {
+          modelParams.style.display = 'none';
+      }
+    });
+
     // 图片上传预览
     document.getElementById('image-upload').addEventListener('change', function(event) {
       handleUploadFiles(event);
@@ -365,6 +424,13 @@ function initResultPage() {
 
     // 粘贴
     document.addEventListener('paste', async (event) => {
+
+      const modelSelection = document.getElementById('model-selection');
+      const selectedModel = modelSelection.value;
+      if (!IMAGE_SUPPORT_MODELS.includes(selectedModel)) {
+        return;
+      }
+
       const items = event.clipboardData.items;
       let files = [];
       for (let item of items) {
@@ -565,7 +631,7 @@ function initResultPage() {
             let userMessage = '';
             base64Images.forEach(url => {
               if(!url.includes('image')) {
-                url = DEFAULT_LOGO_PATH;
+                url = DEFAULT_FILE_LOGO_PATH;
               }
               userMessage += "<img src='"+ url +"' />"
             });
