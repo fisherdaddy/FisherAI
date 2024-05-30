@@ -121,10 +121,8 @@ chrome.storage.sync.get(QUICK_TRANS, function(config) {
             return;
           }
           const {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
-          if(baseUrl && apiKey ) {
-            // 构造content
-            const contentObj = generateLLMContent(TRANSLATE2CHN_PROMPT + selectedText);
-            chatWithLLM(model, contentObj, TRANS_TYPE); 
+          if(baseUrl && apiKey) {
+            chatWithLLM(model, TRANSLATE2CHN_PROMPT + selectedText, null, TRANS_TYPE); 
           } else {
             translationPopup.innerHTML = DEFAULT_TIPS;
           }

@@ -1,15 +1,24 @@
 // 对话历史（OpenAI兼容格式）
-let dialogueHistory = [{
-  "role": "system",
-  "content": SYSTEM_PROMPT
-}];
+let dialogueHistory = [];
 
 // 对话历史数组（gemini）
-let geminiDialogueHistory = []
+let geminiDialogueHistory = [];
+
+// gemini system prompt
+let geminiSystemPrompt = {
+    "role": "model",
+    "parts": [
+      {
+        "text": SYSTEM_PROMPT
+      }
+    ]
+  };
 
 // 用于控制主动关闭请求
 let currentController = null;
 
+// 初始化system prompt
+initChatHistory();
 
 function cancelRequest() {
   if (currentController) {
@@ -115,12 +124,14 @@ function createRequestParams(additionalHeaders, body) {
 }
 
 /**
- * AI 对话逻辑
+ * call llm
  * @param {string} model 
- * @param {object} contentObj 
+ * @param {string} inputText 
+ * @param {Array} base64Images 
  * @param {string} type 
+ * @returns 
  */
-async function chatWithLLM(model, contentObj, type) {
+async function chatWithLLM(model, inputText, base64Images, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
 
   // 如果是划词或划句场景，把system prompt置空
@@ -128,168 +139,133 @@ async function chatWithLLM(model, contentObj, type) {
     dialogueHistory[0].content = '';
   }
 
-  let completeText = '';
-  if(model.includes(GEMINI_MODEL)) {
-    completeText = await chatWithGemini(baseUrl, apiKey, model, contentObj, type);
-  } else {
-    completeText = await chatWithOpenAIFormat(baseUrl, apiKey, model, contentObj, type);
-  }
-  return completeText;
-}
+  const openaiDialogueEntry = createDialogueEntry('user', 'content', inputText, base64Images);
+  const geminiDialogueEntry = createDialogueEntry('user', 'parts', inputText, base64Images);
 
-/**
- * 和OpenAI 入参和返回格式兼容的模型接口处理，包括OpenAI、moonshot、groq
- * @param {string} baseUrl 
- * @param {string} apiKey 
- * @param {string} modelName 
- * @param {string} content 
- * @param {string} type
- */ 
-async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, contentObj, type) {
   // 将用户提问更新到对话历史
-  dialogueHistory.push({
-    "role": "user",
-    "content": contentObj.contentForOpenAI
-  });
-  geminiDialogueHistory.push({
-    "role": "user",
-    "parts": contentObj.contentForGemini
-  });
+  dialogueHistory.push(openaiDialogueEntry);
+  geminiDialogueHistory.push(geminiDialogueEntry);
 
   // 取最近的 X 条对话记录
   if(dialogueHistory.length > MAX_DIALOG_LEN) {
     dialogueHistory = dialogueHistory.slice(-MAX_DIALOG_LEN);
   }
 
-  let realModelName = modelName.replace(new RegExp(GROQ_MODEL_POSTFIX, 'g'), "");
-  realModelName = realModelName.replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "");
-  
-  // 模型参数
-  const temperature = Number(await getValueFromChromeStorage('temperature') || DEFAULT_TEMPERATURE);
-  const topP = Number(await getValueFromChromeStorage('top_p') || DEFAULT_TOP_P);
-  const maxTokens = Number(await getValueFromChromeStorage('max_tokens') || DEFAULT_MAX_TOKENS);
-  const frequencyPenalty =  Number(await getValueFromChromeStorage('frequency_penalty') || DEFAULT_FREQUENCY_PENALTY);
-  const presencePenalty =  Number(await getValueFromChromeStorage('presence_penalty') || DEFAULT_PRESENCE_PENALTY);
-
-  const body = {
-    model: realModelName,
-    temperature: temperature,
-    top_p: topP,
-    max_tokens: maxTokens,
-    frequency_penalty: frequencyPenalty,
-    presence_penalty: presencePenalty,
-    stream: true,
-    messages: dialogueHistory
-  }
-  let additionalHeaders = {
-    'Authorization': 'Bearer ' + apiKey,
-  };
-
-  // 特殊处理一下 azure OpenAI的参数
-  if(modelName.includes(AZURE_MODEL)) {
-    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
-    additionalHeaders = {
-      'api-key': apiKey,
-    };
-  }
-
-  const params = createRequestParams(additionalHeaders, body);
-
-  console.log(baseUrl);
-  console.log(params);
-
   let completeText = '';
-  try {
-    const response = await fetch(baseUrl, params);
-    console.log(response);
-    if (!response.ok) throw new Error('Network response was not ok.');
-
-    // 解析并显示
-    completeText = await parseAndUpdateChatContent(response, modelName, type);
-
-    // 将 AI 回答更新到对话历史
-    dialogueHistory.push({
-      "role": "assistant",
-      "content": completeText
-    });
-    geminiDialogueHistory.push({
-      "role": "model",
-      "parts": [{
-        "text": completeText
-      }]
-    });
-
-    return completeText;
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Fetch aborted...', completeText, "<<<");
-      return completeText;
-    } else {
-      console.error('Fetch error:', error);
-      throw error;
-    }
-  } finally {
-    // do nothing
+  if(model.includes(GEMINI_MODEL)) {
+    baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
+    completeText = await chatWithGemini(baseUrl, model, type);
+  } else {
+    completeText = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
   }
+
+  // 将 AI 回答更新到对话历史
+  updateChatHistory(completeText);
+
+  return completeText;
 }
 
 /**
- * 处理gemini api接口请求
+ * 处理 OpenAI 兼容数据格式
  * @param {string} baseUrl 
  * @param {string} apiKey 
  * @param {string} modelName 
- * @param {string} content 
- * @param {string} type
+ * @param {string} type 
+ * @returns 
  */
-async function chatWithGemini(baseUrl, apiKey, modelName, contentObj, type) {
-  baseUrl = baseUrl.replace('{MODEL_NAME}', modelName);
-  baseUrl = baseUrl.replace('{API_KEY}', apiKey);
+async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
+  let realModelName = modelName.replace(new RegExp(GROQ_MODEL_POSTFIX, 'g'), "")
+                                .replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "");
+  
+  const { temperature, topP, maxTokens, frequencyPenalty, presencePenalty } = await getModelParameters();
 
-  // 将用户提问更新到对话历史
-  geminiDialogueHistory.push({
-    "role": "user",
-    "parts": contentObj.contentForGemini
-  });
-  dialogueHistory.push({
-    "role": "user",
-    "content": contentObj.contentForOpenAI
-  });
-
-  // 取最近的 X 条对话记录
-  if(geminiDialogueHistory.length > MAX_DIALOG_LEN) {
-    geminiDialogueHistory = geminiDialogueHistory.slice(-MAX_DIALOG_LEN);
-    console.log("geminiDialogueHistory...", geminiDialogueHistory);
-  }
-  // 模型参数
   const body = {
-    contents: geminiDialogueHistory
+    model: realModelName,
+    temperature,
+    top_p: topP,
+    max_tokens: maxTokens,
+    stream: true,
+    messages: dialogueHistory
+  };
+
+  // mistral 的模型传以下两个参数会报错，这里过滤掉
+  if(!modelName.includes(MISTRAL_MODEL)) {
+    body.frequency_penalty = frequencyPenalty;
+    body.presence_penalty = presencePenalty;
   }
+
+  let additionalHeaders = { 'Authorization': 'Bearer ' + apiKey };
+
+  if (modelName.includes(AZURE_MODEL)) {
+    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
+    additionalHeaders = { 'api-key': apiKey };
+  }
+
+  const params = createRequestParams(additionalHeaders, body);
+  console.log(baseUrl);
+  console.log(params);
+
+  return await fetchAndHandleResponse(baseUrl, params, modelName, type);
+}
+
+/**
+ * 处理 gemini 接口数据格式
+ * @param {string} baseUrl 
+ * @param {string} modelName 
+ * @param {string} type 
+ * @returns 
+ */
+async function chatWithGemini(baseUrl, modelName, type) {
+  const { temperature, topP, maxTokens } = await getModelParameters();
+
+  const body = {
+    contents: geminiDialogueHistory,
+    systemInstruction: geminiSystemPrompt,
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      temperature: temperature,
+      topP: topP
+    }
+  };
+
   const additionalHeaders = {};
   const params = createRequestParams(additionalHeaders, body);
   console.log(baseUrl);
   console.log(params);
 
+  return await fetchAndHandleResponse(baseUrl, params, modelName, type);
+}
+
+/**
+ * 从 chrome storage 中获取模型参数
+ * @returns 
+ */
+async function getModelParameters() {
+  return {
+    temperature: Number(await getValueFromChromeStorage('temperature') || DEFAULT_TEMPERATURE),
+    topP: Number(await getValueFromChromeStorage('top_p') || DEFAULT_TOP_P),
+    maxTokens: Number(await getValueFromChromeStorage('max_tokens') || DEFAULT_MAX_TOKENS),
+    frequencyPenalty: Number(await getValueFromChromeStorage('frequency_penalty') || DEFAULT_FREQUENCY_PENALTY),
+    presencePenalty: Number(await getValueFromChromeStorage('presence_penalty') || DEFAULT_PRESENCE_PENALTY)
+  };
+}
+
+/**
+ * LLM 接口请求 & 解析
+ * @param {string} baseUrl 
+ * @param {string} params 
+ * @param {string} modelName 
+ * @param {string} type 
+ * @returns 
+ */
+async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
   let completeText = '';
   try {
     const response = await fetch(baseUrl, params);
     console.log(response);
     if (!response.ok) throw new Error('Network response was not ok.');
     
-    // 解析并显示
     completeText = await parseAndUpdateChatContent(response, modelName, type);
-
-    // 将 AI 回答更新到对话历史
-    geminiDialogueHistory.push({
-      "role": "model",
-      "parts": [{
-        "text": completeText
-      }]
-    });
-    dialogueHistory.push({
-      "role": "assistant",
-      "content": completeText
-    });
-    
     return completeText;
   } catch (error) {
     if (error.name === 'AbortError') {
@@ -299,10 +275,79 @@ async function chatWithGemini(baseUrl, apiKey, modelName, contentObj, type) {
       console.error('Fetch error:', error);
       throw error;
     }
-  } finally {
-    // do nothing
   }
 }
+
+/**
+ * 将输入转为适合 LLM 接口需要的数据需格式
+ * @param {string} role 
+ * @param {string} partsKey 
+ * @param {string} text 
+ * @param {string} images 
+ * @returns 
+ */
+function createDialogueEntry(role, partsKey, text, images) {
+  const entry = { "role": role };
+  
+  // geimini
+  if (partsKey === 'parts') {
+    entry[partsKey] = [];
+    if (text) {
+      entry[partsKey].push({ "text": text });
+    }
+    if (images) {
+      images.forEach(imageBase64 => {
+        const parsedImage = parseBase64Image(imageBase64);
+        entry[partsKey].push({
+          "inline_data": {
+            "mime_type": parsedImage.mimeType,
+            "data": parsedImage.data
+          }
+        });
+      });
+    }
+  } else {
+    // OpenAI 兼容格式
+    if (!images || images.length === 0) {
+      entry[partsKey] = text ? text : '';
+    } else {
+      entry[partsKey] = [];
+      if (text) {
+        entry[partsKey].push({ 
+          "type": "text",
+          "text": text 
+        });
+      }
+      images.forEach(imageBase64 => {
+        entry[partsKey].push({
+          "type": "image_url",
+          "image_url": { "url": imageBase64 }
+        });
+      });
+    }
+  }
+  
+  return entry;
+}
+
+
+/**
+ * 更新对话历史
+ * @param {string} text 
+ */
+function updateChatHistory(text) {
+  dialogueHistory.push({
+    "role": "assistant",
+    "content": text
+  });
+  geminiDialogueHistory.push({
+    "role": "model",
+    "parts": [{
+      "text": text
+    }]
+  });
+}
+
 
 /**
  * 获取正文

@@ -43,7 +43,7 @@ function showRecommandContent() {
 /**
  * 定义清空并加载内容的函数
  */
-async function clearAndGenerate(model, contentObj) {
+async function clearAndGenerate(model, inputText, base64Images) {
   // 隐藏初始推荐内容
   hideRecommandContent();
 
@@ -52,15 +52,16 @@ async function clearAndGenerate(model, contentObj) {
   contentDiv.innerHTML = '';
 
   // generate
-  await chatLLMAndUIUpdate(model, contentObj);
+  await chatLLMAndUIUpdate(model, inputText, base64Images);
 }
 
 /**
  * 调用模型 & 更新ui
  * @param {string} model 
- * @param {string} content 
+ * @param {string} inputText 
+ * @param {Array} base64Images 
  */
-async function chatLLMAndUIUpdate(model, contentObj) {
+async function chatLLMAndUIUpdate(model, inputText, base64Images) {
   // loading
   const loadingDiv = document.querySelector('.my-extension-loading');
   loadingDiv.style.display = 'flex';
@@ -75,7 +76,7 @@ async function chatLLMAndUIUpdate(model, contentObj) {
   contentDiv.appendChild(aiContentDiv);
     
   try {
-    const completeText = await chatWithLLM(model, contentObj, CHAT_TYPE);
+    const completeText = await chatWithLLM(model, inputText, base64Images, CHAT_TYPE);
     createCopyButton(aiContentDiv, completeText);
   } catch (error) {
     loadingDiv.style.display = 'none'; 
@@ -481,10 +482,7 @@ function initResultPage() {
         inputText = await fetchPageContent(FORMAT_TEXT);
       }
 
-      // 构造content
-      const contentObj = generateLLMContent(SUMMARY_PROMPT + inputText);
-
-      await clearAndGenerate(model, contentObj);
+      await clearAndGenerate(model, SUMMARY_PROMPT + inputText, null);
     });
 
     // 网页翻译
@@ -509,10 +507,7 @@ function initResultPage() {
         inputText = await fetchPageContent();
       }
 
-      // 构造content
-      const contentObj = generateLLMContent(TRANSLATE2CHN_PROMPT + inputText);
-
-      await clearAndGenerate(model, contentObj);
+      await clearAndGenerate(model, TRANSLATE2CHN_PROMPT + inputText, null);
     });
 
     // 视频翻译
@@ -532,10 +527,7 @@ function initResultPage() {
       // 视频翻译
       const inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
 
-      // 构造content
-      const contentObj = generateLLMContent(SUBTITLE2CHN_PROMPT + inputText);
-
-      await clearAndGenerate(model, contentObj);
+      await clearAndGenerate(model, SUBTITLE2CHN_PROMPT + inputText, null);
     });
 
 
@@ -659,8 +651,6 @@ function initResultPage() {
               newInputText = inputText;
             }
 
-            const contentObj = generateLLMContent(newInputText.trim(), base64Images);
-
             // 滚动到底部
             contentDiv.scrollTop = contentDiv.scrollHeight;
 
@@ -672,7 +662,7 @@ function initResultPage() {
             previewArea.innerHTML = '';
 
             // AI 回答
-            chatLLMAndUIUpdate(model, contentObj);
+            chatLLMAndUIUpdate(model, newInputText, base64Images);
           }
         });
     }
