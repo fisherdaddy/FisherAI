@@ -40,6 +40,9 @@ const GROQ_CHAT_API_PATH = "/openai/v1/chat/completions";
 const MISTRAL_CHAT_BASE_URL = "https://api.mistral.ai";
 const MISTRAL_CHAT_API_PATH = "/v1/chat/completions";
 
+const ZHIPU_CHAT_BASE_URL = "https://open.bigmodel.cn";
+const ZHIPU_CHAT_API_PATH = "/api/paas/v4/chat/completions";
+
 const MOONSHOT_CHAT_BASE_URL = "https://api.moonshot.cn";
 const MOONSHOT_CHAT_API_PATH = "/v1/chat/completions";
 
@@ -61,6 +64,7 @@ const GEMINI_MODEL = 'gemini';
 const GROQ_MODEL = "groq";
 const GROQ_MODEL_POSTFIX = "-" + GROQ_MODEL;
 const MISTRAL_MODEL = "open-mixtral";
+const ZHIPU_MODEL = "glm";
 const MOONSHOT_MODEL = "moonshot";
 const DEEPSEEK_MODEL = 'deepseek';
 const YI_MODEL = "yi";
@@ -73,13 +77,14 @@ const AZURE_GPT_DEFAULT_MODEL = "azure-gpt-35-turbo";
 const GEMINI_DEFAULT_MODEL = "gemini-1.0-pro-latest";
 const GROQ_DEFAULT_MODEL = "gemma-7b-it";
 const MISTRA_DEFAULTL_MODEL = "open-mixtral-8x7b";
+const ZHIPU_DEFAULT_MODEL = "glm-3-turbo";
 const MOONSHOT_DEFAULT_MODEL = "moonshot-v1-8k";
 const DEEPSEEK_DEFAULT_MODEL = 'deepseek-chat';
 const YI_DEFAULT_MODEL = "yi-34b-chat-0205";
 
 
 // 支持图像的模型
-const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'azure-gpt-4-turbo', 'azure-gpt-4o', 'gemini-1.0-pro-vision-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
+const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'azure-gpt-4-turbo', 'azure-gpt-4o', 'gemini-1.0-pro-vision-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'glm-4v'];
 const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
@@ -93,6 +98,7 @@ const DEFAULT_LLM_URLS = [
   { key: GROQ_MODEL, baseUrl: GROQ_CHAT_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
   { key: OLLAMA_MODEL, baseUrl: OLLAMA_CHAT_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, defaultModel: '' },
   { key: MISTRAL_MODEL, baseUrl: MISTRAL_CHAT_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, defaultModel: MISTRA_DEFAULTL_MODEL },
+  { key: ZHIPU_MODEL, baseUrl: ZHIPU_CHAT_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, defaultModel: ZHIPU_DEFAULT_MODEL },
   { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_CHAT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
   { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_CHAT_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
   { key: YI_MODEL, baseUrl: YI_CHAT_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL }
@@ -258,7 +264,7 @@ const MAX_DIALOG_LEN = 3 * 2;
 
 // 模型参数默认值
 const DEFAULT_TEMPERATURE = 0.7;
-const DEFAULT_TOP_P = 1;
+const DEFAULT_TOP_P = 0.7;
 const DEFAULT_MAX_TOKENS = 1024;
 const DEFAULT_PRESENCE_PENALTY = 0;
 const DEFAULT_FREQUENCY_PENALTY = 0;

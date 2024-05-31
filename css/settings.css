@@ -28,6 +28,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .my-extension-header {
@@ -37,12 +39,12 @@ body {
 }
 
 .my-extension-logo {
-  height: 48px;
-  width: 48px;
+  height: 38px;
+  width: 38px;
 }
 
 .my-extension-brand {
-  font-size: 20px;
+  font-size: 15px;
   color: white;
   margin-top: 10px;
 }
@@ -66,11 +68,22 @@ body {
 
 .tab-link svg {
   margin-right: 8px;
+  width: 24px;
+  height: 24px; 
 }
 
 .tab-link span {
   font-size: 15px;
   font-weight: 500;
+}
+
+.collapsible-content {
+  display: none;
+  margin-left: -30px;
+  flex-direction: column;
+}
+.collapsible.active + .collapsible-content {
+  display: flex;
 }
 
 .tab-content {

@@ -212,6 +212,15 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   });
 
+  // 点击扩展
+  document.querySelectorAll('.collapsible').forEach(button => {
+    button.addEventListener('click', () => {
+        button.classList.toggle('active');
+        const content = button.nextElementSibling;
+        content.style.display = content.style.display === 'flex' ? 'none' : 'flex';
+    });
+  });
+
   // 点击保存按钮
   var saveButtons = document.querySelectorAll('.save-button');
   saveButtons.forEach(function(button) {

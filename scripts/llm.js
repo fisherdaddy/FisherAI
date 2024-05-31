@@ -139,8 +139,8 @@ async function chatWithLLM(model, inputText, base64Images, type) {
     dialogueHistory[0].content = '';
   }
 
-  const openaiDialogueEntry = createDialogueEntry('user', 'content', inputText, base64Images);
-  const geminiDialogueEntry = createDialogueEntry('user', 'parts', inputText, base64Images);
+  const openaiDialogueEntry = createDialogueEntry('user', 'content', inputText, base64Images, model);
+  const geminiDialogueEntry = createDialogueEntry('user', 'parts', inputText, base64Images, model);
 
   // 将用户提问更新到对话历史
   dialogueHistory.push(openaiDialogueEntry);
@@ -286,7 +286,7 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
  * @param {string} images 
  * @returns 
  */
-function createDialogueEntry(role, partsKey, text, images) {
+function createDialogueEntry(role, partsKey, text, images, model) {
   const entry = { "role": role };
   
   // geimini
@@ -319,6 +319,10 @@ function createDialogueEntry(role, partsKey, text, images) {
         });
       }
       images.forEach(imageBase64 => {
+        // 智谱的兼容OpenAI格式没做太好，这里的base64不能带前缀，特殊处理一下
+        if(model.includes(ZHIPU_MODEL)) {
+          imageBase64 = imageBase64.split(',')[1];
+        }
         entry[partsKey].push({
           "type": "image_url",
           "image_url": { "url": imageBase64 }
