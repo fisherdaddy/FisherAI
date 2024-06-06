@@ -160,11 +160,14 @@ chrome.storage.sync.get(QUICK_TRANS, function(config) {
   });
 
   document.addEventListener('mousedown', function (event) {
-    // 只有在非右键点击时才考虑清除选区
-    if (event.button !== 2) { // 鼠标左键为 0，右键为 2
+    // 获取选中文本
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    // 如果点击的是编辑器的按钮或选中了文本，则不清除选区
+    if (event.target.tagName !== 'BUTTON' && selectedText === '') { 
       if (event.target !== button && !button.contains(event.target) &&
           event.target !== translationPopup && !translationPopup.contains(event.target)) {
-        const selection = window.getSelection();
         if (selection) {
           selection.removeAllRanges(); // 清除选中区域
         }
