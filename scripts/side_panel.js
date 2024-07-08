@@ -88,6 +88,14 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
   }
 }
 
+
+const rightSvgString = `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md-heavy">
+  <path fill="currentColor" fill-rule="evenodd" d="M18.063 5.674a1 1 0 0 1 .263 1.39l-7.5 11a1 1 0 0 1-1.533.143l-4.5-4.5a1 1 0 1 1 1.414-1.414l3.647 3.647 6.82-10.003a1 1 0 0 1 1.39-.263" clip-rule="evenodd"></path>
+</svg>
+`;
+
+
 /**
  * 生成复制按钮
  * @param {object} aiContentDiv 
@@ -99,7 +107,13 @@ function createCopyButton(aiContentDiv, completeText) {
 
   copySvg.addEventListener('click', function() {
       navigator.clipboard.writeText(completeText).then(() => {
-         // copy success...
+        // 复制成功，替换为对号 SVG
+        const originalSvg = copySvg.innerHTML;
+        copySvg.innerHTML = rightSvgString;
+        // 在几秒后恢复为原始复制按钮
+        setTimeout(() => {
+          copySvg.innerHTML = originalSvg;
+        }, 2000);
       }).catch(err => {
           console.error('复制失败:', err);
       });
@@ -352,6 +366,16 @@ function loadModelParams() {
   });
 }
 
+function loadToolsSelectedStatus() {
+  chrome.storage.sync.get(['tools_websearch', 'tools_draw'], (result) => {
+    if (result.tools_websearch !== undefined) {
+        document.getElementById('tools_websearch').checked = result.tools_websearch;
+    }
+    if (result.tools_draw !== undefined) {
+        document.getElementById('tools_draw').checked = result.tools_draw;
+    }
+  });
+}
 
 /**
  * 初始化结果页面
@@ -363,6 +387,9 @@ function initResultPage() {
 
     // 加载模型参数
     loadModelParams();
+
+    // 加载工具选择状态
+    loadToolsSelectedStatus();
 
     // 初始化按钮状态
     updateSubmitButton();
@@ -395,14 +422,15 @@ function initResultPage() {
         });
     });
 
-    // 设置模型参数
-    const paramsDiv = document.getElementById('params-div');
-    const modelParams = document.getElementById('model-params');
-    paramsDiv.addEventListener('click', function(event) {
+    // 模型参数设置
+    const paramsBtn = document.getElementById('params-div');
+    const modelParamsPopupDiv = document.getElementById('model-params');
+    paramsBtn.addEventListener('click', function(event) {
       event.stopPropagation();
-      modelParams.style.display = 'block';
+      modelParamsPopupDiv.style.display = 'block';
+      toolStorePopupDiv.style.display = 'none';
     });
-    modelParams.addEventListener('click', function(event) {
+    modelParamsPopupDiv.addEventListener('click', function(event) {
       event.stopPropagation(); // Prevent this click from triggering the document click event
     });
 
@@ -411,10 +439,37 @@ function initResultPage() {
     document.getElementById('top_p').addEventListener('change', saveModelParams);
     document.getElementById('max_tokens').addEventListener('change', saveModelParams);
 
+    // 工具箱
+    const toolsBtn = document.getElementById('tools-div');
+    const toolStorePopupDiv = document.getElementById('tool-store');
+    toolsBtn.addEventListener('click', function(event) {
+      event.stopPropagation();
+      toolStorePopupDiv.style.display = 'block';
+      modelParamsPopupDiv.style.display = 'none';
+    });
+
+    // 保存工具选择状态
+    const toolCheckboxes = document.querySelectorAll('#tool-store input[type="checkbox"]');
+    toolCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (event) => {
+          const toolId = event.target.id;
+          const isChecked = event.target.checked;
+
+          let storageObject = {};
+          storageObject[toolId] = isChecked;
+          chrome.storage.sync.set(storageObject, () => {
+              // console.log(`Saved ${toolId} state: ${isChecked}`);
+          });
+      });
+    });
+
     // 点击事件
     document.addEventListener('click', function(event) {
-      if (!modelParams.contains(event.target) && event.target !== paramsDiv) {
-          modelParams.style.display = 'none';
+      if (!modelParamsPopupDiv.contains(event.target) && event.target !== paramsBtn) {
+        modelParamsPopupDiv.style.display = 'none';
+      }
+      if(!toolStorePopupDiv.contains(event.target) && event.target !== toolsBtn) {
+        toolStorePopupDiv.style.display = 'none';
       }
     });
 
