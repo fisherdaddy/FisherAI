@@ -135,7 +135,7 @@ async function chatWithLLM(model, inputText, base64Images, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
 
   // 如果是划词或划句场景，把system prompt置空
-  if(type == TRANS_TYPE) {
+  if(type == HUACI_TRANS_TYPE) {
     dialogueHistory[0].content = '';
   }
 
@@ -181,7 +181,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
 
   const body = {
     model: realModelName,
-    temperature,
+    temperature: temperature,
     top_p: topP,
     max_tokens: maxTokens,
     stream: true,
@@ -193,6 +193,20 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
     body.frequency_penalty = frequencyPenalty;
     body.presence_penalty = presencePenalty;
   }
+
+  // 获取工具选择情况
+  const toolsWebSearch = await getValueFromChromeStorage('tools_websearch');
+  const toolsDraw = await getValueFromChromeStorage('tools_draw');
+  let tools_list_prompt = "";
+  if(toolsWebSearch != null && toolsWebSearch) {
+    tools_list_prompt += WEB_SEARCH_PROMTP;
+  }
+  if(toolsDraw != null && toolsDraw) {
+    tools_list_prompt += IMAGE_GEN_PROMTP;
+  }
+
+  // 根据选择的工具状态来更新 system prompt
+  dialogueHistory[0].content = SYSTEM_PROMPT.replace('{tools-list}', tools_list_prompt);
 
   let additionalHeaders = { 'Authorization': 'Bearer ' + apiKey };
 
@@ -506,7 +520,7 @@ function updateChatContent(completeText, type) {
       contentDiv.scrollTop = contentDiv.scrollHeight; // 滚动到底部
     }
 
-  } else if(type == TRANS_TYPE) {
+  } else if(type == HUACI_TRANS_TYPE) {
     // popup
     const translationPopup = document.querySelector('#fisherai-transpop-id');
     translationPopup.style.display = 'block';  

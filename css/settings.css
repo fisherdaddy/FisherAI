@@ -39,12 +39,12 @@ body {
 }
 
 .my-extension-logo {
-  height: 38px;
-  width: 38px;
+  height: 48px;
+  width: 48px;
 }
 
 .my-extension-brand {
-  font-size: 15px;
+  font-size: 20px;
   color: white;
   margin-top: 10px;
 }

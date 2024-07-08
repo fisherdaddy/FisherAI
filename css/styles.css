@@ -445,6 +445,7 @@
 
 .tool-store {
   width: 150px;
+  /* left: 160px; */
   display: block;
 }
 

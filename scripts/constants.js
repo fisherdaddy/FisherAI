@@ -107,13 +107,33 @@ const DEFAULT_LLM_URLS = [
 
 // 任务类型
 const CHAT_TYPE = "chat";
-const TRANS_TYPE = "translate";
+const HUACI_TRANS_TYPE = "huaci-translate";
 
 // 一些常用prompt
-const SYSTEM_PROMPT = "你是一款 AI 智能助手，能回答用户提问的任何问题。要求如下：\n" +
-                      "1. 为了向用户显示更易读的格式，你的回答必须使用 MARKDOWN 格式。\n" + 
-                      "2. 遇到公式时，请一定要用 latex 格式进行表示。例如遇到a/b时，请用$ \frac{a}{b} $ 来标识。\n" +
-                      "3. 请记住，回答时一定要用中文回答。";
+const SYSTEM_PROMPT = `你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题。使用指南如下：
+                      # 回答格式
+                        - 请使用 Markdown 格式，以确保回答内容清晰易读。
+                        - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
+                      # 语言要求
+                        - 所有回答必须用中文。
+                      # 常规提问
+                        - 用户可以在不选择工具的情况下直接提问，AI助手会尽力提供帮助。
+                      # 工具箱
+                      你可以选择以下工具来更好地回答问题：
+                      {tools-list}
+
+                      最后，请记住，回答时一定要用中文回答。`;
+
+const WEB_SEARCH_PROMTP = `
+                      ## browser
+                      You have the tool 'browser'. Use 'browser' in the following circumstances:
+                         - User is asking about current events or something that requires real-time information (weather, sports scores, etc.)
+                         - User is asking about some term you are totally unfamiliar with (it might be new)
+                         - User explicitly asks you to browse or provide links to references`;
+
+const IMAGE_GEN_PROMTP = `
+                      ## dalle
+                      // Whenever a description of an image is given, create a prompt that dalle can use to generate the image.`;
 
 const SUMMARY_PROMPT = "你这次的任务是提供一个简洁而全面的摘要，这个摘要需要捕捉给定文本的主要观点和关键细节，同时准确地传达作者的意图。" + 
                     "请确保摘要结构清晰、组织有序，便于阅读。使用清晰的标题和小标题来指导读者了解每一部分的内容。摘要的长度应该适中，既能覆盖文本的主要点和关键细节，又不包含不必要的信息或变得过长。\n" +
