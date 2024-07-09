@@ -444,7 +444,7 @@
 }
 
 .tool-store {
-  width: 150px;
+  width: 180px;
   /* left: 160px; */
   display: block;
 }
@@ -470,7 +470,7 @@
 }
 
 .tool-item span {
-  width: 50px;
+  width: 80px;
   font-size: 14px;
   font-weight: 600;
 }

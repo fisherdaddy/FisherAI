@@ -141,6 +141,29 @@ function getModelBaseParamForCheck(baseUrl, model, apiKey) {
   }
 }
 
+function getToolsParamForCheck(baseUrl, model, apiKey) {
+  let body = '';
+  for (const { key, defaultBaseUrl, apiPath, defaultModel } of DEFAULT_TOOL_URLS) {
+    if(model.includes(key)) {
+      let apiUrl = baseUrl || defaultBaseUrl;
+      apiUrl += apiPath;
+
+      if(model.includes(SERPAPI_KEY)) {
+        apiUrl = apiUrl.replace('{API_KEY}', apiKey).replace('{QUERY}', 'apple');
+      } else if(model.includes(DALLE_KEY)) {
+        body = JSON.stringify({
+          model: defaultModel,
+          prompt: "A cute baby sea otter",
+          n: 1,
+          size: "1024x1024"
+        });
+      }
+
+      return {apiUrl, body};
+    }
+  }
+}
+
 /**
  * 用于连通性测试
  * @param {string} baseUrl 
@@ -149,7 +172,16 @@ function getModelBaseParamForCheck(baseUrl, model, apiKey) {
  * @param {object} resultElement 
  */
 function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
-  const {apiUrl, body} = getModelBaseParamForCheck(baseUrl, model, apiKey);
+
+  var apiUrl, body;
+
+  // 为了复用该函数，这里做一些trick
+  if (model.includes(TOOL_KEY)) {
+    ({ apiUrl, body } = getToolsParamForCheck(baseUrl, model, apiKey));
+  } else {
+    ({ apiUrl, body } = getModelBaseParamForCheck(baseUrl, model, apiKey));
+  }
+  
   
   const headers = {
     'Content-Type': 'application/json'
@@ -167,7 +199,7 @@ function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
     body: body
   };
 
-  if(model.includes(OLLAMA_MODEL)) {
+  if(model.includes(OLLAMA_MODEL) || model.includes(SERPAPI_KEY)) {
     params = {
       method: "GET"
     }
@@ -261,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var apiKey = '';
       if(input) {
         apiKey = input.value;
-      } 
+      }
 
       // api 代理地址
       var baseUrlInput = tabContent.querySelector('.baseurl-input');

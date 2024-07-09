@@ -25,34 +25,35 @@ SHORTCUT_IMAGE2TEXT = "图像转文本：";
 
 
 // 各个大模型 api
-const OPENAI_CHAT_BASE_URL = "https://api.openai.com";
+const OPENAI_BASE_URL = "https://api.openai.com";
 const OPENAI_CHAT_API_PATH = "/v1/chat/completions";
+const OPENAI_DALLE_API_PATH = "/v1/images/generations";
 
-const AZURE_OPENAI_CHAT_BASE_URL = "https://{YOUR_RESOURCE_NAME}.openai.azure.com";
+const AZURE_OPENAI_BASE_URL = "https://{YOUR_RESOURCE_NAME}.openai.azure.com";
 const AZURE_OPENAI_CHAT_API_PATH = "/openai/deployments/{MODEL_NAME}/chat/completions?api-version=2024-04-01-preview";
 
-const GEMINI_CHAT_BASE_URL = "https://generativelanguage.googleapis.com";
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com";
 const GEMINI_CHA_API_PAH = "/v1beta/models/{MODEL_NAME}:streamGenerateContent?alt=sse&key={API_KEY}";
 
-const GROQ_CHAT_BASE_URL = "https://api.groq.com";
+const GROQ_BASE_URL = "https://api.groq.com";
 const GROQ_CHAT_API_PATH = "/openai/v1/chat/completions";
 
-const MISTRAL_CHAT_BASE_URL = "https://api.mistral.ai";
+const MISTRAL_BASE_URL = "https://api.mistral.ai";
 const MISTRAL_CHAT_API_PATH = "/v1/chat/completions";
 
-const ZHIPU_CHAT_BASE_URL = "https://open.bigmodel.cn";
+const ZHIPU_BASE_URL = "https://open.bigmodel.cn";
 const ZHIPU_CHAT_API_PATH = "/api/paas/v4/chat/completions";
 
-const MOONSHOT_CHAT_BASE_URL = "https://api.moonshot.cn";
+const MOONSHOT_BASE_URL = "https://api.moonshot.cn";
 const MOONSHOT_CHAT_API_PATH = "/v1/chat/completions";
 
-const DEEPSEEK_CHAT_BASE_URL = "https://api.deepseek.com";
+const DEEPSEEK_BASE_URL = "https://api.deepseek.com";
 const DEEPSEEK_CHAT_API_PATH = "/chat/completions";
 
-const YI_CHAT_BASE_URL = "https://api.lingyiwanwu.com";
+const YI_BASE_URL = "https://api.lingyiwanwu.com";
 const YI_CHAT_API_PATH = "/v1/chat/completions";
 
-const OLLAMA_CHAT_BASE_URL = "http://127.0.0.1:11434";
+const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 const OLLAMA_CHAT_API_PATH = "/api/chat";
 const OLLAMA_LIST_MODEL_PATH = "/api/tags";
 
@@ -92,16 +93,16 @@ const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
-  { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_CHAT_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
-  { key: GPT_MODEL, baseUrl: OPENAI_CHAT_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
-  { key: GEMINI_MODEL, baseUrl: GEMINI_CHAT_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
-  { key: GROQ_MODEL, baseUrl: GROQ_CHAT_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
-  { key: OLLAMA_MODEL, baseUrl: OLLAMA_CHAT_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, defaultModel: '' },
-  { key: MISTRAL_MODEL, baseUrl: MISTRAL_CHAT_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, defaultModel: MISTRA_DEFAULTL_MODEL },
-  { key: ZHIPU_MODEL, baseUrl: ZHIPU_CHAT_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, defaultModel: ZHIPU_DEFAULT_MODEL },
-  { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_CHAT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
-  { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_CHAT_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
-  { key: YI_MODEL, baseUrl: YI_CHAT_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL }
+  { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
+  { key: GPT_MODEL, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
+  { key: GEMINI_MODEL, baseUrl: GEMINI_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
+  { key: GROQ_MODEL, baseUrl: GROQ_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
+  { key: OLLAMA_MODEL, baseUrl: OLLAMA_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, defaultModel: '' },
+  { key: MISTRAL_MODEL, baseUrl: MISTRAL_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, defaultModel: MISTRA_DEFAULTL_MODEL },
+  { key: ZHIPU_MODEL, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, defaultModel: ZHIPU_DEFAULT_MODEL },
+  { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
+  { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
+  { key: YI_MODEL, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL }
 ];
 
 
@@ -288,3 +289,19 @@ const DEFAULT_TOP_P = 0.7;
 const DEFAULT_MAX_TOKENS = 1024;
 const DEFAULT_PRESENCE_PENALTY = 0;
 const DEFAULT_FREQUENCY_PENALTY = 0;
+
+
+// 工具配置
+const TOOL_KEY = "tool_";
+const SERPAPI_KEY  = TOOL_KEY + "serpapi";
+const SERPAPI_BASE_URL = "https://serpapi.com";
+const SERPAPI_PATH_URL = "/search?api_key={API_KEY}&q={QUERY}";
+
+const DALLE_KEY = TOOL_KEY + "dalle";
+const DALLE_DEFAULT_MODEL = "dall-e-3";
+
+
+const DEFAULT_TOOL_URLS = [
+  { key: SERPAPI_KEY, apiPath: SERPAPI_PATH_URL, apiPath: SERPAPI_PATH_URL},
+  { key: DALLE_KEY, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_DALLE_API_PATH, defaultModel: DALLE_DEFAULT_MODEL },
+];
