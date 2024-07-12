@@ -40,7 +40,7 @@
     right: 0;
     left: 0;
     top: 25px;
-    bottom: 100px;
+    bottom: 120px;
     background-color: #111827;
     overflow-x: auto; 
     overflow-y: auto; 
@@ -134,7 +134,7 @@
   box-sizing: border-box;
 }
 
-.my-extension-dialogue input {
+.my-extension-dialogue textarea {
   flex-grow: 1;
   padding: 15px;
   margin-right: 5px;
@@ -143,6 +143,7 @@
   color: white;
   font-size: 15px;
   border-radius: 5px;
+  resize: none; /* 禁止用户手动调整大小 */
 }
 
 .my-extension-dialogue-submit, .my-extension-dialogue-generate {
@@ -168,6 +169,13 @@
   padding-bottom: 15px;
 }
 
+
+.ai-message p {
+  word-wrap: break-word; /* 允许长单词换行 */
+  overflow-wrap: break-word; /* 处理超长单词换行，兼容性更好 */
+  max-width: 100%;
+}
+
 .user-message:not(:first-of-type) {
   border-top: 1px solid #3C3C3C;
   padding-top: 20px;
@@ -175,7 +183,7 @@
 
 .my-extension-loading {
   position: fixed;
-  bottom: 95px;
+  bottom: 115px;
   right: 40%;
   display: none;
   z-index: 100000;
@@ -267,7 +275,7 @@
 
 .navigation-bar {
   position:fixed;
-  bottom: 50px;
+  bottom: 70px;
   display: flex;
   justify-content: start;
   align-items: center;
@@ -322,7 +330,7 @@
   display: flex;
   flex-wrap: wrap;
   position: fixed;
-  bottom: 90px;
+  bottom: 110px;
   left: 0;
   right: 0;
   padding: 0px 10px;
@@ -383,7 +391,7 @@
   z-index: 1000;
   width: 200px;
   left: 10px;
-  bottom: 95px;
+  bottom: 115px;
   color: white;
 }
 .shortcut-menu div {
