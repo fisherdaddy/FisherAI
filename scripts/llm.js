@@ -185,7 +185,8 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
     top_p: topP,
     max_tokens: maxTokens,
     stream: true,
-    messages: dialogueHistory
+    messages: dialogueHistory,
+    tools: []
   };
 
   // mistral 的模型传以下两个参数会报错，这里过滤掉
@@ -195,14 +196,16 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   }
 
   // 获取工具选择情况
-  const toolsWebSearch = await getValueFromChromeStorage('tools_websearch');
-  const toolsDraw = await getValueFromChromeStorage('tools_draw');
+  const tool_serpapi = await getValueFromChromeStorage(SERPAPI_KEY);
+  const tool_dalle = await getValueFromChromeStorage(DALLE_KEY);
   let tools_list_prompt = "";
-  if(toolsWebSearch != null && toolsWebSearch) {
+  if(tool_serpapi != null && tool_serpapi) {
     tools_list_prompt += WEB_SEARCH_PROMTP;
+    body.tools.push(FUNCTION_SERAPI);
   }
-  if(toolsDraw != null && toolsDraw) {
+  if(tool_dalle != null && tool_dalle) {
     tools_list_prompt += IMAGE_GEN_PROMTP;
+    body.tools.push(FUNCTION_DALLE);
   }
 
   // 根据选择的工具状态来更新 system prompt
@@ -441,6 +444,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
     // 使用长轮询，服务器会持续发送数据
     const reader = response.body.getReader();
     let completeText = '';
+    let tools = [];
     let buffer = '';
     try {
       while (true) {
@@ -474,7 +478,33 @@ async function parseAndUpdateChatContent(response, modelName, type) {
             } else if(modelName.includes(OLLAMA_MODEL)) {
               content = jsonData.message.content;
             } else {
-              content = jsonData.choices.map(choice => choice.delta.content).join('');
+              jsonData.choices.forEach(choice => {
+                const delta = choice.delta;
+
+                // 检查 content 字段
+                if (delta.content !== undefined && delta.content !== null) {
+                  content += delta.content;
+                }
+
+                // 检查 tool_calls 字段
+                if (delta.tool_calls !== undefined && Array.isArray(delta.tool_calls)) {
+                  delta.tool_calls.forEach(tool_call => {
+                    console.log('tool_call:', tool_call);
+                    const func = tool_call.function;
+                    if (func) {
+                      const index = tool_call.index;
+                      if(tools.length < index+1) {
+                        tools.push({});
+                        tools[index]['id'] = tool_call.id;
+                        tools[index]['name'] = func.name;
+                        tools[index]['arguments'] = func.arguments;
+                      } else {
+                        tools[index]['arguments'] += func.arguments;
+                      }
+                    }
+                  });
+                }
+              })
             }
             completeText += content;
             position = end + 1; // 更新位置，准备解析下一个对象
@@ -485,7 +515,13 @@ async function parseAndUpdateChatContent(response, modelName, type) {
         }
         // 移除已经解析的部分
         buffer = buffer.substring(position);
-  
+
+        // 判断是否为 AGENT 模式
+        if(tools.length > 0) {
+          type = AGENT_TYPE;
+          completeText = JSON.stringify(tools);
+        }
+
         // generate
         if(completeText.length > 0) {
           updateChatContent(completeText, type);
@@ -529,6 +565,43 @@ function updateChatContent(completeText, type) {
 
     // shown
     translationPopup.innerHTML = marked.parse(completeText);
+
+  } else if(type == AGENT_TYPE) {
+    // loading
+    const loadingDiv = document.querySelector('.my-extension-loading');
+    loadingDiv.style.display = 'none'; 
+
+    const contentDiv = document.querySelector('.chat-content');
+    const isAtBottom = (contentDiv.scrollHeight - contentDiv.clientHeight) <= contentDiv.scrollTop;
+
+    // 解析function
+    console.log('completeText:', completeText);
+    let newCompleteText = '';
+    const tools = JSON.parse(completeText);
+    if(tools.length == 0) {
+      return;
+    }
+    tools.forEach(tool => {
+      const id = tool['id'];
+      const name = tool['name'];
+      const arguments = tool['arguments'];
+      if(name.includes('serpapi')) {
+        // 搜索引擎
+        newCompleteText = '';
+
+      } else if(name.includes('dalle')) {
+        // dalle
+        newCompleteText = '';
+      }
+    });
+
+    // update content
+    const lastDiv = contentDiv.lastElementChild;
+    lastDiv.innerHTML = marked.parse(completeText);
+
+    if (isAtBottom) {
+      contentDiv.scrollTop = contentDiv.scrollHeight; // 滚动到底部
+    }
   }
   
 }

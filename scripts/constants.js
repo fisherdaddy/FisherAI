@@ -108,18 +108,19 @@ const DEFAULT_LLM_URLS = [
 
 // 任务类型
 const CHAT_TYPE = "chat";
+const AGENT_TYPE = "agent";
 const HUACI_TRANS_TYPE = "huaci-translate";
 
 // 一些常用prompt
 const SYSTEM_PROMPT = `
-你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题。使用指南如下：
+你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题。
+
+具体要求如下：
 # 回答格式
   - 请使用 Markdown 格式，以确保回答内容清晰易读。
   - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
 # 语言要求
   - 所有回答必须用中文。
-# 常规提问
-  - 用户可以在不选择工具的情况下直接提问，AI助手会尽力提供帮助。
 # 工具箱
 你可以选择以下工具来更好地回答问题：
 {tools-list}
@@ -127,16 +128,16 @@ const SYSTEM_PROMPT = `
 最后，请记住，回答时一定要用中文回答。`;
 
 const WEB_SEARCH_PROMTP = `
-## browser
-You have the tool 'browser'. Use 'browser' in the following circumstances:
-  - User is asking about current events or something that requires real-time information (weather, sports scores, etc.)
-  - User is asking about some term you are totally unfamiliar with (it might be new)
-  - User explicitly asks you to browse or provide links to references`;
+## search engine
+You have the tool 'search engine'. Use 'search engine' in the following circumstances:
+- User is asking about current events or something that requires real-time information (weather, sports scores, etc.)
+- User is asking about some term you are totally unfamiliar with (it might be new)
+- User explicitly asks you to search engine or provide links to references`;
 
 const IMAGE_GEN_PROMTP = `
 ## dalle
-// Whenever a description of an image is given, create a prompt that dalle can use to generate the image.
-`;
+// Whenever a description of an image is given, create a prompt that dalle can use to generate the image.`;
+
 
 const SUMMARY_PROMPT = `
 你这次的任务是提供一个简洁而全面的摘要，这个摘要需要捕捉给定文本的主要观点和关键细节，同时准确地传达作者的意图。
@@ -325,8 +326,45 @@ const SERPAPI_PATH_URL = "/search?api_key={API_KEY}&q={QUERY}";
 const DALLE_KEY = TOOL_KEY + "dalle";
 const DALLE_DEFAULT_MODEL = "dall-e-3";
 
-
 const DEFAULT_TOOL_URLS = [
   { key: SERPAPI_KEY, apiPath: SERPAPI_PATH_URL, apiPath: SERPAPI_PATH_URL},
   { key: DALLE_KEY, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_DALLE_API_PATH, defaultModel: DALLE_DEFAULT_MODEL },
 ];
+
+
+// 工具函数定义
+const FUNCTION_SERAPI = {
+  "type": "function",
+  "function": {
+    "name": "dalle3",
+    "description": "DALL-E is a tool used to generate images from text",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "Image prompt of DallE 3, you should describe the image you want to generate as a list of words as possible as detailed"
+        }
+      },
+      "required": ["prompt"]
+    }
+  }
+}
+
+const FUNCTION_DALLE = {
+  "type": "function",
+  "function": {
+    "name": "serpapi_search_engine",
+    "description": "A tool for search engine built specifically for AI agents (LLMs), delivering real-time, accurate, and factual results at speed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "text for searching"
+        }
+      },
+      "required": ["query"]
+    }
+  }
+}

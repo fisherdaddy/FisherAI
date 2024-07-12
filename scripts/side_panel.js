@@ -367,12 +367,12 @@ function loadModelParams() {
 }
 
 function loadToolsSelectedStatus() {
-  chrome.storage.sync.get(['tools_websearch', 'tools_draw'], (result) => {
-    if (result.tools_websearch !== undefined) {
-        document.getElementById('tools_websearch').checked = result.tools_websearch;
+  chrome.storage.sync.get([SERPAPI_KEY, DALLE_KEY], (result) => {
+    if (result.tool_serpapi !== undefined) {
+        document.getElementById(SERPAPI_KEY).checked = result.tool_serpapi;
     }
-    if (result.tools_draw !== undefined) {
-        document.getElementById('tools_draw').checked = result.tools_draw;
+    if (result.tool_dalle !== undefined) {
+        document.getElementById(DALLE_KEY).checked = result.tool_dalle;
     }
   });
 }
