@@ -32,7 +32,6 @@ function cancelRequest() {
 }
 
 function initChatHistory() {
-  console.log(systemPrompt);
   dialogueHistory = [{
     "role": "system",
     "content": systemPrompt
@@ -305,16 +304,20 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   }
 
   // 获取工具选择情况
-  const tool_serpapi = await getValueFromChromeStorage(SERPAPI_KEY);
-  const tool_dalle = await getValueFromChromeStorage(DALLE_KEY);
+  const serpapi_checked = await getValueFromChromeStorage(SERPAPI);
+  const dalle_checked = await getValueFromChromeStorage(DALLE);
   let tools_list_prompt = "";
-  if(tool_serpapi != null && tool_serpapi) {
+  if(serpapi_checked != null && serpapi_checked) {
     tools_list_prompt += WEB_SEARCH_PROMTP;
     body.tools.push(FUNCTION_SERAPI);
   }
-  if(tool_dalle != null && tool_dalle) {
+  if(dalle_checked != null && dalle_checked) {
     tools_list_prompt += IMAGE_GEN_PROMTP;
     body.tools.push(FUNCTION_DALLE);
+  }
+  // 如果tools数组为空，则删除tools属性
+  if (body.tools.length === 0) {
+    delete body.tools;
   }
 
   // 根据选择的工具状态来更新 system prompt

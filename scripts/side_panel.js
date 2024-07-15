@@ -357,12 +357,12 @@ function loadModelParams() {
 }
 
 function loadToolsSelectedStatus() {
-  chrome.storage.sync.get([SERPAPI_KEY, DALLE_KEY], (result) => {
-    if (result.tool_serpapi !== undefined) {
-        document.getElementById(SERPAPI_KEY).checked = result.tool_serpapi;
+  chrome.storage.sync.get([SERPAPI, DALLE], (result) => {
+    if (result.serpapi !== undefined) {
+        document.getElementById(SERPAPI).checked = result.serpapi;
     }
-    if (result.tool_dalle !== undefined) {
-        document.getElementById(DALLE_KEY).checked = result.tool_dalle;
+    if (result.dalle !== undefined) {
+        document.getElementById(DALLE).checked = result.dalle;
     }
   });
 }

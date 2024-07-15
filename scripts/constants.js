@@ -329,11 +329,13 @@ const rightSvgString = `
 
 // 工具配置
 const TOOL_KEY = "tool_";
-const SERPAPI_KEY  = TOOL_KEY + "serpapi";
+const SERPAPI = "serpapi";
+const SERPAPI_KEY  = TOOL_KEY + SERPAPI;
 const SERPAPI_BASE_URL = "https://serpapi.com";
 const SERPAPI_PATH_URL = "/search?api_key={API_KEY}&q={QUERY}";
 
-const DALLE_KEY = TOOL_KEY + "dalle";
+const DALLE = "dalle";
+const DALLE_KEY = TOOL_KEY + DALLE;
 const DALLE_DEFAULT_MODEL = "dall-e-3";
 
 const DEFAULT_TOOL_URLS = [
@@ -343,7 +345,7 @@ const DEFAULT_TOOL_URLS = [
 
 
 // 工具函数定义
-const FUNCTION_SERAPI = {
+const FUNCTION_DALLE = {
   "type": "function",
   "function": {
     "name": "dalle3",
@@ -361,7 +363,7 @@ const FUNCTION_SERAPI = {
   }
 }
 
-const FUNCTION_DALLE = {
+const FUNCTION_SERAPI = {
   "type": "function",
   "function": {
     "name": "serpapi_search_engine",
