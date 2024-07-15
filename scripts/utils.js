@@ -267,3 +267,40 @@ function parseBase64Image(base64String) {
       throw new Error('Invalid Base64 string');
   }
 }
+
+// 创建AI回复div
+function createAIMessageDiv() {
+    const aiContentDiv = document.createElement('div');
+    aiContentDiv.className = 'ai-message';
+    const contentDiv = document.querySelector('.chat-content');
+    contentDiv.appendChild(aiContentDiv);
+}
+
+// 展示 loading
+function displayLoading() {
+    const loadingDiv = document.querySelector('.my-extension-loading');
+    loadingDiv.style.display = 'flex';
+}
+
+// 隐藏 loading
+function hiddenLoadding() {
+    const loadingDiv = document.querySelector('.my-extension-loading');
+    loadingDiv.style.display = 'none';
+}
+
+// 获取当前时间的函数
+function getCurrentTime() {
+    const now = new Date();
+
+    // 获取日期
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+
+    // 获取时间
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}

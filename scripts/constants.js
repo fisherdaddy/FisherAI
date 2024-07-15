@@ -113,7 +113,7 @@ const HUACI_TRANS_TYPE = "huaci-translate";
 
 // 一些常用prompt
 const SYSTEM_PROMPT = `
-你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题。
+你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题（现在时间是{current_time}）。
 
 具体要求如下：
 # 回答格式
@@ -121,6 +121,8 @@ const SYSTEM_PROMPT = `
   - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
 # 语言要求
   - 所有回答必须用中文。
+# 回答内容
+  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如’今天是几号‘, ’最近的有关Nvidia的新闻‘等
 # 工具箱
 你可以选择以下工具来更好地回答问题：
 {tools-list}
@@ -315,6 +317,14 @@ const DEFAULT_TOP_P = 0.7;
 const DEFAULT_MAX_TOKENS = 1024;
 const DEFAULT_PRESENCE_PENALTY = 0;
 const DEFAULT_FREQUENCY_PENALTY = 0;
+
+
+// 前端样式中使用的一些常量
+const rightSvgString = `
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md-heavy">
+  <path fill="currentColor" fill-rule="evenodd" d="M18.063 5.674a1 1 0 0 1 .263 1.39l-7.5 11a1 1 0 0 1-1.533.143l-4.5-4.5a1 1 0 1 1 1.414-1.414l3.647 3.647 6.82-10.003a1 1 0 0 1 1.39-.263" clip-rule="evenodd"></path>
+</svg>
+`;
 
 
 // 工具配置

@@ -63,23 +63,19 @@ async function clearAndGenerate(model, inputText, base64Images) {
  */
 async function chatLLMAndUIUpdate(model, inputText, base64Images) {
   // loading
-  const loadingDiv = document.querySelector('.my-extension-loading');
-  loadingDiv.style.display = 'flex';
+  displayLoading();
 
   // submit & generating button
   hideSubmitBtnAndShowGenBtn();
   
   // 创建AI回答div
-  const aiContentDiv = document.createElement('div');
-  aiContentDiv.className = 'ai-message';
-  const contentDiv = document.querySelector('.chat-content');
-  contentDiv.appendChild(aiContentDiv);
+  createAIMessageDiv();
     
   try {
     const completeText = await chatWithLLM(model, inputText, base64Images, CHAT_TYPE);
-    createCopyButton(aiContentDiv, completeText);
+    createCopyButton(completeText);
   } catch (error) {
-    loadingDiv.style.display = 'none'; 
+    hiddenLoadding();
     updateChatContent("<p>发生了一些未知的错误！</p>");
     console.error('Failed to fetch:', error);
   } finally {
@@ -89,19 +85,11 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
 }
 
 
-const rightSvgString = `
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md-heavy">
-  <path fill="currentColor" fill-rule="evenodd" d="M18.063 5.674a1 1 0 0 1 .263 1.39l-7.5 11a1 1 0 0 1-1.533.143l-4.5-4.5a1 1 0 1 1 1.414-1.414l3.647 3.647 6.82-10.003a1 1 0 0 1 1.39-.263" clip-rule="evenodd"></path>
-</svg>
-`;
-
-
 /**
  * 生成复制按钮
- * @param {object} aiContentDiv 
  * @param {string} completeText 
  */
-function createCopyButton(aiContentDiv, completeText) {
+function createCopyButton(completeText) {
   const copySvg = document.querySelector('.icon-copy').cloneNode(true);
   copySvg.style.display = 'block';
 
@@ -119,7 +107,9 @@ function createCopyButton(aiContentDiv, completeText) {
       });
   });
 
-  aiContentDiv.appendChild(copySvg);
+  const contentDiv = document.querySelector('.chat-content');
+  let lastDiv = contentDiv.lastElementChild;
+  lastDiv.appendChild(copySvg);
 }
 
 
