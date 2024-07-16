@@ -355,7 +355,38 @@ const FUNCTION_DALLE = {
       "properties": {
         "prompt": {
           "type": "string",
-          "description": "Image prompt of DallE 3, you should describe the image you want to generate as a list of words as possible as detailed"
+          "description": "Image prompt of DallE 3, you should describe the image you want to generate as a list of words as possible as detailed. The maximum length is 4000 characters for dall-e-3."
+        },
+        "quality": {
+          "default": "standard",
+          "description": "The quality of the image that will be generated. hd creates images with finer details and greater consistency across the image.",
+          "enum":
+          [
+              "standard",
+              "hd"
+          ],
+          "type": "string"
+        },
+        "size": {
+          "default": "1024x1024",
+          "description": "The resolution of the requested image, which can be wide, square, or tall. Use 1024x1024 (square) as the default unless the prompt suggests a wide image, 1792x1024, or a full-body portrait, in which case 1024x1792 (tall) should be used instead. Always include this parameter in the request.",
+          "enum":
+          [
+              "1792x1024",
+              "1024x1024",
+              "1024x1792"
+          ],
+          "type": "string"
+        },
+        "style": {
+          "default": "vivid",
+          "description": "The style of the generated images. Must be one of vivid or natural. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images.",
+          "enum":
+          [
+              "vivid",
+              "natural"
+          ],
+          "type": "string"
         }
       },
       "required": ["prompt"]

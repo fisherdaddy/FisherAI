@@ -235,8 +235,10 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
           // DALLE 图像生成
           lastDiv.innerHTML = marked.parse('正在调用 DALLE 图像生成工具..');
 
+          console.log('tool>>>', tool);
+
           // 调用 DALLE API & 展示结果
-          const dalleResult = await callDALLE(toolArgs['prompt']);
+          const dalleResult = await callDALLE(toolArgs['prompt'], toolArgs['quality'], toolArgs['size'], toolArgs['style']);
           let htmlContent = '';
           for(element of dalleResult.data) {
             htmlContent += '<p>Prompt:</p><p>' + element.revised_prompt + "</p>";
@@ -265,11 +267,6 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
     updateChatHistory(result.completeText);
   }
 }
-
-
-
-
-
 
 
 
@@ -719,22 +716,23 @@ async function callSerpAPI(query) {
 }
 
 
-async function callDALLE(prompt) {
+async function callDALLE(prompt, quality, size, style) {
   const keyStorage = await getValueFromChromeStorage(DALLE_KEY);
   const url = OPENAI_BASE_URL + OPENAI_DALLE_API_PATH;
   const body = {
     model: DALLE_DEFAULT_MODEL,
     prompt: prompt,
-    n: 1,
-    size: "1024x1024"
+    quality: quality,
+    size: size,
+    style: style
   };
 
   const additionalHeaders = { 'Authorization': 'Bearer ' + keyStorage.apiKey };
   const params = createRequestParams(additionalHeaders, body);
   const response = await fetch(url, params);
 
-  console.log('url>>', url);
-  console.log('params>>', params);
+  // console.log('url>>', url);
+  // console.log('params>>', params);
   console.log(response);
   if (!response.ok) throw new Error('Network response was not ok.');
 
