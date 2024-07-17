@@ -304,3 +304,13 @@ function getCurrentTime() {
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+// 生成唯一标识
+function generateUniqueId() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 24; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }

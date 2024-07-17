@@ -157,7 +157,7 @@ async function chatWithLLM(model, inputText, base64Images, type) {
     dialogueHistory = dialogueHistory.slice(-MAX_DIALOG_LEN);
   }
 
-  let result = { resultString: '', resultArray: [] };
+  let result = { completeText: '', tools: [] };
   if(model.includes(GEMINI_MODEL)) {
     baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
     result = await chatWithGemini(baseUrl, model, type);
@@ -165,16 +165,23 @@ async function chatWithLLM(model, inputText, base64Images, type) {
     result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
   }
 
-  await parseAIResult(result, baseUrl, apiKey, model, type);
+  while(result.tools.length > 0) {
+    result = await parseFunctionCalling(result, baseUrl, apiKey, model, type);
+  }
 
   return result.completeText;
 }
 
 
-async function parseAIResult(result, baseUrl, apiKey, model, type) {
-  if(result.tools.length > 0) {
-    // 若走了function call
+async function parseFunctionCalling(result, baseUrl, apiKey, model, type) {
 
+  if(result.completeText.length > 0) {
+    // 将 AI 回答更新到对话历史
+    updateChatHistory(result.completeText);
+  }
+
+  if(result.tools.length > 0) {
+    // 若触发function call
     const tools  = [];
     for(const tool of result.tools) {
       tools.push(
@@ -197,12 +204,14 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
         let toolArgs = tool['arguments'];
 
         // Parse the JSON string into an object
-        try {
-          toolArgs = JSON.parse(toolArgs);
-        } catch (error) {
-            console.error('Error parsing arguments:', error);
+        if(typeof toolArgs == 'string') {
+          try {
+            toolArgs = JSON.parse(toolArgs);
+          } catch (error) {
+              console.error('Error parsing arguments:', error);
+          }
         }
-
+        
         const contentDiv = document.querySelector('.chat-content');
         let lastDiv = contentDiv.lastElementChild;
         if(lastDiv.innerHTML.length > 0) {
@@ -229,7 +238,7 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
           lastDiv.innerHTML = marked.parse(htmlContent);
 
           // 将搜索结果更新至对话历史
-          updateToolCallChatHistory(toolId, JSON.stringify(searchResult));
+          updateToolCallChatHistory(tool, JSON.stringify(searchResult));
 
         } else if(toolName.includes('dalle')) {
           // DALLE 图像生成
@@ -242,7 +251,6 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
           let htmlContent = '';
           for(element of dalleResult.data) {
             htmlContent += '<p>Prompt:</p><p>' + element.revised_prompt + "</p>";
-          //   htmlContent += '<img src="' + element.url + '"/>';
           }
 
           lastDiv.innerHTML = marked.parse(htmlContent);
@@ -251,7 +259,7 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
           hiddenLoadding();
 
           // 将dalle结果更新至对话历史
-          updateToolCallChatHistory(toolId, JSON.stringify(dalleResult));
+          updateToolCallChatHistory(tool, JSON.stringify(dalleResult));
         }
     }
 
@@ -261,10 +269,15 @@ async function parseAIResult(result, baseUrl, apiKey, model, type) {
     if(lastDiv.innerHTML.length > 0) {
       createAIMessageDiv();
     }
-    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
-  } else {
-    // 将 AI 回答更新到对话历史
-    updateChatHistory(result.completeText);
+
+    let newResult = { completeText: '', tools: [] };
+    if(model.includes(GEMINI_MODEL)) {
+      newResult = await chatWithGemini(baseUrl, model, type);
+    } else {
+      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
+    }
+
+    return newResult;
   }
 }
 
@@ -303,7 +316,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   // 获取工具选择情况
   const serpapi_checked = await getValueFromChromeStorage(SERPAPI);
   const dalle_checked = await getValueFromChromeStorage(DALLE);
-  let tools_list_prompt = "";
+  let tools_list_prompt = TOOL_PROMPT_PREFIX;
   if(serpapi_checked != null && serpapi_checked) {
     tools_list_prompt += WEB_SEARCH_PROMTP;
     body.tools.push(FUNCTION_SERAPI);
@@ -318,7 +331,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   }
 
   // 根据选择的工具状态来更新 system prompt
-  dialogueHistory[0].content = SYSTEM_PROMPT.replace('{tools-list}', tools_list_prompt);
+  dialogueHistory[0].content = systemPrompt.replace('{tools-list}', tools_list_prompt);
 
   let additionalHeaders = { 'Authorization': 'Bearer ' + apiKey };
 
@@ -351,8 +364,33 @@ async function chatWithGemini(baseUrl, modelName, type) {
       maxOutputTokens: maxTokens,
       temperature: temperature,
       topP: topP
-    }
+    },
+    tools: [
+      {
+        functionDeclarations:[]
+      }
+    ]
   };
+
+  // 获取工具选择情况
+  const serpapi_checked = await getValueFromChromeStorage(SERPAPI);
+  const dalle_checked = await getValueFromChromeStorage(DALLE);
+  let tools_list_prompt = TOOL_PROMPT_PREFIX;
+  if(serpapi_checked != null && serpapi_checked) {
+    tools_list_prompt += WEB_SEARCH_PROMTP;
+    body.tools[0].functionDeclarations.push(FUNCTION_SERAPI.function);
+  }
+  if(dalle_checked != null && dalle_checked) {
+    tools_list_prompt += IMAGE_GEN_PROMTP;
+    body.tools[0].functionDeclarations.push(FUNCTION_DALLE.function);
+  }
+  // 如果tools数组为空，则删除tools属性
+  if (body.tools[0].functionDeclarations.length === 0) {
+    delete body.tools;
+  }
+
+  // 根据选择的工具状态来更新 system prompt
+  geminiSystemPrompt.parts[0].text = systemPrompt.replace('{tools-list}', tools_list_prompt);
 
   const additionalHeaders = {};
   const params = createRequestParams(additionalHeaders, body);
@@ -388,8 +426,13 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
   let result = { resultString: '', resultArray: [] };
   try {
     const response = await fetch(baseUrl, params);
-    console.log(response);
-    if (!response.ok) throw new Error('Network response was not ok.');
+    // console.log(response);
+    if (!response.ok) {
+      // 错误响应
+      const errorJson = await response.json();
+      console.error('Error response JSON:', errorJson);
+      throw new Error('Network response was not ok.');
+    } 
     
     const result = await parseAndUpdateChatContent(response, modelName, type);
     return result;
@@ -479,18 +522,52 @@ function updateChatHistory(text) {
 }
 
 function updateToolChatHistory(tools) {
+  // openai
   dialogueHistory.push({
     "role": "assistant",
     "content": '',
     "tool_calls": tools
   });
+
+  // gemini
+  const parts = []
+  for(const tool of tools) {
+    parts.push({
+      "functionCall":
+      {
+          "name": tool.function.name,
+          "args": JSON.parse(tool.function.arguments)
+      }
+    });
+  }
+  geminiDialogueHistory.push({
+    "role": "model",
+    "parts": parts
+  });
 }
 
-function updateToolCallChatHistory(toolId, content) {
+function updateToolCallChatHistory(tool, content) {
+  // openai
   dialogueHistory.push({
     "role": "tool",
-    "tool_call_id": toolId,
+    "tool_call_id": tool.id,
     "content": content
+  });
+
+  // gemini
+  geminiDialogueHistory.push({
+    "role": "function",
+    "parts": [
+      {
+        "functionResponse": {
+          "name": tool.name,
+          "response": {
+            "name": tool.name,
+            "content": content
+          }
+        }
+      }
+    ]
   });
 }
 
@@ -599,7 +676,22 @@ async function parseAndUpdateChatContent(response, modelName, type) {
             const jsonData = JSON.parse(jsonText);
             let content = '';
             if(modelName.includes(GEMINI_MODEL)) {
-              content = jsonData.candidates[0].content.parts[0].text;
+              jsonData.candidates[0].content.parts.forEach(part => {
+                // 检查 content 字段
+                if(part.text !== undefined &&  part.text != null) {
+                  content += part.text;
+                }
+
+                // 检查 functionCall 字段
+                if(part.functionCall !== undefined) {
+                  const func = part.functionCall;
+                  tools.push({
+                    'id': generateUniqueId(),
+                    'name': func.name,
+                    'arguments': JSON.stringify(func.args)
+                  });
+                }
+              });
             } else if(modelName.includes(OLLAMA_MODEL)) {
               content = jsonData.message.content;
             } else {
@@ -700,8 +792,13 @@ async function callSerpAPI(query) {
   url = url.replace('{API_KEY}', keyStorage.apiKey);
 
   const response = await fetch(url);
-  console.log(response);
-  if (!response.ok) throw new Error('Network response was not ok.');
+  // console.log(response);
+  if (!response.ok) {
+    // 错误响应
+    const errorJson = await response.json();
+    console.error('Error response JSON:', errorJson);
+    throw new Error('Network response was not ok.');
+  } 
 
   const data = await response.json(); 
   
@@ -717,6 +814,9 @@ async function callSerpAPI(query) {
 
 
 async function callDALLE(prompt, quality, size, style) {
+  quality = quality!=undefined ? quality : QUALITY_DEFAULT;
+  size = size!=undefined ? size : SIZE_DEFAULT;
+  style = style!=undefined ? style : STYLE_DEFAULT;
   const keyStorage = await getValueFromChromeStorage(DALLE_KEY);
   const url = OPENAI_BASE_URL + OPENAI_DALLE_API_PATH;
   const body = {
@@ -733,8 +833,13 @@ async function callDALLE(prompt, quality, size, style) {
 
   // console.log('url>>', url);
   // console.log('params>>', params);
-  console.log(response);
-  if (!response.ok) throw new Error('Network response was not ok.');
+  // console.log(response);
+  if (!response.ok) {
+    // 错误响应
+    const errorJson = await response.json();
+    console.error('Error response JSON:', errorJson);
+    throw new Error('Network response was not ok.');
+  } 
 
   const data = await response.json();
   return data;

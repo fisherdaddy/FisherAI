@@ -123,11 +123,14 @@ const SYSTEM_PROMPT = `
   - 所有回答必须用中文。
 # 回答内容
   - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如’今天是几号‘, ’最近的有关Nvidia的新闻‘等
-# 工具箱
-你可以选择以下工具来更好地回答问题：
+
 {tools-list}
 
 最后，请记住，回答时一定要用中文回答。`;
+
+const TOOL_PROMPT_PREFIX = `
+# 工具箱
+你可以选择以下工具来更好地回答问题：`;
 
 const WEB_SEARCH_PROMTP = `
 ## search engine
@@ -343,6 +346,11 @@ const DEFAULT_TOOL_URLS = [
   { key: DALLE_KEY, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_DALLE_API_PATH, defaultModel: DALLE_DEFAULT_MODEL },
 ];
 
+// dalle 默认的配置，由于gemini不支持在schema中设置default，这里拿出来单独定义
+const QUALITY_DEFAULT = 'standard';
+const SIZE_DEFAULT = '1024x1024';
+const STYLE_DEFAULT = 'vivid';
+
 
 // 工具函数定义
 const FUNCTION_DALLE = {
@@ -358,8 +366,7 @@ const FUNCTION_DALLE = {
           "description": "Image prompt of DallE 3, you should describe the image you want to generate as a list of words as possible as detailed. The maximum length is 4000 characters for dall-e-3."
         },
         "quality": {
-          "default": "standard",
-          "description": "The quality of the image that will be generated. hd creates images with finer details and greater consistency across the image.",
+          "description": "The quality of the image that will be generated. hd creates images with finer details and greater consistency across the image. The default value is standard.",
           "enum":
           [
               "standard",
@@ -368,7 +375,6 @@ const FUNCTION_DALLE = {
           "type": "string"
         },
         "size": {
-          "default": "1024x1024",
           "description": "The resolution of the requested image, which can be wide, square, or tall. Use 1024x1024 (square) as the default unless the prompt suggests a wide image, 1792x1024, or a full-body portrait, in which case 1024x1792 (tall) should be used instead. Always include this parameter in the request.",
           "enum":
           [
@@ -379,8 +385,7 @@ const FUNCTION_DALLE = {
           "type": "string"
         },
         "style": {
-          "default": "vivid",
-          "description": "The style of the generated images. Must be one of vivid or natural. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images.",
+          "description": "The style of the generated images. Must be one of vivid or natural. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images. The default value is vivid.",
           "enum":
           [
               "vivid",
