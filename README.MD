@@ -1,7 +1,7 @@
 # FisherAI - Chrome 插件
 
 ## 项目简介
- [FisherAI](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj) 是一款为提高学习效率而设计的Chrome插件，通过一键操作，支持自动摘要、网页及视频翻译、多轮对话等功能。此外，FisherAI 支持多种大语言模型，包括但不限于gpt/azure/gemini/deepseek/mistral/groq/yi/moonshot等等，为用户提供灵活且强大的AI工具。
+ [FisherAI](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj) 是一款为提高学习效率而设计的Chrome插件，通过一键操作，支持自动摘要、网页及视频翻译、多轮对话、工具箱等功能。此外，FisherAI 支持多种大语言模型，包括但不限于gpt/azure/gemini/deepseek/mistral/groq/yi/moonshot等等，为用户提供灵活且强大的AI工具。
 
 ## 功能支持
 - [x] 一键自动摘要
@@ -13,6 +13,7 @@
 - [x] 支持图片分享
 - [x] 支持划词翻译
 - [x] 支持输'/'触发快捷功能，快捷功能包括翻译、摘要、润色、图像转文本、代码解释
+- [x] 支持工具箱：联网工具 SerpApi、画图工具 DALLE 3
 
 <a target="_blank" href="https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj">
 <img src="public/home.png" alt="" style="max-width: 80%;">
@@ -44,6 +45,12 @@ OLLAMA_ORIGINS=chrome-extension://* ollama serve
 4. 返回首页，在模型选择中，会显示本地模型支持的模型列表(以-ollma结尾)。选择所需模型后即可使用。
 
 ## 更新记录
+### 2024-07-17
+新增功能和改进包括：
+- 工具箱
+- 自定义模型参数
+- Ollama
+
 ### 2024-05-19
 新增功能和改进包括：
 - 网页翻译
