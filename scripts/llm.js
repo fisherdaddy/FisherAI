@@ -141,11 +141,11 @@ async function chatWithLLM(model, inputText, base64Images, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
 
   if(!baseUrl) {
-    throw new Error('API 代理地址配置错误，请检查！');
+    throw new Error('模型 ' + model + ' 的 API 代理地址为空，请检查！');
   }
 
   if(!apiKey) {
-    throw new Error('API Key 为空或配置错误，请检查！');
+    throw new Error('模型 ' + model + ' 的 API Key 为空，请检查！');
   }
 
   // 如果是划词或划句场景，把system prompt置空
@@ -439,7 +439,7 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
       // 错误响应
       const errorJson = await response.json();
       console.error('Error response JSON:', errorJson);
-      throw new Error('错误码：' + errorJson.error.code + "。错误信息：" + errorJson.error.message);
+      throw new Error("错误信息：" + errorJson.error.message);
     } 
     
     const result = await parseAndUpdateChatContent(response, modelName, type);
@@ -797,6 +797,11 @@ async function callSerpAPI(query) {
   const keyStorage = await getValueFromChromeStorage(SERPAPI_KEY);
   let url = SERPAPI_BASE_URL + SERPAPI_PATH_URL;
   url = url.replace('{QUERY}', query);
+
+  if(!keyStorage || !keyStorage.apiKey) {
+    throw new Error(' SerAPI 工具的 API Key 未配置，请检查！');
+  }
+
   url = url.replace('{API_KEY}', keyStorage.apiKey);
 
   const response = await fetch(url);
@@ -834,6 +839,10 @@ async function callDALLE(prompt, quality, size, style) {
     size: size,
     style: style
   };
+
+  if(!keyStorage || !keyStorage.apiKey) {
+    throw new Error(' DALLE 工具的 API Key 未配置，请检查！');
+  }
 
   const additionalHeaders = { 'Authorization': 'Bearer ' + keyStorage.apiKey };
   const params = createRequestParams(additionalHeaders, body);
