@@ -140,6 +140,14 @@ function createRequestParams(additionalHeaders, body) {
 async function chatWithLLM(model, inputText, base64Images, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
 
+  if(!baseUrl) {
+    throw new Error('API 代理地址配置错误，请检查！');
+  }
+
+  if(!apiKey) {
+    throw new Error('API Key 为空或配置错误，请检查！');
+  }
+
   // 如果是划词或划句场景，把system prompt置空
   if(type == HUACI_TRANS_TYPE) {
     dialogueHistory[0].content = '';
