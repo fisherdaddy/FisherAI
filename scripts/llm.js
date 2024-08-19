@@ -431,7 +431,7 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
       // 错误响应
       const errorJson = await response.json();
       console.error('Error response JSON:', errorJson);
-      throw new Error('Network response was not ok.');
+      throw new Error('错误码：' + errorJson.error.code + "。错误信息：" + errorJson.error.message);
     } 
     
     const result = await parseAndUpdateChatContent(response, modelName, type);
@@ -441,8 +441,8 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
       console.log('Fetch aborted...', completeText, '<<');
       return result;
     } else {
-      console.error('Fetch error:', error);
-      throw error;
+      console.error(error.message);
+      throw new Error(error.message);
     }
   }
 }

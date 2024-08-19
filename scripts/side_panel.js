@@ -76,8 +76,8 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
     createCopyButton(completeText);
   } catch (error) {
     hiddenLoadding();
-    updateChatContent("<p>发生了一些未知的错误！</p>");
-    console.error('Failed to fetch:', error);
+    displayErrorMessage(`${error.message}`);
+    console.error('请求异常:', error);
   } finally {
     // submit & generating button
     showSubmitBtnAndHideGenBtn();
