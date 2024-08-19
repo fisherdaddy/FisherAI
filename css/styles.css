@@ -518,3 +518,11 @@
   outline: none;
   box-shadow: 0 0 3px 2px rgba(76, 175, 80, 0.5);
 }
+
+.error-message {
+  color: #ff4d4d;
+  padding: 10px;
+  border: 1px solid #ff4d4d;
+  border-radius: 5px;
+  margin: 20px 0;
+}

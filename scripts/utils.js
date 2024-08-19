@@ -38,6 +38,7 @@ async function extractYoutubeSubtitles(url, format) {
         return formattedSubtitles;
     } catch (error) {
         console.error('Error fetching subtitles:', error);
+        throw new Error('视频字幕获取失败，原因：字幕获取接口暂不可用！');
     }
 }
 
@@ -95,7 +96,21 @@ async function extractBilibiliSubtitles(paramURL, format) {
         { headers: {'User-Agent': USER_AGENT}, credentials: 'include' }
     );
     const subtitleData = await subtitleResponse.json();
+    console.log(subtitleData);
+
+    if(subtitleData.code != 0) {
+        throw new Error('视频字幕获取失败，原因：字幕获取接口暂不可用！');
+    }
+
     const subtitleList = subtitleData.data.subtitle.subtitles;
+    if(subtitleData.data.need_login_subtitle && subtitleList.length == 0) {
+        throw new Error('视频字幕获取失败，原因：需要登录才能获取字幕！');
+    }
+
+    if(subtitleList.length == 0) {
+        throw new Error('视频字幕获取失败，原因：该视频暂未提供字幕！');
+    }
+
     let subtitleUrl = subtitleList[0].subtitle_url;
     if (subtitleUrl.startsWith('//')) {
         subtitleUrl = 'https:' + subtitleUrl; 

@@ -516,15 +516,22 @@ function initResultPage() {
       }
       let inputText = '';
       const currentURL = await getCurrentURL();
-      if(isVideoUrl(currentURL)) {
-        // 视频摘要
-        inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
-      } else if(isPDFUrl(currentURL)) {
-        // PDF摘要
-        inputText = await extractPDFText(currentURL);
-      } else {
-        // 网页摘要
-        inputText = await fetchPageContent(FORMAT_TEXT);
+
+      try {
+        if(isVideoUrl(currentURL)) {
+          // 视频摘要
+          inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
+        } else if(isPDFUrl(currentURL)) {
+          // PDF摘要
+          inputText = await extractPDFText(currentURL);
+        } else {
+          // 网页摘要
+          inputText = await fetchPageContent(FORMAT_TEXT);
+        }
+      } catch(error) {
+        console.error('智能摘要失败', error);
+        displayErrorMessage(`智能摘要失败: ${error.message}`);
+        return;
       }
 
       await clearAndGenerate(model, SUMMARY_PROMPT + inputText, null);
@@ -541,15 +548,22 @@ function initResultPage() {
       }
       let inputText = '';
       const currentURL = await getCurrentURL();
-      if(isVideoUrl(currentURL)) {
-        // 视频翻译
-        inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
-      } else if(isPDFUrl(currentURL)) {
-        // PDF 翻译
-        inputText = await extractPDFText(currentURL);
-      } else {
-        // 网页翻译
-        inputText = await fetchPageContent();
+
+      try {
+        if(isVideoUrl(currentURL)) {
+          // 视频翻译
+          inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
+        } else if(isPDFUrl(currentURL)) {
+          // PDF 翻译
+          inputText = await extractPDFText(currentURL);
+        } else {
+          // 网页翻译
+          inputText = await fetchPageContent();
+        }
+      } catch(error) {
+        console.error('网页翻译失败', error);
+        displayErrorMessage(`网页翻译失败: ${error.message}`);
+        return;
       }
 
       await clearAndGenerate(model, TRANSLATE2CHN_PROMPT + inputText, null);
@@ -569,9 +583,15 @@ function initResultPage() {
         return;
       }
 
-      // 视频翻译
-      const inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
-
+      try {
+        // 视频翻译
+        const inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
+      } catch(error) {
+        console.error('视频翻译失败', error);
+        displayErrorMessage(`视频翻译失败: ${error.message}`);
+        return;
+      }
+     
       await clearAndGenerate(model, SUBTITLE2CHN_PROMPT + inputText, null);
     });
 
@@ -738,6 +758,16 @@ function isVideoUrl(url) {
   ];
   
   return patterns.some(pattern => pattern.test(url));
+}
+
+/**
+ * 显示错误信息
+ * @param {string} message 
+ */
+function displayErrorMessage(message) {
+  hideRecommandContent();
+  const contentDiv = document.querySelector('.chat-content');
+  contentDiv.innerHTML = `<div class="error-message">${message}</div>`;
 }
  
 
