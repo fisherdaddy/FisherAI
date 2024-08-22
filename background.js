@@ -1,6 +1,18 @@
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.action === "openSettings") {
     chrome.tabs.create({'url': 'settings.html'});
+  } else if (message.action === "getPageTitle") {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      if (chrome.runtime.lastError) {
+        // 如果出现错误，返回错误信息
+        sendResponse({title: null, error: chrome.runtime.lastError.message});
+      } else if (tabs && tabs[0]) {
+        sendResponse({title: tabs[0].title});
+      } else {
+        sendResponse({title: null});
+      }
+    });
+    return true; // Keep the message channel open to send the response asynchronously
   }
 });
 
@@ -52,7 +64,7 @@ chrome.runtime.onInstalled.addListener(function() {
   
 });
 
-// 监听菜单项的点击事件
+// 监听��单项的点击事件
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId === "copyPageContent") {
     chrome.tabs.sendMessage(tab.id, {action: 'copyPageContent'});

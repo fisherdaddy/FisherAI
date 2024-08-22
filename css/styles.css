@@ -51,7 +51,6 @@
 .my-extension-content h1 {
   color: #28a745;
   font-size: 20px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 10px 0;
   display: block;
@@ -62,7 +61,6 @@
   font-weight: bold;
   font-size: 17px;
   padding: 10px 0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
   margin: 10px 0 10px;
   font-family: 'Arial', sans-serif;
   display: block;

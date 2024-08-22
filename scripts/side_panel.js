@@ -368,6 +368,24 @@ function loadToolsSelectedStatus() {
 }
 
 /**
+ * 获取当前页面标题
+ * @returns {Promise<string>}
+ */
+function getPageTitle() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({action: "getPageTitle"}, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else if (response && response.title) {
+        resolve(response.title);
+      } else {
+        reject(new Error("Unable to get page title"));
+      }
+    });
+  });
+}
+
+/**
  * 初始化结果页面
  */
 function initResultPage() {
@@ -632,26 +650,123 @@ function initResultPage() {
             height: contentDiv.style.height,
             width: contentDiv.style.width
         };
-        html2canvas(contentDiv, {
-          onclone: function(clonedDoc) {
-             var clonedContentDiv = clonedDoc.querySelector('.my-extension-content');
-             if (clonedContentDiv) {
-              clonedContentDiv.style.position = 'static';
-              clonedContentDiv.style.overflow = 'visible';
-              clonedContentDiv.style.height = originalStyle.height;
-              clonedContentDiv.style.width = originalStyle.width;
-             }
-          },
-          backgroundColor: '#111827',
-          useCORS: true
-        }).then(canvas => {
-          canvas.toBlob(function(blob) {
-            var url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-          }, 'image/png');
-        }).catch(error => {
-          console.error('Error rendering canvas:', error);
+
+        const pageTitle = await getPageTitle();
+
+        // Create a new div element off-screen
+        const newDiv = document.createElement('div');
+        newDiv.innerHTML = contentDiv.innerHTML;
+        newDiv.style.cssText = `
+          position: absolute;
+          left: -9999px;
+          top: -9999px;
+          width: ${contentDiv.offsetWidth}px;
+          background-color: #FAF8F6;
+          border-radius: 16px;
+          padding: 15px 25px;
+        `;
+
+        // Remove the first h1 element (summary title)
+        const firstH1 = newDiv.querySelector('h1');
+        if (firstH1) {
+          firstH1.remove();
+        }
+        // 添加标题
+        const titleElement = document.createElement('h1');
+        titleElement.textContent = pageTitle;
+        titleElement.style.cssText = `
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          font-size: 24px;
+          font-weight: 600;
+          color: #2c3e50;
+          margin: 0 0 25px 0;
+          padding: 20px 15px;
+          text-align: center;
+          letter-spacing: 0.5px;
+          line-height: 1.4;
+          max-width: 90%;
+          margin-left: auto;
+          margin-right: auto;
+          border-bottom: 2px solid #ecf0f1;
+          transition: all 0.3s ease;
+        `;
+        newDiv.insertBefore(titleElement, newDiv.firstChild);
+
+        // 修改文本样式
+        newDiv.querySelectorAll('p, li').forEach(element => {
+          element.style.cssText = `
+            font-family: 'Open Sans', Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #34495e;
+            margin-bottom: 12px;
+          `;
         });
+
+        // 加载二维码图片
+        const qrCode = new Image();
+        qrCode.src = chrome.runtime.getURL('images/chromestore.png');
+        qrCode.onload = function() {
+          const footerDiv = document.createElement('div');
+          footerDiv.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            color: #333;
+            font-size: 14px;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+          `;
+
+          const explanationText = document.createElement('p');
+          explanationText.textContent = 'FisherAI — Your Best Summary Copilot';
+          explanationText.style.cssText = `
+            margin: 0;
+            color: #2c3e50;
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 0.7px;
+            text-align: center;
+          `;
+
+          qrCode.style.width = '70px';
+          qrCode.style.height = '70px';
+          qrCode.style.marginLeft = '5px';
+
+          const textQrWrapper = document.createElement('div');
+          textQrWrapper.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          `;
+
+          textQrWrapper.appendChild(explanationText);
+          textQrWrapper.appendChild(qrCode);
+          footerDiv.appendChild(textQrWrapper);
+
+          newDiv.appendChild(footerDiv);
+
+          // Append the new div to body
+          document.body.appendChild(newDiv);
+
+          // Render the new div
+          html2canvas(newDiv, {
+            backgroundColor: '#1F2937',
+            useCORS: true
+          }).then(canvas => {
+            canvas.toBlob(function(blob) {
+              var url = URL.createObjectURL(blob);
+              window.open(url, '_blank');
+            }, 'image/png');
+          }).catch(error => {
+            console.error('Error rendering canvas:', error);
+          }).finally(() => {
+            // Remove the temporary div
+            document.body.removeChild(newDiv);
+          });
+        };
       });
     }
 
@@ -754,7 +869,7 @@ function isVideoUrl(url) {
   const patterns = [
     /^https?:\/\/(?:www\.)?youtube\.com\/watch/, // 匹配 YouTube 观看页面
     /^https?:\/\/(?:www\.)?bilibili\.com\/video\//, // 匹配 Bilibili 视频页面
-    /^https?:\/\/(?:www\.)?bilibili\.com\/list\/watchlater/ // 匹配 Bilibili 稍后再看页面
+    /^https?:\/\/(?:www\.)?bilibili\.com\/list\/watchlater/ // 匹配 Bilibili 稍后再看页
   ];
   
   return patterns.some(pattern => pattern.test(url));
