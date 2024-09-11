@@ -64,7 +64,7 @@ chrome.runtime.onInstalled.addListener(function() {
   
 });
 
-// 监听��单项的点击事件
+// 监听菜单项的点击事件
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
   if (info.menuItemId === "copyPageContent") {
     chrome.tabs.sendMessage(tab.id, {action: 'copyPageContent'});
