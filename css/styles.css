@@ -213,7 +213,6 @@
 
 .chat-content {
   max-height: 100%; 
-  /* overflow-y: auto;  */
   padding-right: 10px;
   padding-left: 10px;
 }
@@ -523,4 +522,57 @@
   border: 1px solid #ff4d4d;
   border-radius: 5px;
   margin: 20px 0;
+}
+
+.user-message {
+  position: relative;
+  align-self: flex-end;
+  color: #28a745;
+  font-size: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 10px 0;
+  display: block;
+}
+
+.edit-message-btn {
+  position: absolute;
+  bottom: 1px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-message:hover .edit-message-btn {
+  opacity: 1;
+}
+
+.edit-message-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #ffffff;
+}
+
+.save-message-btn, .cancel-message-btn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background-color: #3C3C3C;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-message-textarea {
+  width: 100%;
+  min-height: 100px;
+  margin-bottom: 10px;
+  padding: 5px;
+  background-color: #111827;
+  color: white;
+  border: 1px solid #3C3C3C;
+  border-radius: 5px;
 }

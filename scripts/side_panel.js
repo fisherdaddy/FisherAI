@@ -68,8 +68,16 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
   // submit & generating button
   hideSubmitBtnAndShowGenBtn();
   
-  // 创建AI回答div
-  createAIMessageDiv();
+  // 创建或获取AI回答div
+  const contentDiv = document.querySelector('.chat-content');
+  let aiMessageDiv = contentDiv.lastElementChild;
+  if (!aiMessageDiv || !aiMessageDiv.classList.contains('ai-message')) {
+    aiMessageDiv = document.createElement('div');
+    aiMessageDiv.className = 'ai-message';
+    contentDiv.appendChild(aiMessageDiv);
+  } else {
+    aiMessageDiv.innerHTML = ''; // Clear existing content if regenerating
+  }
     
   try {
     const completeText = await chatWithLLM(model, inputText, base64Images, CHAT_TYPE);
@@ -83,7 +91,6 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
     showSubmitBtnAndHideGenBtn();
   }
 }
-
 
 /**
  * 生成复制按钮
@@ -601,9 +608,10 @@ function initResultPage() {
         return;
       }
 
+      let inputText = '';
       try {
         // 视频翻译
-        const inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
+        inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
       } catch(error) {
         console.error('视频翻译失败', error);
         displayErrorMessage(`视频翻译失败: ${error.message}`);
@@ -798,17 +806,31 @@ function initResultPage() {
             });
 
             // 创建用户问题div
-            const userQuestionDiv = document.createElement('h1');
+            const userQuestionDiv = document.createElement('div');
             userQuestionDiv.className = 'user-message';
             let userMessage = '';
-            base64Images.forEach(url => {
-              if(!url.includes('image')) {
-                url = DEFAULT_FILE_LOGO_PATH;
-              }
-              userMessage += "<img src='"+ url +"' />"
-            });
+            if(base64Images) {
+              base64Images.forEach(url => {
+                if(!url.includes('image')) {
+                  url = DEFAULT_FILE_LOGO_PATH;
+                }
+                userMessage += "<img src='"+ url +"' />"
+              });
+            }
             userMessage += inputText;
             userQuestionDiv.innerHTML = userMessage;
+
+            // Add edit button
+            const editButton = document.createElement('button');
+            editButton.className = 'edit-message-btn';
+            editButton.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            `;
+            editButton.onclick = () => editUserMessage(userQuestionDiv, inputText);
+            userQuestionDiv.appendChild(editButton);
 
             const contentDiv = document.querySelector('.chat-content');
             contentDiv.appendChild(userQuestionDiv);
