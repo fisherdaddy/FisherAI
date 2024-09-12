@@ -292,15 +292,21 @@ function createAIMessageDiv() {
 }
 
 // 展示 loading
-function displayLoading() {
+function displayLoading(message = 'AI 思考中...') {
     const loadingDiv = document.querySelector('.my-extension-loading');
-    loadingDiv.style.display = 'flex';
+    if (loadingDiv) {
+        loadingDiv.textContent = message;
+        loadingDiv.style.display = 'flex';
+    }
 }
 
 // 隐藏 loading
 function hiddenLoadding() {
     const loadingDiv = document.querySelector('.my-extension-loading');
-    loadingDiv.style.display = 'none';
+    if (loadingDiv) {
+        loadingDiv.style.display = 'none';
+        loadingDiv.textContent = 'AI 思考中...'; // 恢复默认文本
+    }
 }
 
 // 获取当前时间的函数

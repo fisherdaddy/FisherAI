@@ -545,15 +545,19 @@ function initResultPage() {
       try {
         if(isVideoUrl(currentURL)) {
           // 视频摘要
+          displayLoading('正在获取字幕...');
           inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
         } else if(isPDFUrl(currentURL)) {
           // PDF摘要
+          displayLoading('正在提取PDF内容...');
           inputText = await extractPDFText(currentURL);
         } else {
           // 网页摘要
+          displayLoading('正在提取网页内容...');
           inputText = await fetchPageContent(FORMAT_TEXT);
         }
       } catch(error) {
+        hiddenLoadding();
         console.error('智能摘要失败', error);
         displayErrorMessage(`智能摘要失败: ${error.message}`);
         return;
@@ -577,15 +581,19 @@ function initResultPage() {
       try {
         if(isVideoUrl(currentURL)) {
           // 视频翻译
+          displayLoading('正在获取字幕...');
           inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
         } else if(isPDFUrl(currentURL)) {
           // PDF 翻译
+          displayLoading('正在提取PDF内容...');
           inputText = await extractPDFText(currentURL);
         } else {
           // 网页翻译
+          displayLoading('正在提取网页内容...');
           inputText = await fetchPageContent();
         }
       } catch(error) {
+        hiddenLoadding();
         console.error('网页翻译失败', error);
         displayErrorMessage(`网页翻译失败: ${error.message}`);
         return;
@@ -611,8 +619,10 @@ function initResultPage() {
       let inputText = '';
       try {
         // 视频翻译
+        displayLoading('正在获取字幕...');
         inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
       } catch(error) {
+        hiddenLoadding();
         console.error('视频翻译失败', error);
         displayErrorMessage(`视频翻译失败: ${error.message}`);
         return;
