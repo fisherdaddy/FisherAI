@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "FisherAI - Your Best Summary Copilot, Supporting ChatGPT & Gemini",
-    "version": "1.1.15",
+    "version": "1.1.16",
     "description": "Your Best Summary Copilot",
     "icons": {
       "16": "images/logo_16.png",
