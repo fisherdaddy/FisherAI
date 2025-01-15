@@ -73,20 +73,22 @@ const OLLAMA_MODEL = "ollama";
 const OLLAMA_MODEL_POSTFIX = "-" + OLLAMA_MODEL;
 
 // 默认模型
-const GPT_DEFAULT_MODEL = "gpt-3.5-turbo";
+const GPT_DEFAULT_MODEL = "gpt-4o-mini";
 const AZURE_GPT_DEFAULT_MODEL = "azure-gpt-35-turbo";
-const GEMINI_DEFAULT_MODEL = "gemini-1.0-pro-latest";
+const GEMINI_DEFAULT_MODEL = "gemini-1.5-flash-latest";
 const GROQ_DEFAULT_MODEL = "gemma-7b-it";
 const MISTRA_DEFAULTL_MODEL = "open-mixtral-8x7b";
 const ZHIPU_DEFAULT_MODEL = "glm-3-turbo";
 const MOONSHOT_DEFAULT_MODEL = "moonshot-v1-8k";
 const DEEPSEEK_DEFAULT_MODEL = 'deepseek-chat';
-const YI_DEFAULT_MODEL = "yi-34b-chat-0205";
+const YI_DEFAULT_MODEL = "yi-lightning";
 
 
 // 支持图像的模型
-const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'azure-gpt-4-turbo', 'azure-gpt-4o', 'gemini-1.0-pro-vision-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'glm-4v', 'chatgpt-4o-latest'];
-const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest'];
+const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
+  'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206',
+  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview'];
+const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 
