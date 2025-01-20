@@ -307,19 +307,23 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
 
   const body = {
     model: realModelName,
-    temperature: temperature,
-    top_p: topP,
     max_tokens: maxTokens,
     stream: true,
     messages: dialogueHistory,
     tools: []
   };
 
-  // mistral 的模型传以下两个参数会报错，这里过滤掉
-  if(!modelName.includes(MISTRAL_MODEL)) {
+  if(!modelName.includes(DEEPSEEK_REASONER)) {
+    body.temperature = temperature;
+    body.top_p = topP;
+  }
+   
+  // mistral 和 deepseek-reasoner 的模型传以下两个参数会报错，这里过滤掉
+  if(!modelName.includes(MISTRAL_MODEL) && !modelName.includes(DEEPSEEK_REASONER)) {
     body.frequency_penalty = frequencyPenalty;
     body.presence_penalty = presencePenalty;
   }
+  
 
   // 获取工具选择情况
   const serpapi_checked = await getValueFromChromeStorage(SERPAPI);

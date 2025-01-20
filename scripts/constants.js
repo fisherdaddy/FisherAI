@@ -65,6 +65,7 @@ const GEMINI_MODEL = 'gemini';
 const GROQ_MODEL = "groq";
 const GROQ_MODEL_POSTFIX = "-" + GROQ_MODEL;
 const MISTRAL_MODEL = "open-mixtral";
+const DEEPSEEK_REASONER = "deepseek-reasoner";
 const ZHIPU_MODEL = "glm";
 const MOONSHOT_MODEL = "moonshot";
 const DEEPSEEK_MODEL = 'deepseek';
