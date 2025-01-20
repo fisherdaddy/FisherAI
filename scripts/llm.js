@@ -173,8 +173,17 @@ async function chatWithLLM(model, inputText, base64Images, type) {
     result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
   }
 
-  while(result.tools.length > 0) {
-    result = await parseFunctionCalling(result, baseUrl, apiKey, model, type);
+  
+
+  if(result.tools.length > 0) {
+    while(result.tools.length > 0) {
+      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type);
+    }
+  } else {
+    if(result.completeText.length > 0) {
+      // 将 AI 回答更新到对话历史
+      updateChatHistory(result.completeText);
+    }
   }
 
   return result.completeText;
