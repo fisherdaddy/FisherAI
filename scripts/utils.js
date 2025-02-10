@@ -413,3 +413,54 @@ function editUserMessage(messageDiv, originalText) {
     editButton.onclick = () => editUserMessage(messageDiv, originalText);
     messageDiv.appendChild(editButton);
 }
+
+/**
+ * Generate FisherAI authentication headers
+ * @param {string} apiKey - The FisherAI API key
+ * @param {string} apiSecret - The FisherAI API secret
+ * @param {object} body - The request body
+ * @returns {object} - Headers object with authentication
+ */
+function generateFisherAIHeaders(apiKey, apiSecret, body) {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const bodyStr = JSON.stringify(body);
+    const messageToSign = `${apiKey}${timestamp}${bodyStr}`;
+
+    // console.log('apiKey');
+    // console.log(apiKey);
+    // console.log('apiSecret');
+    // console.log(apiSecret);
+    // console.log('body');
+    // console.log(body);
+    // console.log('messageToSign');
+    // console.log(messageToSign);
+    
+    // Generate HMAC SHA-256 signature
+    const encoder = new TextEncoder();
+    const key = encoder.encode(apiSecret);
+    const message = encoder.encode(messageToSign);
+    
+    return crypto.subtle.importKey(
+        'raw',
+        key,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+    ).then(key => {
+        return crypto.subtle.sign(
+            'HMAC',
+            key,
+            message
+        );
+    }).then(signature => {
+        const hashArray = Array.from(new Uint8Array(signature));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        return {
+            'X-API-Key': apiKey,
+            'X-Timestamp': timestamp,
+            'X-Signature': hashHex,
+            'Content-Type': 'application/json'
+        };
+    });
+}

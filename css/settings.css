@@ -286,3 +286,31 @@ input:checked + .slider:before {
   padding: 5px;
   font-size: 16px;
 }
+
+.ollama-instructions {
+    padding: 5px;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.instruction-step {
+    margin-bottom: 5px;
+}
+
+.command-block {
+    /* background: #f5f5f5; */
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 8px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-family: monospace;
+}
+
+.instruction-note {
+    margin-top: 20px;
+    padding: 10px;
+    /* background: #fff8e6; */
+    border-left: 4px solid #ffd700;
+    border-radius: 4px;
+}

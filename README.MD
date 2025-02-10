@@ -38,7 +38,7 @@
 ### 配合 Ollama 使用
 1. 插件已支持使用 Ollma 来启动本地模型，启动服务时需要[开启插件使用时的跨域](https://github.com/ollama/ollama/issues/2308)，具体命令如下:
 ```
-OLLAMA_ORIGINS=chrome-extension://* ollama serve
+OLLAMA_ORIGINS=* ollama serve
 ```
 2. 在插件设置中的 Ollama 模型配置项中，输入你的 Ollama 服务地址，默认为：http://127.0.0.1:11434
 3. 确认连通性测试通过后，点击保存。

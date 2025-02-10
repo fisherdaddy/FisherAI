@@ -274,7 +274,7 @@ function loadOllamaModels(callback) {
   chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
     const modelInfo = result[OLLAMA_MODEL];
     if (modelInfo) {
-      const baseUrl = modelInfo.baseUrl || OLLAMA_CHAT_BASE_URL;
+      const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
       const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
       fetch(apiUrl)
         .then(response => {
@@ -286,12 +286,13 @@ function loadOllamaModels(callback) {
         })
         .then(data => {
           const models = data.models;
-          const selection = document.getElementById('model-selection');
+          const customModelsGroup = document.getElementById('ollama-models');
+
           models.forEach(model => {
             const option = document.createElement('option');
             option.value = model.model + OLLAMA_MODEL_POSTFIX;
-            option.textContent = model.name + OLLAMA_MODEL_POSTFIX;
-            selection.appendChild(option);
+            option.textContent = model.name;
+            customModelsGroup.appendChild(option);
           });
           if (callback) callback();
         })

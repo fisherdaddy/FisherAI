@@ -57,6 +57,11 @@ const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 const OLLAMA_CHAT_API_PATH = "/api/chat";
 const OLLAMA_LIST_MODEL_PATH = "/api/tags";
 
+// 这些值将从环境变量中获取
+const FISHERAI_BASE_URL = "https://www.heytransl.com";
+const FISHERAI_API_KEY = "28c81f920240b0fdbca940e07b86b8db";
+const FISHERAI_API_SECRET = "d6e57784b134d09a8bed9ca004c98b4f";
+const FISHERAI_CHAT_API_PATH = "/api/chat";
 
 // 模型名称包含的关键字
 const GPT_MODEL = "gpt";
@@ -72,6 +77,8 @@ const DEEPSEEK_MODEL = 'deepseek';
 const YI_MODEL = "yi";
 const OLLAMA_MODEL = "ollama";
 const OLLAMA_MODEL_POSTFIX = "-" + OLLAMA_MODEL;
+const FISHERAI_MODEL = "fisherai";
+const FISHERAI_MODEL_POSTFIX = "-" + FISHERAI_MODEL;
 
 // 默认模型
 const GPT_DEFAULT_MODEL = "gpt-4o-mini";
@@ -83,19 +90,22 @@ const ZHIPU_DEFAULT_MODEL = "glm-3-turbo";
 const MOONSHOT_DEFAULT_MODEL = "moonshot-v1-8k";
 const DEEPSEEK_DEFAULT_MODEL = 'deepseek-chat';
 const YI_DEFAULT_MODEL = "yi-lightning";
+const FISHERAI_DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct";
 
 
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
   'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206',
-  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview'];
-const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206'];
+  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai'];
+const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp',
+   'gemini-exp-1206', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 
 
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
+  { key: FISHERAI_MODEL, baseUrl: FISHERAI_BASE_URL, apiPath: FISHERAI_CHAT_API_PATH, defaultModel: FISHERAI_DEFAULT_MODEL },
   { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
   { key: GPT_MODEL, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
   { key: GEMINI_MODEL, baseUrl: GEMINI_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
@@ -105,7 +115,7 @@ const DEFAULT_LLM_URLS = [
   { key: ZHIPU_MODEL, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, defaultModel: ZHIPU_DEFAULT_MODEL },
   { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
   { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
-  { key: YI_MODEL, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL }
+  { key: YI_MODEL, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL },
 ];
 
 
@@ -125,7 +135,7 @@ const SYSTEM_PROMPT = `
 # 语言要求
   - 所有回答必须用中文。
 # 回答内容
-  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如’今天是几号‘, ’最近的有关Nvidia的新闻‘等
+  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
 
 {tools-list}
 
@@ -152,13 +162,13 @@ const SUMMARY_PROMPT = `
 请确保摘要结构清晰、组织有序，便于阅读。使用清晰的标题和小标题来指导读者了解每一部分的内容。摘要的长度应该适中，既能覆盖文本的主要点和关键细节，又不包含不必要的信息或变得过长。
 
 具体要求如下：
-1. 使用“# 摘要”作为主标题。
-2. 将摘要分为“## 主要观点”和“## 关键细节”两个部分，每部分都应有相应的小标题。
-3. 在“主要观点”部分，简洁地概述文本的核心思想和论点。
-4. 在“关键细节”部分，详细介绍支持主要观点的重要信息和数据。
+1. 使用"# 摘要"作为主标题。
+2. 将摘要分为"## 主要观点"和"## 关键细节"两个部分，每部分都应有相应的小标题。
+3. 在"主要观点"部分，简洁地概述文本的核心思想和论点。
+4. 在"关键细节"部分，详细介绍支持主要观点的重要信息和数据。
 5. 摘要应准确无误，忠实于原文的意图和语境。
 6. 尽可能保持语言简洁明了，避免使用专业术语，以便于普通读者理解。
-8  保留特定的英文术语、数字或名字，并在其前后加上空格，例如：“生成式 AI 产品”
+8  保留特定的英文术语、数字或名字，并在其前后加上空格，例如："生成式 AI 产品"
 9. 给出本次摘要后，后续的对话请忽略本次任务指令，遵循 system 指令即可。
 
 你要摘要的内容如下：\n\n`;
@@ -172,7 +182,7 @@ const TRANSLATE2CHN_PROMPT = `
 - 遵守原意的前提下让内容更通俗易懂、符合中文表达习惯，但一定要保留原有格式不变。
 - 即使意译也要保留原始段落格式，以及保留术语，例如 FLAC，JPEG 等。保留公司缩写，例如 Microsoft, Amazon 等。
 - 要保留引用的论文，例如 [20] 这样的引用。
-- 对于 Figure 和 Table，翻译的同时保留原有格式，例如：“Figure 1: ”翻译为“图 1: ”，“Table 1: ”翻译为：“表 1: ”。
+- 对于 Figure 和 Table，翻译的同时保留原有格式，例如："Figure 1: "翻译为"图 1: "，"Table 1: "翻译为："表 1: "。
 - 对于\citep格式的引用转为小括号的方式呈现，例如\citep{wu2016google}转为(wu2016google) +
 # 如果输入的是一个单词或短语
 - 如果是单词，则给出单词的词性以及对应的中文释义。
@@ -181,7 +191,7 @@ const TRANSLATE2CHN_PROMPT = `
 # 其他要求
 - 全角括号换成半角括号，并在左括号前面加半角空格，右括号后面加半角空格。
 - 你的回答必须使用 MARKDOWN 格式
-- 保留特定的英文术语、数字或名字，并在其前后加上空格，例如：“生成式 AI 产品”
+- 保留特定的英文术语、数字或名字，并在其前后加上空格，例如："生成式 AI 产品"
 - 以下是常见的 AI 相关术语词汇对应表：
   * Transformer -> Transformer
   * LLM/Large Language Model -> 大语言模型
@@ -203,8 +213,8 @@ const SUBTITLE2CHN_PROMPT = `
 5. 专业术语：准确传达相关软件或领域的专业术语。
 6. 准确传达信息：准确传达原文的事实和背景，不遗漏任何信息。
 7. 通俗易懂：在遵守原意的前提下，使内容更通俗易懂，符合中文表达习惯。
-8. 保留特定术语：保留特定的英文术语、数字或名字，并在其前后加上空格，例如：“生成式 AI 产品”。
-9. 去掉语气词：在翻译过程中，请确保去掉所有语气词，例如“嗯”、“呃”等。
+8. 保留特定术语：保留特定的英文术语、数字或名字，并在其前后加上空格，例如："生成式 AI 产品"。
+9. 去掉语气词：在翻译过程中，请确保去掉所有语气词，例如"嗯"、"呃"等。
 10. Markdown格式：请使用 Markdown 格式进行回答。
 请记住，回答时一定要用中文。
 
@@ -241,10 +251,10 @@ const TRANSLATION_PROMPT = `
 - 翻译时要准确传达原文的事实和背景。
 - 即使上意译也要保留原始段落格式，以及保留术语，例如 FLAC，JPEG 等。保留公司缩写，例如 Microsoft, Amazon, OpenAI 等。
 - 人名不翻译
-- 对于 Figure 和 Table，翻译的同时保留原有格式，例如：“Figure 1: ”翻译为“图 1: ”，“Table 1: ”翻译为：“表 1: ”。
+- 对于 Figure 和 Table，翻译的同时保留原有格式，例如："Figure 1: "翻译为"图 1: "，"Table 1: "翻译为："表 1: "。
 - 全角括号换成半角括号，并在左括号前面加半角空格，右括号后面加半角空格。
 - 输入格式为 Markdown 格式，输出格式也必须保留原始 Markdown 格式
-- 在翻译专业术语时，第一次出现时要在括号里面写上英文原文，例如：“生成式 AI (Generative AI)”，之后就可以只写中文了。
+- 在翻译专业术语时，第一次出现时要在括号里面写上英文原文，例如："生成式 AI (Generative AI)"，之后就可以只写中文了。
 - 以下是常见的 AI 相关术语词汇对应表（English -> 中文）：
   * Transformer -> Transformer
   * Token -> Token

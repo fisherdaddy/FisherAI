@@ -119,13 +119,18 @@ function createRequestParams(additionalHeaders, body) {
   currentController = controller;
   headers = {...headers, ...additionalHeaders};
 
+   // 设置30秒超时
+   const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+
   console.log('body>>>', body);
 
   return {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
-    signal: controller.signal 
+    signal: controller.signal,
+    timeoutId // 保存 timeoutId 以便后续清除
   };
 }
 
@@ -140,12 +145,14 @@ function createRequestParams(additionalHeaders, body) {
 async function chatWithLLM(model, inputText, base64Images, type) {
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
 
-  if(!baseUrl) {
-    throw new Error('模型 ' + model + ' 的 API 代理地址为空，请检查！');
-  }
+  if(!model.includes(FISHERAI_MODEL) && !model.includes(OLLAMA_MODEL)) {
+    if(!baseUrl) {
+      throw new Error('模型 ' + model + ' 的 API 代理地址为空，请检查！');
+    }
 
-  if(!apiKey) {
-    throw new Error('模型 ' + model + ' 的 API Key 为空，请检查！');
+    if(!apiKey) {
+      throw new Error('模型 ' + model + ' 的 API Key 为空，请检查！');
+    }
   }
 
   // 如果是划词或划句场景，把system prompt置空
@@ -166,7 +173,7 @@ async function chatWithLLM(model, inputText, base64Images, type) {
   }
 
   let result = { completeText: '', tools: [] };
-  if(model.includes(GEMINI_MODEL)) {
+  if(model.includes(GEMINI_MODEL) && !model.includes(FISHERAI_MODEL)) {
     baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
     result = await chatWithGemini(baseUrl, model, type);
   } else {
@@ -309,8 +316,15 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type) {
  * @returns 
  */
 async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
+  let isFisherAI = false;
+
+  if(modelName.includes(FISHERAI_MODEL)) {
+    isFisherAI = true;
+  }
+
   let realModelName = modelName.replace(new RegExp(GROQ_MODEL_POSTFIX, 'g'), "")
-                                .replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "");
+                                .replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "")
+                                .replace(new RegExp(FISHERAI_MODEL_POSTFIX, 'g'), "");
   
   const { temperature, topP, maxTokens, frequencyPenalty, presencePenalty } = await getModelParameters();
 
@@ -359,6 +373,11 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   if (modelName.includes(AZURE_MODEL)) {
     baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
     additionalHeaders = { 'api-key': apiKey };
+  }
+
+  // FisherAI 模型需要特殊的认证头
+  if(isFisherAI) {
+    additionalHeaders = await generateFisherAIHeaders(FISHERAI_API_KEY, FISHERAI_API_SECRET, body);
   }
 
   const params = createRequestParams(additionalHeaders, body);
@@ -447,6 +466,10 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
   let result = { resultString: '', resultArray: [] };
   try {
     const response = await fetch(baseUrl, params);
+
+    // 清除超时定时器
+    clearTimeout(params.timeoutId);
+
     // console.log(response);
     if (!response.ok) {
       // 错误响应
@@ -677,7 +700,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
   
         // 处理接收到的数据
         buffer += new TextDecoder().decode(value);
-        // console.log('buffer...', buffer);
+        console.log('buffer...', buffer);
         let position = 0;
         while (position < buffer.length) {
           let start = buffer.indexOf('{', position);
@@ -696,7 +719,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
             // console.log('jsonText...', jsonText);
             const jsonData = JSON.parse(jsonText);
             let content = '';
-            if(modelName.includes(GEMINI_MODEL)) {
+            if(modelName.includes(GEMINI_MODEL) && !modelName.includes(FISHERAI_MODEL)) {
               jsonData.candidates[0].content.parts.forEach(part => {
                 // 检查 content 字段
                 if(part.text !== undefined &&  part.text != null) {

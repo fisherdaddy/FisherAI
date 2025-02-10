@@ -121,7 +121,9 @@ chrome.storage.sync.get(QUICK_TRANS, function(config) {
             return;
           }
           const {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
-          if(baseUrl && apiKey) {
+          if(model.includes(FISHERAI_MODEL) || model.includes(OLLAMA_MODEL)) {
+            chatWithLLM(model, TRANSLATE2CHN_PROMPT + selectedText, null, HUACI_TRANS_TYPE); 
+          }else if(baseUrl && apiKey) {
             chatWithLLM(model, TRANSLATE2CHN_PROMPT + selectedText, null, HUACI_TRANS_TYPE); 
           } else {
             translationPopup.innerHTML = DEFAULT_TIPS;

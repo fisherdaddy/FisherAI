@@ -230,6 +230,41 @@ function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
   });
 }
 
+/**
+ * 加载Ollama模型到快捷翻译的模型选择列表中
+ */
+function loadOllamaModelsForQuickTrans() {
+  chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
+    const modelInfo = result[OLLAMA_MODEL];
+    if (modelInfo) {
+      const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
+      const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
+      fetch(apiUrl)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error('Network response was not ok.');
+          }
+        })
+        .then(data => {
+          const models = data.models;
+          const customModelsGroup = document.getElementById('ollama-models-quicktrans');
+          if (customModelsGroup) {
+            models.forEach(model => {
+              const option = document.createElement('option');
+              option.value = model.model + OLLAMA_MODEL_POSTFIX;
+              option.textContent = model.name;
+              customModelsGroup.appendChild(option);
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Failed to load Ollama models:', error);
+        });
+    }
+  });
+}
 
 /**
  * 主程序
@@ -332,6 +367,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var saveMessage = quickTransDiv.querySelector('.save-message');
     storeParams(tabId, enabled, selectedModel, saveMessage);
   });
+
+  // 加载Ollama模型到快捷翻译的选项中
+  loadOllamaModelsForQuickTrans();
 
 });
 
