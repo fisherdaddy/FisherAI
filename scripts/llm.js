@@ -8,6 +8,44 @@ let geminiDialogueHistory = [];
 const currentTime = getCurrentTime();
 const systemPrompt =  SYSTEM_PROMPT.replace(/{current_time}/g, currentTime);
 
+// 配置 marked.js 使用 KaTeX 渲染 LaTeX
+marked.setOptions({
+  renderer: new marked.Renderer(),
+  highlight: function(code, lang) {
+    return code;
+  },
+  pedantic: false,
+  gfm: true,
+  breaks: true,
+  sanitize: false,
+  smartypants: false,
+  xhtml: false
+});
+
+// 扩展 marked.js 以支持 LaTeX
+const renderer = new marked.Renderer();
+const originalParagraph = renderer.paragraph.bind(renderer);
+
+renderer.paragraph = (text) => {
+  const mathRegex = /\$\$([\s\S]+?)\$\$|\$((?!\$)[\s\S]+?(?!\$))\$/g;
+  text = text.replace(mathRegex, (match, displayMode, inlineMode) => {
+    try {
+      const tex = displayMode || inlineMode;
+      const isDisplayMode = !!displayMode;
+      return katex.renderToString(tex, {
+        displayMode: isDisplayMode,
+        throwOnError: false
+      });
+    } catch (err) {
+      console.error('KaTeX error:', err);
+      return match;
+    }
+  });
+  return originalParagraph(text);
+};
+
+marked.setOptions({ renderer });
+
 // gemini system prompt
 let geminiSystemPrompt = {
     "role": "model",
@@ -810,6 +848,15 @@ function updateChatContent(completeText, type) {
     const lastDiv = contentDiv.lastElementChild;
     lastDiv.innerHTML = marked.parse(completeText);
 
+    // 渲染数学公式
+    renderMathInElement(lastDiv, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+
     if (isAtBottom) {
       contentDiv.scrollTop = contentDiv.scrollHeight; // 滚动到底部
     }
@@ -824,8 +871,15 @@ function updateChatContent(completeText, type) {
     // shown
     translationPopup.innerHTML = marked.parse(completeText);
 
+    // 渲染数学公式
+    renderMathInElement(translationPopup, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
   }
-
 }
 
 

@@ -577,3 +577,60 @@
   border: 1px solid #3C3C3C;
   border-radius: 5px;
 }
+
+/* KaTeX 公式样式控制 */
+.chat-content .katex-display {
+    /* 限制公式容器的最大宽度 */
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 5px 0;
+    margin: 0.5em 0;
+}
+
+.chat-content .katex {
+    /* 允许公式内部文本换行 */
+    white-space: normal !important;
+    /* 确保公式不会超出容器 */
+    max-width: 100%;
+}
+
+.chat-content .katex-html {
+    /* 允许 HTML 输出换行 */
+    white-space: normal !important;
+    /* 确保换行时数学符号对齐 */
+    text-align: left;
+}
+
+/* 处理长公式的滚动条样式 */
+.chat-content .katex-display::-webkit-scrollbar {
+    height: 4px;
+}
+
+.chat-content .katex-display::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-content .katex-display::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+}
+
+.chat-content .katex-display::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 同样处理弹出窗口中的公式 */
+#fisherai-transpop-id .katex-display,
+#fisherai-transpop-id .katex,
+#fisherai-transpop-id .katex-html {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: normal !important;
+}
+
+/* 确保公式容器不会影响整体布局 */
+.chat-content, #fisherai-transpop-id {
+    overflow-x: hidden;
+    word-wrap: break-word;
+}
