@@ -47,6 +47,14 @@ OLLAMA_ORIGINS=* ollama serve
 如果还是有问题，请检查 ollama 是否正常启动，可以通过这个地址（http://127.0.0.1:11434/api/tags）来访问本地 ollama 是否在正常启动
 
 ## 更新记录
+
+### 2025-02-10
+新增功能和改进包括：
+- 支持开箱即用，支持如 DeepSeek-R1、Gemini-2.0-flash、Gemini-2.0-flash-thinking-exp 等全球顶尖模型，由 [OpenRouter](https://openrouter.ai/models?q=free) 提供支持。
+- 支持 latex 公式渲染
+- 优化 Ollama 本地模型使用体验
+
+
 ### 2024-07-17
 新增功能和改进包括：
 - 工具箱
