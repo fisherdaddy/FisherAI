@@ -9,8 +9,18 @@ function extractContent(format) {
     var content = article.content;
     if(format === FORMAT_TEXT) {
         content = article.textContent;
+    } else {
+        // 创建临时 div 来解析 HTML 内容
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        
+        // 获取 readability-page-1 div 的内部内容
+        const readabilityDiv = tempDiv.querySelector('#readability-page-1');
+        if (readabilityDiv && readabilityDiv.firstElementChild) {
+            content = readabilityDiv.firstElementChild.innerHTML;
+        }
     }
-    const result =  title + "\n" + content;
+    const result = title + "\n\n" + content;
     return result;
 }
 
