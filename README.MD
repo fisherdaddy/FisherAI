@@ -50,7 +50,7 @@ OLLAMA_ORIGINS=* ollama serve
 
 ### 2025-02-10
 新增功能和改进包括：
-- 支持开箱即用，支持如 DeepSeek-R1、Gemini-2.0-flash、Gemini-2.0-flash-thinking-exp 等全球顶尖模型，由 [OpenRouter](https://openrouter.ai/models?q=free) 提供支持。
+- 支持开箱即用，支持如 DeepSeek-R1、Gemini-2.0-flash、Gemini-2.0-flash-thinking-exp 等全球顶尖模型，由大善人 [OpenRouter](https://openrouter.ai/models?q=free) 提供支持。
 - 支持 latex 公式渲染
 - 优化 Ollama 本地模型使用体验
 
