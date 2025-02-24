@@ -1,59 +1,67 @@
-# FisherAI - Chrome 插件
+<div align="center">
+    <h1>FisherAI - Your Best Summary Copilot</h1>
+    <p>🚀 强大的 Chrome AI 助手，让网页浏览更智能</p>
+    <p>
+        <a href="https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj">
+            <img src="https://img.shields.io/chrome-web-store/v/ipfiijaobcenaibdpaacbbpbjefgekbj" alt="Chrome Web Store">
+        </a>
+        <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License">
+    </p>
+</div>
 
-## 项目简介
- [FisherAI](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj) 是一款为提高学习效率而设计的Chrome插件，通过一键操作，支持自动摘要、网页及视频翻译、多轮对话、工具箱等功能。此外，FisherAI 支持多种大语言模型，包括但不限于gpt/azure/gemini/deepseek/mistral/groq/yi/moonshot等等，为用户提供灵活且强大的AI工具。
+## 📖 简介
 
-## 功能支持
-- [x] 一键自动摘要
-- [x] 一键网页翻译
-- [x] 一键视频翻译
-- [x] 自定义模型/API密钥/API代理地址
-- [x] 支持常见LLM系列模型
-- [x] 支持多轮对话
-- [x] 支持图片分享
-- [x] 支持划词翻译
-- [x] 支持输'/'触发快捷功能，快捷功能包括翻译、摘要、润色、图像转文本、代码解释
-- [x] 支持工具箱：联网工具 SerpApi、画图工具 DALLE 3
+FisherAI 是一款强大的 Chrome 插件，专注于提升您的网页浏览和学习体验。支持多种顶级 AI 模型，包括 GPT、Azure、Gemini、Deepseek、Mistral、Groq、Yi、Moonshot 等。
 
-<a target="_blank" href="https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj">
-<img src="public/home.png" alt="" style="max-width: 80%;">
-</a>
+### ✨ 主要特性
 
-<a target="_blank" href="https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj">
-<img src="public/settings.png" alt="" style="max-width: 80%;">
-</a>
+- 🔍 **智能摘要** - 一键生成网页/视频的内容摘要
+- 🌍 **智能翻译** - 支持网页和视频字幕翻译
+- 🤖 **多模型支持** - 集成主流大语言模型，可自定义 API
+- 🆓 **内置免费模型** - 预置多个高性能免费模型，无需配置即可使用
+- 💬 **多轮对话** - 智能上下文理解，连续对话交互
+- 🛠️ **实用工具集** - 内置 SerpApi 搜索、DALLE-3 绘图等工具
 
-## 安装指南
-安装 FisherAI 插件非常简单：
-1. 访问已上架 Chrome应用商店的 [FisherAI](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj)，并点击安装。
-2. 或者，下载源代码，然后在Chrome扩展程序页面 (`chrome://extensions/`) 中加载已解压的扩展程序。
+## 🖼️ 界面预览
 
-## 使用说明
-安装插件后，您可以通过点击浏览器右上角的 FisherAI 图标，访问所有功能。具体功能使用如下：
-- **自动摘要**
-- **网页翻译**
-- **视频翻译**
-- 其他功能请参阅以下更新记录。
+<div align="center">
+    <img src="public/home.png" alt="FisherAI 主界面" width="80%">
+    <br/>
+    <img src="public/settings.png" alt="FisherAI 设置界面" width="80%">
+</div>
 
-### 配合 Ollama 使用
-1. 插件已支持使用 Ollma 来启动本地模型，启动服务时需要[开启插件使用时的跨域](https://github.com/ollama/ollama/issues/2308)，具体命令如下:
-```
+## 🚀 快速开始
+
+### 安装方式
+
+1. [Chrome 应用商店安装](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj)（推荐）
+2. 下载源码本地安装：
+   - 下载并解压源代码
+   - 打开 Chrome 扩展管理页面 (`chrome://extensions/`)
+   - 开启"开发者模式"
+   - 点击"加载已解压的扩展程序"，选择解压目录
+
+### Ollama 本地模型配置
+
+1. 启动 Ollama 服务（需开启跨域支持）：
+```bash
 OLLAMA_ORIGINS=* ollama serve
 ```
-2. 在插件设置中的 Ollama 模型配置项中，输入你的 Ollama 服务地址，默认为：http://127.0.0.1:11434
-3. 确认连通性测试通过后，点击保存。
-4. 返回首页并刷新，在模型选择中，会显示本地模型支持的模型列表(以-ollma结尾)。选择所需模型后即可使用。
 
-如果还是有问题，请检查 ollama 是否正常启动，可以通过这个地址（http://127.0.0.1:11434/api/tags）来访问本地 ollama 是否在正常启动
+2. 插件配置：
+   - 打开插件设置
+   - 在 Ollama 配置项中输入服务地址（默认：`http://127.0.0.1:11434`）
+   - 测试连接并保存
+   - 刷新后即可使用本地模型（模型名以 -ollama 结尾）
 
-## 更新记录
+> 提示：可通过访问 `http://127.0.0.1:11434/api/tags` 验证 Ollama 服务状态
+
+## 📝 更新日志
 
 ### 2025-02-10
-新增功能和改进包括：
-- 支持开箱即用，支持如 DeepSeek-R1、Gemini-2.0-flash、Gemini-2.0-flash-thinking-exp 等全球顶尖模型，由大善人 [OpenRouter](https://openrouter.ai/models?q=free) 提供支持。
-- 支持 latex 公式渲染
-- 优化 Ollama 本地模型使用体验
-
+- ✨ 集成 DeepSeek-R1、Gemini-2.0-flash 等顶尖模型
+- 🔢 支持 LaTeX 公式渲染
+- 🛠️ 优化 Ollama 使用体验
 
 ### 2024-07-17
 新增功能和改进包括：
@@ -77,3 +85,15 @@ OLLAMA_ORIGINS=* ollama serve
 - 自定义OpenAI API密钥
 - 多轮对话功能
 - 分享功能
+
+## 📜 开源协议
+
+本项目遵循 Apache 2.0 协议。详见 [LICENSE](LICENSE) 文件。
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+## ⭐ 支持项目
+
+如果这个项目对您有帮助，请考虑给它一个 Star！
