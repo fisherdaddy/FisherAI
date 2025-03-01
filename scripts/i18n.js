@@ -72,12 +72,12 @@ const i18n = {
         'default_tips': '<p>请先去设置 <b>Model</b> 和 <b>API KEY</b>.</p><p class="note"><b>Note:</b> API KEY仅缓存在 Chrome 本地存储空间，不会上传服务器，以保证安全和隐私.</p>',
         
         // 快捷功能
-        'shortcut_summary': '摘要：',
-        'shortcut_dict': '查词：',
-        'shortcut_translation': '翻译：',
-        'shortcut_polish': '润色：',
-        'shortcut_code_explain': '代码解释：',
-        'shortcut_image2text': '图像转文本：',
+        'shortcut_summary': '摘要',
+        'shortcut_dict': '查词',
+        'shortcut_translate': '翻译',
+        'shortcut_polish': '润色',
+        'shortcut_code_explain': '代码解释',
+        'shortcut_image2text': '图像转文本',
         
         // 语言选择
         'language': '语言',
@@ -99,7 +99,7 @@ const i18n = {
         
         // 模型参数配置
         'temperature': '温度',
-        'max_tokens': '最大令牌数',
+        'max_tokens': 'max tokens',
         'top_p': 'Top P',
         'top_k': 'Top K',
         'presence_penalty': '存在惩罚',
@@ -198,12 +198,12 @@ const i18n = {
         'default_tips': '<p>Please first set up your <b>Model</b> and <b>API KEY</b>.</p><p class="note"><b>Note:</b> API KEY is only cached in Chrome local storage and will not be uploaded to the server to ensure security and privacy.</p>',
         
         // Shortcuts
-        'shortcut_summary': 'Summary:',
-        'shortcut_dict': 'Dictionary:',
-        'shortcut_translation': 'Translation:',
-        'shortcut_polish': 'Polish:',
-        'shortcut_code_explain': 'Code Explanation:',
-        'shortcut_image2text': 'Image to Text:',
+        'shortcut_summary': 'Summary',
+        'shortcut_dict': 'Dictionary',
+        'shortcut_translate': 'Translation',
+        'shortcut_polish': 'Polish',
+        'shortcut_code_explain': 'Code Explanation',
+        'shortcut_image2text': 'Image to Text',
         
         // Language selection
         'language': 'Language',
