@@ -332,37 +332,63 @@ function handleUploadFiles(event) {
 
 // 检测是否启用ollama，拉去ollama模型列表并追加到模型选择列表中
 function loadOllamaModels(callback) {
-  chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
-    const modelInfo = result[OLLAMA_MODEL];
-    if (modelInfo) {
-      const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
-      const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
-      fetch(apiUrl)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Network response was not ok.');
-          }
-        })
-        .then(data => {
-          const models = data.models;
-          const customModelsGroup = document.getElementById('ollama-models');
-
-          models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model.model + OLLAMA_MODEL_POSTFIX;
-            option.textContent = model.name;
-            customModelsGroup.appendChild(option);
-          });
-          if (callback) callback();
-        })
-        .catch(error => {
-          if (callback) callback();
-        });
-    } else {
-      if (callback) callback();
+  // 首先检查 Ollama 提供商是否启用
+  chrome.storage.sync.get('ollama-enabled', (enabledResult) => {
+    // 如果没有保存过状态，默认为启用
+    const isEnabled = enabledResult['ollama-enabled'] !== undefined ? enabledResult['ollama-enabled'] : true;
+    
+    // 如果提供商被禁用，直接返回空数组
+    if (!isEnabled) {
+      if (typeof callback === 'function') {
+        callback([]);
+      }
+      return;
     }
+    
+    // 提供商已启用，继续加载模型
+    chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
+      const modelInfo = result[OLLAMA_MODEL];
+      if (modelInfo) {
+        const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
+        const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
+        fetch(apiUrl)
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error('Network response was not ok.');
+            }
+          })
+          .then(data => {
+            const models = data.models;
+            // 如果传入了回调函数，直接将模型数据传给回调函数
+            if (typeof callback === 'function') {
+              callback(models);
+            } else {
+              // 兼容旧的直接操作DOM的方式
+              const customModelsGroup = document.getElementById('ollama-models');
+              if (customModelsGroup) {
+                models.forEach(model => {
+                  const option = document.createElement('option');
+                  option.value = model.model + OLLAMA_MODEL_POSTFIX;
+                  option.textContent = model.name;
+                  customModelsGroup.appendChild(option);
+                });
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error loading Ollama models:', error);
+            if (typeof callback === 'function') {
+              callback([]);
+            }
+          });
+      } else {
+        if (typeof callback === 'function') {
+          callback([]);
+        }
+      }
+    });
   });
 }
 
@@ -462,9 +488,6 @@ function initResultPage() {
   initI18n().then(() => {
     // 加载模型选择
     populateModelSelections();
-    
-    // 加载ollama模型
-    loadOllamaModels(handleModelSelection);
     
     // 加载模型参数
     loadModelParams();
@@ -968,6 +991,7 @@ function populateModelSelections() {
   const optgroups = modelSelection.querySelectorAll('optgroup');
   const freeModelsGroup = optgroups[0];
   const customModelsGroup = optgroups[1];
+  const ollamaModelsGroup = optgroups[2] || null;
   
   // 清空现有选项
   while (freeModelsGroup.firstChild) {
@@ -978,6 +1002,12 @@ function populateModelSelections() {
     customModelsGroup.removeChild(customModelsGroup.firstChild);
   }
   
+  if (ollamaModelsGroup) {
+    while (ollamaModelsGroup.firstChild) {
+      ollamaModelsGroup.removeChild(ollamaModelsGroup.firstChild);
+    }
+  }
+  
   // 添加免费模型
   MODEL_LIST.free_models.forEach(model => {
     const option = document.createElement('option');
@@ -986,13 +1016,157 @@ function populateModelSelections() {
     freeModelsGroup.appendChild(option);
   });
   
-  // 添加自定义配置模型
+  // 从设置页面加载自定义配置模型
+  loadCustomModelsFromSettings(customModelsGroup);
+  
+  // 如果有Ollama模型组，加载Ollama模型
+  if (ollamaModelsGroup) {
+    loadOllamaModels((models) => {
+      models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = `${model.name}-ollama`;
+        option.textContent = `${model.name} (Ollama)`;
+        ollamaModelsGroup.appendChild(option);
+      });
+    });
+  }
+}
+
+/**
+ * 从设置页面加载自定义配置模型
+ * @param {HTMLElement} customModelsGroup - 自定义模型的optgroup元素
+ */
+function loadCustomModelsFromSettings(customModelsGroup) {
+  // 定义要加载的模型提供商，按照settings.html中的顺序排列
+  const providers = [
+    'gpt', 'gemini', 'deepseek', 'moonshot', 
+    'yi', 'glm', 'groq', 'open-mixtral', 'azure', 'ollama'
+  ];
+  
+  // 首先添加默认的自定义模型作为备选
   MODEL_LIST.custom_config_models.forEach(model => {
     const option = document.createElement('option');
     option.value = model.value;
     option.textContent = model.display;
+    option.dataset.provider = getProviderFromModel(model.value);
     customModelsGroup.appendChild(option);
   });
+  
+  // 存储每个提供商的模型，以便按顺序添加
+  const providerModels = {};
+  let loadedProviders = 0;
+  
+  // 从Chrome存储中获取每个提供商的模型和启用状态
+  providers.forEach(provider => {
+    // 同时获取模型列表和启用状态
+    chrome.storage.sync.get([`${provider}-models`, `${provider}-enabled`], (result) => {
+      const models = result[`${provider}-models`];
+      // 如果没有保存过状态，默认为启用
+      const isEnabled = result[`${provider}-enabled`] !== undefined ? result[`${provider}-enabled`] : true;
+      
+      // 存储该提供商的模型和启用状态
+      providerModels[provider] = {
+        models: models && Array.isArray(models) && models.length > 0 ? models : [],
+        enabled: isEnabled
+      };
+      
+      loadedProviders++;
+      
+      // 当所有提供商的数据都加载完成后，按顺序添加模型
+      if (loadedProviders === providers.length) {
+        // 清空现有选项
+        while (customModelsGroup.firstChild) {
+          customModelsGroup.removeChild(customModelsGroup.firstChild);
+        }
+        
+        // 按照providers数组的顺序添加模型
+        providers.forEach(providerName => {
+          const providerData = providerModels[providerName];
+          
+          // 如果提供商被禁用，跳过
+          if (!providerData.enabled) {
+            return;
+          }
+          
+          // 如果有模型，添加到下拉列表
+          if (providerData.models.length > 0) {
+            providerData.models.forEach(model => {
+              const option = document.createElement('option');
+              // 根据提供商设置正确的值
+              option.value = getModelValue(model, providerName);
+              option.textContent = model;
+              option.dataset.provider = providerName;
+              customModelsGroup.appendChild(option);
+            });
+          } else {
+            // 如果没有自定义模型，使用默认模型
+            MODEL_LIST.custom_config_models
+              .filter(model => getProviderFromModel(model.value) === providerName)
+              .forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.value;
+                option.textContent = model.display;
+                option.dataset.provider = providerName;
+                customModelsGroup.appendChild(option);
+              });
+          }
+        });
+      }
+    });
+  });
+}
+
+/**
+ * 根据模型名称和提供商获取正确的模型值
+ * @param {string} modelName - 模型名称
+ * @param {string} provider - 提供商ID
+ * @returns {string} - 模型值
+ */
+function getModelValue(modelName, provider) {
+  // 根据不同提供商设置正确的模型值
+  switch(provider) {
+    case 'gpt':
+      return modelName; // OpenAI模型值与名称相同
+    case 'gemini':
+      return modelName; // Gemini模型值与名称相同
+    case 'azure':
+      return modelName; // Azure模型值与名称相同
+    case 'deepseek':
+      // 处理deepseek模型，如果是deepseek-chat-v3，值应为deepseek-chat
+      if (modelName === 'deepseek-chat-v3') return 'deepseek-chat';
+      if (modelName === 'deepseek-resonser') return 'deepseek-reasoner';
+      return modelName.toLowerCase();
+    case 'yi':
+      return modelName.toLowerCase();
+    case 'moonshot':
+      return modelName.toLowerCase();
+    case 'glm':
+      return modelName.toLowerCase();
+    case 'groq':
+      return `${modelName.toLowerCase()}-groq`;
+    case 'open-mixtral':
+      return modelName.toLowerCase();
+    default:
+      return modelName.toLowerCase();
+  }
+}
+
+/**
+ * 从模型值获取提供商
+ * @param {string} modelValue - 模型值
+ * @returns {string} - 提供商ID
+ */
+function getProviderFromModel(modelValue) {
+  if (modelValue.startsWith('gpt-') || modelValue.startsWith('chatgpt-')) return 'gpt';
+  if (modelValue.startsWith('gemini-')) return 'gemini';
+  if (modelValue.startsWith('deepseek-')) return 'deepseek';
+  if (modelValue.startsWith('moonshot-')) return 'moonshot';
+  if (modelValue.startsWith('yi-')) return 'yi';
+  if (modelValue.startsWith('glm-')) return 'glm';
+  if (modelValue.endsWith('-groq')) return 'groq';
+  if (modelValue.startsWith('open-mixtral-')) return 'open-mixtral';
+  if (modelValue.startsWith('azure-')) return 'azure';
+  return '';
 }
 
 /**
@@ -1025,5 +1199,20 @@ function displayErrorMessage(message) {
  */ 
 document.addEventListener('DOMContentLoaded', function() {
   initResultPage();
+});
+
+// 监听存储变化，当模型列表或提供商启用状态更新时刷新模型选择
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  if (namespace === 'sync') {
+    // 检查是否有模型列表变化
+    const modelChanges = Object.keys(changes).filter(key => key.endsWith('-models'));
+    // 检查是否有提供商启用状态变化
+    const providerEnabledChanges = Object.keys(changes).filter(key => key.endsWith('-enabled'));
+    
+    if (modelChanges.length > 0 || providerEnabledChanges.length > 0) {
+      // 如果有模型列表或提供商启用状态变化，重新加载模型选择
+      populateModelSelections();
+    }
+  }
 });
 

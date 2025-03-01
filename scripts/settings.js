@@ -383,6 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置模型列表自定义功能
     setupModelCustomization();
+    
+    // 初始化供应商开关状态
+    initProviderToggles();
   });
 });
 
@@ -981,5 +984,46 @@ function getModelExample(tabId) {
   };
   
   return examples[tabId] || 'model-name';
+}
+
+// 初始化供应商开关状态
+function initProviderToggles() {
+  const providerToggles = document.querySelectorAll('.provider-toggle');
+  
+  providerToggles.forEach(toggle => {
+    const provider = toggle.dataset.provider;
+    
+    // 从存储中加载状态
+    chrome.storage.sync.get(`${provider}-enabled`, (result) => {
+      // 如果没有保存过状态，默认为启用
+      const isEnabled = result[`${provider}-enabled`] !== undefined ? result[`${provider}-enabled`] : true;
+      toggle.checked = isEnabled;
+    });
+    
+    // 添加变更事件监听
+    toggle.addEventListener('change', (event) => {
+      const isEnabled = event.target.checked;
+      const storageObj = {};
+      storageObj[`${provider}-enabled`] = isEnabled;
+      
+      chrome.storage.sync.set(storageObj, () => {
+        // 显示自动保存消息
+        const globalSaveMessage = document.querySelector('.auto-save-message');
+        if (globalSaveMessage) {
+          globalSaveMessage.style.display = 'block';
+          setTimeout(() => {
+            globalSaveMessage.style.opacity = '1';
+            setTimeout(() => {
+              globalSaveMessage.style.opacity = '0';
+              globalSaveMessage.style.transform = 'translateX(-50%)';
+              setTimeout(() => {
+                globalSaveMessage.style.display = 'none';
+              }, 300);
+            }, 2000);
+          }, 10);
+        }
+      });
+    });
+  });
 }
 

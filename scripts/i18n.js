@@ -33,6 +33,7 @@ const i18n = {
         'ollama_explanation': 'Ollama模型直接从本地服务加载，无需编辑',
         'network_tools': '联网工具',
         'image_tools': '画图工具',
+        'enable_provider': '启用此供应商',
 
 
         // ollama 说明
@@ -161,6 +162,7 @@ const i18n = {
         'ollama_explanation': 'Ollama models are loaded directly from the local service and do not need to be edited',
         'network_tools': 'Network Tools',
         'image_tools': 'Image Tools',
+        'enable_provider': 'Enable Provider',
         
         // ollama 说明
         'ollama_step1': 'The plugin now supports using Ollama to start local models. When starting the service, you need to enable cross-domain when using the plugin. Specific command: OLLAMA_ORIGINS=* ollama serve',

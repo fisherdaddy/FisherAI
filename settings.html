@@ -200,6 +200,13 @@
                         <span data-i18n="edit">编辑</span>
                     </button>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="gpt-provider-toggle" class="provider-toggle" data-provider="gpt" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="model-list-container" id="gpt-model-list">
                     <div class="model-item">gpt-4o-mini</div>
                     <div class="model-item">gpt-4o</div>
@@ -290,6 +297,13 @@
                         <span data-i18n="edit">编辑</span>
                     </button>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="gemini-provider-toggle" class="provider-toggle" data-provider="gemini" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="model-list-container" id="gemini-model-list">
                     <div class="model-item">gemini-1.5-pro-latest</div>
                     <div class="model-item">gemini-1.5-flash-latest</div>
@@ -376,6 +390,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                         <span data-i18n="edit">编辑</span>
                     </button>
+                </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="deepseek-provider-toggle" class="provider-toggle" data-provider="deepseek" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <div class="model-list-container" id="deepseek-model-list">
                     <div class="model-item">deepseek-chat-v3</div>
@@ -465,6 +486,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                         <span data-i18n="edit">编辑</span>
                     </button>
+                </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="moonshot-provider-toggle" class="provider-toggle" data-provider="moonshot" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <div class="model-list-container" id="moonshot-model-list">
                     <div class="model-item">moonshot-v1-128k</div>
@@ -556,6 +584,13 @@
                         <span data-i18n="edit">编辑</span>
                     </button>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="yi-provider-toggle" class="provider-toggle" data-provider="yi" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="model-list-container" id="yi-model-list">
                     <div class="model-item">yi-lightning</div>
                     <div class="model-item">yi-vision-v2</div>
@@ -645,6 +680,13 @@
                         <span data-i18n="edit">编辑</span>
                     </button>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="groq-provider-toggle" class="provider-toggle" data-provider="groq" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="model-list-container" id="groq-model-list">
                     <div class="model-item">llama3-70b-8192</div>
                 </div>
@@ -733,6 +775,13 @@
                         <span data-i18n="edit">编辑</span>
                     </button>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="open-mixtral-provider-toggle" class="provider-toggle" data-provider="open-mixtral" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="model-list-container" id="open-mixtral-model-list">
                     <div class="model-item">open-mixtral-8x22b</div>
                 </div>
@@ -813,6 +862,13 @@
                     <div class="model-list-title" data-i18n="available_models">可用模型</div>
                     <div class="ollama-explanation" data-i18n="ollama_explanation">（Ollama模型直接从本地服务加载，无需编辑）</div>
                 </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="ollama-provider-toggle" class="provider-toggle" data-provider="ollama" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 
                 <div class="model-list-container ollama-model-grid" id="ollama-model-list">
                     <div class="model-item">Llama 3</div>
@@ -887,6 +943,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                         <span data-i18n="edit">编辑</span>
                     </button>
+                </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="glm-provider-toggle" class="provider-toggle" data-provider="glm" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <div class="model-list-container" id="glm-model-list">
                     <div class="model-item">GLM-4</div>
@@ -977,6 +1040,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                         <span data-i18n="edit">编辑</span>
                     </button>
+                </div>
+                <div class="provider-toggle-container">
+                    <span class="toggle-label" data-i18n="enable_provider">启用此供应商: </span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="azure-provider-toggle" class="provider-toggle" data-provider="azure" checked>
+                        <span class="slider"></span>
+                    </label>
                 </div>
                 <div class="model-list-container" id="azure-model-list">
                     <div class="model-item">azure-gpt-35-turbo</div>
