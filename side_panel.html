@@ -15,6 +15,7 @@
     <script type="text/javascript" src="/scripts/third/katex/auto-render.min.js"></script>
     <script type="text/javascript" src="/scripts/constants.js"></script>
     <script type="text/javascript" src="/scripts/third/youtube-transcript.js"></script>
+    <script type="text/javascript" src="/scripts/i18n.js"></script>
     <script type="text/javascript" src="/scripts/utils.js"></script>
     <script type="text/javascript" src="/scripts/llm.js"></script>
     <script type="text/javascript" src="/scripts/side_panel.js"></script>
@@ -30,17 +31,17 @@
             </span>
         </div>
         <div class="my-extension-content">
-            <div class="my-extension-slogan">
+            <div class="my-extension-slogan" data-i18n="slogan">
             <b>FisherAI</b> - Your Best Summary Copilot
             </div>
             <div class="feature-container">
-                <div class="feature-title">功能推荐：</div>
+                <div class="feature-title" data-i18n="feature_recommend">功能推荐：</div>
                 <div class="feature-item">
                     <a id="my-extension-summary-btn">
                         <img src="/images/summary.webp" alt="Web Summary" class="feature-icon">
                         <div class="feature-text">
-                            <div class="feature-name">智能摘要</div>
-                            <div class="feature-desc">支持多种格式，包括网页、PDF 文件、Bilibili 和 YouTube 视频。</div>
+                            <div class="feature-name" data-i18n="smart_summary">智能摘要</div>
+                            <div class="feature-desc" data-i18n="summary_desc">支持多种格式，包括网页、PDF 文件、Bilibili 和 YouTube 视频。</div>
                         </div>
                     </a>
                 </div>
@@ -48,8 +49,8 @@
                     <a id="my-extension-translate-btn">
                         <img src="/images/trans.webp" alt="Web Translation" class="feature-icon">
                         <div class="feature-text">
-                            <div class="feature-name">网页翻译</div>
-                            <div class="feature-desc">支持多种格式，包括网页、PDF 文件，保持原有布局和格式。</div>
+                            <div class="feature-name" data-i18n="web_trans">网页翻译</div>
+                            <div class="feature-desc" data-i18n="web_trans_desc">支持多种格式，包括网页、PDF 文件，保持原有布局和格式。</div>
                         </div>
                     </a>
                 </div>
@@ -57,8 +58,8 @@
                     <a id="my-extension-videotrans-btn">
                         <img src="/images/videotrans.png" alt="video Translation" class="feature-icon">
                         <div class="feature-text">
-                            <div class="feature-name">视频翻译</div>
-                            <div class="feature-desc">支持 Bilibili 和 YouTube 视频。</div>
+                            <div class="feature-name" data-i18n="video_trans">视频翻译</div>
+                            <div class="feature-desc" data-i18n="video_trans_desc">支持 Bilibili 和 YouTube 视频。</div>
                         </div>
                     </a>
                 </div>
@@ -81,51 +82,26 @@
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>        
-        <div class="image-preview-area">
+        <div class="image-preview-area" data-i18n-placeholder="preview_area">
             <!-- 图片预览将在这里显示 -->
         </div>    
         <div class="navigation-bar">
             <div id="model-selection-div">
                 <select id="model-selection">
-                    <optgroup label="免费模型">
-                        <option value="google/gemini-2.0-flash-exp:free-fisherai">gemini-2.0-flash-exp</option>
-                        <option value="deepseek/deepseek-r1:free-fisherai">deepseek-r1</option>
-                        <option value="google/gemini-2.0-flash-thinking-exp:free-fisherai">gemini-2.0-flash-thinking-exp</option>
-                        <option value="google/gemini-2.0-flash-lite-preview-02-05:free-fisherai">gemini-2.0-flash-lite</option>
+                    <optgroup label="免费模型" data-i18n="free_models">
+                        <!-- 由JavaScript动态填充 -->
                     </optgroup>
-                    <optgroup label="自定义配置模型" id="custom-models">
-                        <option value="gpt-4o-mini">gpt-4o-mini</option>
-                        <option value="gpt-4o">gpt-4o</option>
-                        <option value="chatgpt-4o-latest">chatgpt-4o-latest</option>
-                        <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
-                        <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
-                        <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
-                        <option value="gemini-2.0-flash-thinking-exp">gemini-2.0-flash-thinking-exp</option>
-                        <option value="gemini-exp-1206">gemini-exp-1206</option>
-                        <option value="deepseek-chat">deepseek-chat-v3</option>
-                        <option value="deepseek-reasoner">deepseek-reasoner</option>
-                        <option value="yi-lightning">yi-lightning</option>
-                        <option value="yi-vision-v2">yi-vision-v2</option>
-                        <option value="moonshot-v1-128k">moonshot-v1-128k</option>
-                        <option value="moonshot-v1-32k-vision-preview">moonshot-v1-32k-vision-preview</option>
-                        <option value="glm-4">glm-4</option>
-                        <option value="glm-4v">glm-4v</option>
-                        <option value="glm-3-turbo">glm-3-turbo</option>
-                        <option value="azure-gpt-35-turbo">azure-gpt-35-turbo</option>
-                        <option value="azure-gpt-4o">azure-gpt-4o</option>
-                        <option value="open-mixtral-8x22b">mixtral-8x22b</option>
-                        <option value="llama3-70b-8192-groq">llama3-70b-groq</option>
-                        <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-                        <option value="gpt-4-turbo">gpt-4-turbo</option>
+                    <optgroup label="自定义配置模型" id="custom-models" data-i18n="custom_config_models">
+                        <!-- 由JavaScript动态填充 -->
                     </optgroup>
-                    <optgroup label="Ollama 本地模型" id="ollama-models"></optgroup>
+                    <optgroup label="Ollama 本地模型" id="ollama-models" data-i18n="ollama_local_models"></optgroup>
                 </select>
             </div>
 
             <div id="params-div">
                 <label id="params-label">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <title>模型参数</title>
+                        <title data-i18n="model_parameters">模型参数</title>
                         <rect width="24" height="24"/>
                         <circle cx="7" cy="7" r="2.5" stroke="black" stroke-width="2" fill="none"/>
                         <rect x="12" y="6" width="6" height="2" fill="black"/>
@@ -209,7 +185,7 @@
             <span class="shortcut-text-span">润色</span>
         </div>
         <div data-command="代码解释：">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md" style="color: rgb(237, 98, 98);"><path fill="currentColor" fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zm1.293 4.293a1 1 0 0 1 1.414 0l2 2a1 1 0 0 1 0 1.414l-2 2a1 1 0 0 1-1.414-1.414L8.586 12l-1.293-1.293a1 1 0 0 1 0-1.414M12 14a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md" style="color: rgb(237, 98, 98);"><path fill="currentColor" fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zm1.293 4.293a1 1 0 0 1 1.414 0l2 2a1 1 0 0 1 0 1.414l-2 2a1 1 0 0 1-1.414-1.414L8.586 12l-1.293-1.293a1 1 0 0 1 0-1.414M12 14a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
             <span class="shortcut-text-span">代码解释</span>
         </div>
         <div data-command="图像转文本：">
@@ -222,33 +198,33 @@
         </div>
     </div>
     <div id="model-params" class="model-params">
-        <h2>模型参数</h2>
+        <h2 data-i18n="model_parameters">模型参数</h2>
         <div class="params-item">
-            <label for="temperature">温度</label>
+            <label for="temperature" data-i18n="temperature">温度</label>
             <div class="param-control">
                 <input type="number" id="temperature" placeholder="0.7" min="0" max="2">
             </div>
         </div>
         <div class="params-item">
-            <label for="top_p">Top P</label>
+            <label for="top_p" data-i18n="top_p">Top P</label>
             <input type="number" id="top_p" placeholder="0.7" min="0" max="1">
         </div>
         <div class="params-item">
-            <label for="frequency_penalty">频率惩罚</label>
+            <label for="frequency_penalty" data-i18n="frequency_penalty">频率惩罚</label>
             <input type="number" id="frequency_penalty" placeholder="0" min="0" max="1">
         </div>
         <div class="params-item">
-            <label for="presence_penalty">存在惩罚</label>
+            <label for="presence_penalty" data-i18n="presence_penalty">存在惩罚</label>
             <input type="number" id="presence_penalty" placeholder="0" min="0" max="1">
         </div>
         <div class="params-item">
-            <label for="max-tokens">最大 tokens</label>
+            <label for="max-tokens" data-i18n="max_tokens">最大 tokens</label>
             <input type="number" id="max_tokens" placeholder="4096" min="1">
         </div>
     </div>
     
     <div id="tool-store" class="tool-store" style="display: none;">
-        <h2>工具</h2>
+        <h2 data-i18n="toolbox">工具</h2>
         <div class="tool-item">
             <div>
                 <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">

@@ -12,10 +12,12 @@ ACTION_DOWNLOAD_SUBTITLES = 'downloadSubtitles';
 ACTION_GET_PAGE_URL = 'getPageURL';
 
 // default tips
+// 将在初始化时替换为当前语言的版本
 DEFAULT_TIPS =  "<p>请先去设置 <b>Model</b> 和 <b>API KEY</b>.</p>" + 
 "<p class=\"note\"><b>Note:</b> API KEY仅缓存在 Chrome 本地存储空间，不会上传服务器，以保证安全和隐私.</p>";
 
 // shortcut function
+// 将在初始化时替换为当前语言的版本
 SHORTCUT_SUMMAY = "摘要：";
 SHORTCUT_DICTION = "查词：";
 SHORTCUT_TRANSLATION = "翻译：";
@@ -101,7 +103,42 @@ const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-late
    'gemini-exp-1206', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
-
+// 集中定义所有模型列表，便于维护
+const MODEL_LIST = {
+  // 免费模型
+  free_models: [
+    { value: "google/gemini-2.0-flash-exp:free-fisherai", display: "gemini-2.0-flash-exp" },
+    { value: "deepseek/deepseek-r1:free-fisherai", display: "deepseek-r1" },
+    { value: "google/gemini-2.0-flash-thinking-exp:free-fisherai", display: "gemini-2.0-flash-thinking-exp" },
+    { value: "google/gemini-2.0-flash-lite-preview-02-05:free-fisherai", display: "gemini-2.0-flash-lite" }
+  ],
+  // 自定义配置模型
+  custom_config_models: [
+    { value: "gpt-4o-mini", display: "gpt-4o-mini" },
+    { value: "gpt-4o", display: "gpt-4o" },
+    { value: "chatgpt-4o-latest", display: "chatgpt-4o-latest" },
+    { value: "gemini-1.5-flash-latest", display: "gemini-1.5-flash-latest" },
+    { value: "gemini-1.5-pro-latest", display: "gemini-1.5-pro-latest" },
+    { value: "gemini-2.0-flash-exp", display: "gemini-2.0-flash-exp" },
+    { value: "gemini-2.0-flash-thinking-exp", display: "gemini-2.0-flash-thinking-exp" },
+    { value: "gemini-exp-1206", display: "gemini-exp-1206" },
+    { value: "deepseek-chat", display: "deepseek-chat-v3" },
+    { value: "deepseek-reasoner", display: "deepseek-reasoner" },
+    { value: "yi-lightning", display: "yi-lightning" },
+    { value: "yi-vision-v2", display: "yi-vision-v2" },
+    { value: "moonshot-v1-128k", display: "moonshot-v1-128k" },
+    { value: "moonshot-v1-32k-vision-preview", display: "moonshot-v1-32k-vision-preview" },
+    { value: "glm-4", display: "glm-4" },
+    { value: "glm-4v", display: "glm-4v" },
+    { value: "glm-3-turbo", display: "glm-3-turbo" },
+    { value: "azure-gpt-35-turbo", display: "azure-gpt-35-turbo" },
+    { value: "azure-gpt-4o", display: "azure-gpt-4o" },
+    { value: "open-mixtral-8x22b", display: "mixtral-8x22b" },
+    { value: "llama3-70b-8192-groq", display: "llama3-70b-groq" },
+    { value: "gpt-3.5-turbo", display: "gpt-3.5-turbo" },
+    { value: "gpt-4-turbo", display: "gpt-4-turbo" }
+  ]
+};
 
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
@@ -133,13 +170,13 @@ const SYSTEM_PROMPT = `
   - 请使用 Markdown 格式，以确保回答内容清晰易读。
   - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
 # 语言要求
-  - 所有回答必须用中文。
+  - 所有回答必须用当前语言。
 # 回答内容
   - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
 
 {tools-list}
 
-最后，请记住，回答时一定要用中文回答。`;
+最后，请记住，回答时一定要用当前语言回答。`;
 
 const TOOL_PROMPT_PREFIX = `
 # 工具箱

@@ -1,4 +1,65 @@
 /**
+ * 初始化国际化支持
+ */
+async function initI18n() {
+  // 初始化页面的国际化
+  const currentLang = await window.i18n.init();
+  
+  // 更新动态文本（那些不是通过data-i18n属性设置的文本）
+  updateDynamicTexts(currentLang);
+}
+
+/**
+ * 更新动态文本（那些不通过data-i18n属性设置的文本）
+ */
+async function updateDynamicTexts(lang) {
+  // 获取常量文本的翻译
+  const messages = await window.i18n.getMessages([
+    'default_tips', 
+    'shortcut_summary', 
+    'shortcut_dict', 
+    'shortcut_translation', 
+    'shortcut_polish', 
+    'shortcut_code_explain', 
+    'shortcut_image2text',
+    'free_models',
+    'custom_config_models',
+    'ollama_local_models',
+    'model_parameters'
+  ], lang);
+  
+  // 更新常量
+  DEFAULT_TIPS = messages.default_tips;
+  SHORTCUT_SUMMAY = messages.shortcut_summary;
+  SHORTCUT_DICTION = messages.shortcut_dict;
+  SHORTCUT_TRANSLATION = messages.shortcut_translation;
+  SHORTCUT_POLISH = messages.shortcut_polish;
+  SHORTCUT_CODE_EXPLAIN = messages.shortcut_code_explain;
+  SHORTCUT_IMAGE2TEXT = messages.shortcut_image2text;
+  
+  // 更新模型选择下拉框的 optgroup 标签
+  const modelSelect = document.getElementById('model-selection');
+  if (modelSelect) {
+    const optgroups = modelSelect.querySelectorAll('optgroup');
+    for (const optgroup of optgroups) {
+      const i18nKey = optgroup.getAttribute('data-i18n');
+      if (i18nKey && messages[i18nKey]) {
+        optgroup.label = messages[i18nKey];
+      }
+    }
+  }
+  
+  // 更新模型参数标题
+  const modelParamsTitle = document.querySelector('#params-label svg title');
+  if (modelParamsTitle && messages.model_parameters) {
+    modelParamsTitle.textContent = messages.model_parameters;
+  }
+  
+  // 更新其他动态内容
+  // ...
+}
+
+/**
  * 判断是否设置api key
  * @returns
  */
@@ -397,10 +458,14 @@ function getPageTitle() {
  * 初始化结果页面
  */
 function initResultPage() {
-
-    // 加载 Ollama 模型并处理模型选择
+  // 初始化国际化
+  initI18n().then(() => {
+    // 加载模型选择
+    populateModelSelections();
+    
+    // 加载ollama模型
     loadOllamaModels(handleModelSelection);
-
+    
     // 加载模型参数
     loadModelParams();
 
@@ -530,7 +595,7 @@ function initResultPage() {
       // 展示推荐内容
       showRecommandContent();
     });
-  
+
     // 摘要逻辑
     var summaryButton = document.querySelector('#my-extension-summary-btn');
     summaryButton.addEventListener('click', async function() {
@@ -891,8 +956,44 @@ function initResultPage() {
           }
       });
     }
+  });
 }
 
+// 使用常量中定义的模型列表填充模型选择下拉框
+function populateModelSelections() {
+  const modelSelection = document.getElementById('model-selection');
+  if (!modelSelection) return;
+  
+  // 清空现有的选项，保留optgroup结构
+  const optgroups = modelSelection.querySelectorAll('optgroup');
+  const freeModelsGroup = optgroups[0];
+  const customModelsGroup = optgroups[1];
+  
+  // 清空现有选项
+  while (freeModelsGroup.firstChild) {
+    freeModelsGroup.removeChild(freeModelsGroup.firstChild);
+  }
+  
+  while (customModelsGroup.firstChild) {
+    customModelsGroup.removeChild(customModelsGroup.firstChild);
+  }
+  
+  // 添加免费模型
+  MODEL_LIST.free_models.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.value;
+    option.textContent = model.display;
+    freeModelsGroup.appendChild(option);
+  });
+  
+  // 添加自定义配置模型
+  MODEL_LIST.custom_config_models.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.value;
+    option.textContent = model.display;
+    customModelsGroup.appendChild(option);
+  });
+}
 
 /**
  * 是否是视频页面

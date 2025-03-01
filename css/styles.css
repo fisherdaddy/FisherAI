@@ -24,12 +24,14 @@
 }
 
 .my-extension-settings-btn, .my-extension-share-btn {
-  cursor: pointer;
-  margin-right: 5px;
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 15px;
 }
 
 .my-extension-settings-btn {
-  margin-right: 15px;
+    /* 设置按钮样式 */
+    margin-right: 10px;
 }
 
 .my-extension-content {
