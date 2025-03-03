@@ -4,9 +4,17 @@ let dialogueHistory = [];
 // 对话历史数组（gemini）
 let geminiDialogueHistory = [];
 
-// 获取当前时间
-const currentTime = getCurrentTime();
-const systemPrompt =  SYSTEM_PROMPT.replace(/{current_time}/g, currentTime);
+// 初始化变量
+let systemPrompt;
+let currentTime;
+
+// 使用立即执行的异步函数初始化
+(async function initializeVariables() {
+  // 获取当前时间
+  currentTime = getCurrentTime();
+  const targetLanguage = await getTargetLanguage();
+  systemPrompt = SYSTEM_PROMPT.replace(/{current_time}/g, currentTime).replace(/{language}/g, targetLanguage);
+})();
 
 // 配置 marked.js 使用 KaTeX 渲染 LaTeX
 marked.setOptions({
@@ -796,6 +804,8 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                   reasoningContent += delta.reasoning;
                 } else if (delta.reason !== undefined && delta.reason !== null) {
                   reasoningContent += delta.reason;
+                } else if(delta.reasoning_content !== undefined && delta.reasoning_content !== null) {
+                  reasoningContent += delta.reasoning_content;
                 }
 
                 // 检查 tool_calls 字段

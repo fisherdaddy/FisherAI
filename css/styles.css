@@ -699,9 +699,10 @@
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
   white-space: pre-wrap;
-  max-height: 1000px;
-  overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  max-height: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: padding 0.3s ease;
 }
 
 /* 折叠状态 */

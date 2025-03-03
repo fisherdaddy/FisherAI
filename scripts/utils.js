@@ -302,7 +302,7 @@ function createAIMessageDiv() {
 }
 
 // 展示 loading
-function displayLoading(message = 'AI 思考中...') {
+function displayLoading(message = 'Thinking ...') {
     const loadingDiv = document.querySelector('.my-extension-loading');
     if (loadingDiv) {
         loadingDiv.textContent = message;
@@ -315,7 +315,7 @@ function hiddenLoadding() {
     const loadingDiv = document.querySelector('.my-extension-loading');
     if (loadingDiv) {
         loadingDiv.style.display = 'none';
-        loadingDiv.textContent = 'AI 思考中...'; // 恢复默认文本
+        loadingDiv.textContent = 'Thinking ...'; // 恢复默认文本
     }
 }
 
@@ -474,3 +474,83 @@ function generateFisherAIHeaders(apiKey, apiSecret, body) {
         };
     });
 }
+
+
+// 从存储中获取当前语言设置并返回格式化后的 SYSTEM_PROMPT
+async function getTargetLanguage() {
+    try {
+      // 从 Chrome 存储中获取语言设置
+      const result = await chrome.storage.local.get('language');
+      return result.language || 'zh-CN'; // 默认使用中文
+    } catch (error) {
+      console.error('获取语言设置失败:', error);
+      // 出错时使用默认的中文
+      return 'zh-CN';
+    }
+}
+
+
+async function getTranslatePrompt() {
+    try {
+      // 从 Chrome 存储中获取语言设置
+      const result = await chrome.storage.local.get('language');
+      const language = result.language || 'zh-CN'; // 默认使用中文
+      
+      // 返回替换了语言占位符的 prompt
+      return DIRECT_TRANSLATE_PROMPT.replace(/{language}/g, language);
+    } catch (error) {
+      console.error('获取语言设置失败:', error);
+      // 出错时使用默认的中文
+      return DIRECT_TRANSLATE_PROMPT.replace(/{language}/g, '中文');
+    }
+}
+
+
+async function getSubTitleTransPrompt() {
+    try {
+      // 从 Chrome 存储中获取语言设置
+      const result = await chrome.storage.local.get('language');
+      const language = result.language || 'zh-CN'; // 默认使用中文
+      
+      // 返回替换了语言占位符的 prompt
+      return SUBTITLE_TRANSLATE_PROMPT.replace(/{language}/g, language);
+    } catch (error) {
+      console.error('获取语言设置失败:', error);
+      // 出错时使用默认的中文
+      return SUBTITLE_TRANSLATE_PROMPT.replace(/{language}/g, '中文');
+    }
+}
+
+async function getDictionPrompt() {
+    try {
+      // 从 Chrome 存储中获取语言设置
+      const result = await chrome.storage.local.get('language');
+      const language = result.language || 'zh-CN'; // 默认使用中文
+      
+      // 返回替换了语言占位符的 prompt
+      return DICTION_PROMPT.replace(/{language}/g, language);
+    } catch (error) {
+      console.error('获取语言设置失败:', error);
+      // 出错时使用默认的中文
+      return DICTION_PROMPT.replace(/{language}/g, '中文');
+    }
+}
+
+async function getThreeStepsTransPrompt() {
+    try {
+      // 从 Chrome 存储中获取语言设置
+      const result = await chrome.storage.local.get('language');
+      const language = result.language || 'zh-CN'; // 默认使用中文
+      
+      // 返回替换了语言占位符的 prompt
+      return THREE_STEPS_TRANSLATION_PROMPT.replace(/{language}/g, language);
+    } catch (error) {
+      console.error('获取语言设置失败:', error);
+      // 出错时使用默认的中文
+      return THREE_STEPS_TRANSLATION_PROMPT.replace(/{language}/g, '中文');
+    }
+}
+
+
+
+

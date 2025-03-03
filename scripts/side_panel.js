@@ -683,7 +683,9 @@ function initResultPage() {
         return;
       }
 
-      await clearAndGenerate(model, TRANSLATE2CHN_PROMPT + inputText, null);
+      const translatePrompt = await getTranslatePrompt();
+
+      await clearAndGenerate(model, translatePrompt + inputText, null);
     });
 
     // 视频翻译
@@ -711,8 +713,10 @@ function initResultPage() {
         displayErrorMessage(`视频翻译失败: ${error.message}`);
         return;
       }
+
+      const subTitleTransPrompt = await getSubTitleTransPrompt();
      
-      await clearAndGenerate(model, SUBTITLE2CHN_PROMPT + inputText, null);
+      await clearAndGenerate(model, subTitleTransPrompt + inputText, null);
     });
 
 
@@ -934,9 +938,11 @@ function initResultPage() {
             if(inputText.startsWith(SHORTCUT_SUMMAY)) {
               newInputText = SUMMARY_PROMPT + inputText.replace(SHORTCUT_SUMMAY, '') ;
             } else if(inputText.startsWith(SHORTCUT_DICTION)) {
-              newInputText = DICTION_PROMPT + inputText.replace(SHORTCUT_DICTION, '') ;
+              const dictionPrompt = await getDictionPrompt();
+              newInputText = dictionPrompt + inputText.replace(SHORTCUT_DICTION, '') ;
             } else if(inputText.startsWith(SHORTCUT_TRANSLATION)) {
-              newInputText = TRANSLATION_PROMPT + inputText.replace(SHORTCUT_TRANSLATION, '') ;
+              const threeStepsTransPrompt = await getThreeStepsTransPrompt();
+              newInputText = threeStepsTransPrompt + inputText.replace(SHORTCUT_TRANSLATION, '') ;
             } else if(inputText.startsWith(SHORTCUT_POLISH)) {
               newInputText = TEXT_POLISH_PROMTP + inputText.replace(SHORTCUT_POLISH, '');
             } else if(inputText.startsWith(SHORTCUT_CODE_EXPLAIN)) {

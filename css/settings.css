@@ -185,6 +185,19 @@ body {
 .save-message, .checkapi-message{
   color: #38A169;
   margin-top: 10px;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(56, 161, 105, 0.1);
+  border-left: 3px solid #38A169;
+  animation: fadeInOut 2s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(0); }
 }
 
 .password-wrapper, .baseurl-wrapper {

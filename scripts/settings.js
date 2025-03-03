@@ -87,13 +87,17 @@ function storeParams(tabName, param1, param2, saveMessage) {
         }, 2000); // 显示2秒
       }, 10); // 短暂延迟以确保CSS过渡生效
     } else if (saveMessage) {
-      // 原有的显示方式，针对非自动保存的消息
+      // 使用CSS动画显示保存成功消息
+      // 先重置动画
+      saveMessage.style.animation = 'none';
+      saveMessage.offsetHeight; // 触发重排
+      saveMessage.style.display = 'block';
+      saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+      
+      // 动画结束后隐藏元素
       setTimeout(() => {
-        saveMessage.style.display = 'block';
-        setTimeout(() => {
-          saveMessage.style.display = 'none';
-        }, 1000);
-      }, 1000);
+        saveMessage.style.display = 'none';
+      }, 2000);
     }
   });
 }
@@ -473,7 +477,14 @@ function setupSaveButtons() {
         }, function() {
           // 显示保存成功消息
           const saveMessage = tabContent.querySelector('.save-message');
+          // 使用CSS动画显示保存成功消息
+          // 先重置动画
+          saveMessage.style.animation = 'none';
+          saveMessage.offsetHeight; // 触发重排
           saveMessage.style.display = 'block';
+          saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+          
+          // 动画结束后隐藏元素
           setTimeout(() => {
             saveMessage.style.display = 'none';
           }, 2000);
@@ -489,8 +500,11 @@ function setupSaveButtons() {
         apiKey = input.value;
       }
 
+      // 获取保存消息元素
+      const saveMessage = tabContent.querySelector('.save-message');
+      
       // 保存KV & 显示保存成功
-      storeParams(tabId, baseUrl, apiKey, null);
+      storeParams(tabId, baseUrl, apiKey, saveMessage);
     });
   });
   
@@ -885,7 +899,14 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
     const tabContent = document.getElementById(tabId);
     const saveMessage = tabContent.querySelector('.save-message');
     if (saveMessage) {
+      // 使用CSS动画显示保存成功消息
+      // 先重置动画
+      saveMessage.style.animation = 'none';
+      saveMessage.offsetHeight; // 触发重排
       saveMessage.style.display = 'block';
+      saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+      
+      // 动画结束后隐藏元素
       setTimeout(() => {
         saveMessage.style.display = 'none';
       }, 2000);
