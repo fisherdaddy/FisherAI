@@ -730,6 +730,10 @@ async function parseAndUpdateChatContent(response, modelName, type) {
     let completeText = '';
     let tools = [];
     let buffer = '';
+    let isInThinkingMode = false;
+    let thinkingContent = '';
+    let thinkingBlockCreated = false;
+    
     try {
       while (true) {
         const { value, done } = await reader.read();
@@ -757,6 +761,8 @@ async function parseAndUpdateChatContent(response, modelName, type) {
             // console.log('jsonText...', jsonText);
             const jsonData = JSON.parse(jsonText);
             let content = '';
+            let reasoningContent = ''; // 用于存储 reasoning/reason 字段内容
+            
             if(modelName.includes(GEMINI_MODEL) && !modelName.includes(FISHERAI_MODEL)) {
               jsonData.candidates[0].content.parts.forEach(part => {
                 // 检查 content 字段
@@ -784,6 +790,13 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                 if (delta.content !== undefined && delta.content !== null) {
                   content += delta.content;
                 }
+                
+                // 检查 reasoning/reason 字段 (新增)
+                if (delta.reasoning !== undefined && delta.reasoning !== null) {
+                  reasoningContent += delta.reasoning;
+                } else if (delta.reason !== undefined && delta.reason !== null) {
+                  reasoningContent += delta.reason;
+                }
 
                 // 检查 tool_calls 字段
                 if (delta.tool_calls !== undefined && Array.isArray(delta.tool_calls)) {
@@ -805,6 +818,139 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                 }
               })
             }
+            
+            // 处理 reasoning/reason 字段 (新增)
+            if (reasoningContent && reasoningContent.trim().length > 0) {
+              // 如果是第一次有思考内容，创建思考区块
+              if (!thinkingBlockCreated) {
+                thinkingBlockCreated = true;
+                // 创建思考区块的HTML，添加折叠/展开功能
+                const thinkingBlockHTML = `
+                  <div class="thinking-block">
+                    <div class="thinking-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                      <div class="thinking-header-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="thinking-icon">
+                          <path d="M2 12c0-3.5 2.5-6 6.5-6 4 0 6 2.5 9 2.5 2.5 0 4.5-2.5 4.5-2.5v10c0 0-2 2.5-4.5 2.5-3 0-5-2.5-9-2.5-4 0-6.5 2.5-6.5 6"></path>
+                          <path d="M2 6v12"></path>
+                        </svg>
+                        <span class="thinking-title">思考过程</span>
+                      </div>
+                      <div class="thinking-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="thinking-content"></div>
+                  </div>
+                `;
+                
+                // 将思考区块添加到界面
+                if (type == CHAT_TYPE) {
+                  const contentDiv = document.querySelector('.chat-content');
+                  const lastDiv = contentDiv.lastElementChild;
+                  // 使用 insertAdjacentHTML 而不是 innerHTML += 以避免覆盖现有内容
+                  lastDiv.insertAdjacentHTML('beforeend', thinkingBlockHTML);
+                  
+                  // 添加点击事件处理
+                  setupThinkingBlockToggle();
+                } else if (type == HUACI_TRANS_TYPE) {
+                  const translationPopup = document.querySelector('#fisherai-transpop-id');
+                  translationPopup.insertAdjacentHTML('beforeend', thinkingBlockHTML);
+                  
+                  // 添加点击事件处理
+                  setupThinkingBlockToggle();
+                }
+              }
+              
+              // 更新思考内容
+              thinkingContent += reasoningContent;
+              updateThinkingContent(thinkingContent, type);
+            }
+            
+            // 处理思考模式的标签
+            if (content.includes('<think>') && !isInThinkingMode) {
+              isInThinkingMode = true;
+              // 如果是第一次出现<think>标签，创建思考区块
+              if (!thinkingBlockCreated) {
+                thinkingBlockCreated = true;
+                // 创建思考区块的HTML，添加折叠/展开功能
+                const thinkingBlockHTML = `
+                  <div class="thinking-block">
+                    <div class="thinking-header" onclick="this.parentNode.classList.toggle('collapsed')">
+                      <div class="thinking-header-left">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="thinking-icon">
+                          <path d="M2 12c0-3.5 2.5-6 6.5-6 4 0 6 2.5 9 2.5 2.5 0 4.5-2.5 4.5-2.5v10c0 0-2 2.5-4.5 2.5-3 0-5-2.5-9-2.5-4 0-6.5 2.5-6.5 6"></path>
+                          <path d="M2 6v12"></path>
+                        </svg>
+                        <span class="thinking-title">思考过程</span>
+                      </div>
+                      <div class="thinking-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="toggle-icon">
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="thinking-content"></div>
+                  </div>
+                `;
+                
+                // 将思考区块添加到界面
+                if (type == CHAT_TYPE) {
+                  const contentDiv = document.querySelector('.chat-content');
+                  const lastDiv = contentDiv.lastElementChild;
+                  // 使用 insertAdjacentHTML 而不是 innerHTML += 以避免覆盖现有内容
+                  lastDiv.insertAdjacentHTML('beforeend', thinkingBlockHTML);
+                  
+                  // 添加点击事件处理
+                  setupThinkingBlockToggle();
+                } else if (type == HUACI_TRANS_TYPE) {
+                  const translationPopup = document.querySelector('#fisherai-transpop-id');
+                  translationPopup.insertAdjacentHTML('beforeend', thinkingBlockHTML);
+                  
+                  // 添加点击事件处理
+                  setupThinkingBlockToggle();
+                }
+              }
+              
+              // 提取<think>标签后的内容
+              const thinkStartIndex = content.indexOf('<think>') + 7;
+              thinkingContent += content.substring(thinkStartIndex);
+              
+              // 更新思考区块内容
+              updateThinkingContent(thinkingContent, type);
+              
+              // 从completeText中移除<think>标签及其内容
+              content = content.substring(0, content.indexOf('<think>'));
+            } 
+            // 如果已经在思考模式中，继续累积思考内容
+            else if (isInThinkingMode) {
+              // 检查是否有</think>结束标签
+              if (content.includes('</think>')) {
+                const thinkEndIndex = content.indexOf('</think>');
+                // 添加结束标签前的内容到思考内容
+                thinkingContent += content.substring(0, thinkEndIndex);
+                // 更新思考区块的最终内容，但保持思考区块可见
+                updateThinkingContent(thinkingContent, type);
+                
+                // 只保留</think>后的内容添加到completeText
+                content = content.substring(thinkEndIndex + 8);
+                
+                // 设置为非思考模式，以便后续内容正常显示
+                isInThinkingMode = false;
+                
+                // 如果有常规内容，则显示在思考内容下方
+                if (content.trim().length > 0) {
+                  completeText += content;
+                }
+              } else {
+                // 如果没有结束标签，所有内容都是思考内容
+                thinkingContent += content;
+                updateThinkingContent(thinkingContent, type);
+                content = ''; // 不添加到completeText
+              }
+            }
+            
             completeText += content;
             position = end + 1; // 更新位置，准备解析下一个对象
           } catch (error) {
@@ -831,9 +977,46 @@ async function parseAndUpdateChatContent(response, modelName, type) {
 }
 
 /**
- * 更新内容界面
+ * 更新思考区块的内容
+ * @param {string} content 思考内容
+ * @param {string} type 类型（聊天或划词翻译）
+ */
+function updateThinkingContent(content, type) {
+  let thinkingContentElement;
+  
+  if (type == CHAT_TYPE) {
+    const contentDiv = document.querySelector('.chat-content');
+    thinkingContentElement = contentDiv.querySelector('.thinking-content');
+  } else if (type == HUACI_TRANS_TYPE) {
+    const translationPopup = document.querySelector('#fisherai-transpop-id');
+    thinkingContentElement = translationPopup.querySelector('.thinking-content');
+  }
+  
+  if (thinkingContentElement) {
+    // 使用marked解析markdown内容
+    thinkingContentElement.innerHTML = marked.parse(content);
+    
+    // 确保思考区块在内容出现后依然可见
+    const thinkingBlock = thinkingContentElement.closest('.thinking-block');
+    if (thinkingBlock) {
+      thinkingBlock.style.display = 'block';
+    }
+    
+    // 渲染数学公式
+    renderMathInElement(thinkingContentElement, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
+/**
+ * 更新聊天内容
  * @param {string} completeText 
- * @param {string} type
+ * @param {string} type 
  */
 function updateChatContent(completeText, type) {
   if(type == CHAT_TYPE) {
@@ -846,16 +1029,42 @@ function updateChatContent(completeText, type) {
 
     // update content
     const lastDiv = contentDiv.lastElementChild;
-    lastDiv.innerHTML = marked.parse(completeText);
-
-    // 渲染数学公式
-    renderMathInElement(lastDiv, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
-      ],
-      throwOnError: false
-    });
+    
+    // 检查是否存在思考区块
+    const thinkingBlock = lastDiv.querySelector('.thinking-block');
+    
+    if (thinkingBlock) {
+      // 如果存在思考区块，在思考区块后面添加内容，而不是替换整个lastDiv的内容
+      // 创建一个新的元素来容纳常规内容
+      let regularContentDiv = lastDiv.querySelector('.regular-content');
+      if (!regularContentDiv) {
+        regularContentDiv = document.createElement('div');
+        regularContentDiv.className = 'regular-content';
+        lastDiv.appendChild(regularContentDiv);
+      }
+      regularContentDiv.innerHTML = marked.parse(completeText);
+      
+      // 渲染数学公式
+      renderMathInElement(regularContentDiv, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    } else {
+      // 如果没有思考区块，直接更新整个内容
+      lastDiv.innerHTML = marked.parse(completeText);
+      
+      // 渲染数学公式
+      renderMathInElement(lastDiv, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    }
 
     if (isAtBottom) {
       contentDiv.scrollTop = contentDiv.scrollHeight; // 滚动到底部
@@ -868,20 +1077,43 @@ function updateChatContent(completeText, type) {
     const button = document.querySelector('#fisherai-button-id');
     button.style.display = 'none';
 
-    // shown
-    translationPopup.innerHTML = marked.parse(completeText);
-
-    // 渲染数学公式
-    renderMathInElement(translationPopup, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
-      ],
-      throwOnError: false
-    });
+    // 检查是否存在思考区块
+    const thinkingBlock = translationPopup.querySelector('.thinking-block');
+    
+    if (thinkingBlock) {
+      // 如果存在思考区块，在思考区块后面添加内容，而不是替换整个内容
+      // 创建一个新的元素来容纳常规内容
+      let regularContentDiv = translationPopup.querySelector('.regular-content');
+      if (!regularContentDiv) {
+        regularContentDiv = document.createElement('div');
+        regularContentDiv.className = 'regular-content';
+        translationPopup.appendChild(regularContentDiv);
+      }
+      regularContentDiv.innerHTML = marked.parse(completeText);
+      
+      // 渲染数学公式
+      renderMathInElement(regularContentDiv, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    } else {
+      // 如果没有思考区块，直接更新整个内容
+      translationPopup.innerHTML = marked.parse(completeText);
+      
+      // 渲染数学公式
+      renderMathInElement(translationPopup, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+      });
+    }
   }
 }
-
 
 async function callSerpAPI(query) {
   const keyStorage = await getValueFromChromeStorage(SERPAPI_KEY);
@@ -950,4 +1182,28 @@ async function callDALLE(prompt, quality, size, style) {
 
   const data = await response.json();
   return data;
+}
+
+/**
+ * 设置思考区块的折叠/展开功能
+ */
+function setupThinkingBlockToggle() {
+  // 为所有思考区块的标题添加点击事件
+  document.querySelectorAll('.thinking-header').forEach(header => {
+    if (!header.hasAttribute('data-toggle-initialized')) {
+      header.setAttribute('data-toggle-initialized', 'true');
+      header.addEventListener('click', function() {
+        const block = this.closest('.thinking-block');
+        block.classList.toggle('collapsed');
+        
+        // 更新折叠图标方向
+        const toggleIcon = this.querySelector('.toggle-icon');
+        if (block.classList.contains('collapsed')) {
+          toggleIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+        } else {
+          toggleIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
+        }
+      });
+    }
+  });
 }

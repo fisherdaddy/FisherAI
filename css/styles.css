@@ -636,3 +636,127 @@
     overflow-x: hidden;
     word-wrap: break-word;
 }
+
+/* 思考区块样式 */
+.thinking-block {
+  margin: 15px 0;
+  border-radius: 8px;
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.thinking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: rgba(59, 130, 246, 0.15);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.thinking-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.thinking-icon {
+  color: #3b82f6;
+  margin-right: 8px;
+}
+
+.thinking-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.thinking-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.thinking-toggle:hover {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.toggle-icon {
+  color: #3b82f6;
+  transition: transform 0.3s ease;
+}
+
+.thinking-content {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+/* 折叠状态 */
+.thinking-block.collapsed .thinking-content {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.thinking-block.collapsed .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.thinking-content p {
+  margin: 8px 0;
+}
+
+.thinking-content code {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.thinking-content pre {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+/* 隐藏的思考内容 */
+.hidden-thinking {
+  display: none;
+}
+
+/* 在划词翻译中的思考区块样式调整 */
+#fisherai-transpop-id .thinking-block {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+#fisherai-transpop-id .thinking-header {
+  background-color: rgba(59, 130, 246, 0.15);
+}
+
+#fisherai-transpop-id .thinking-content {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+/* 暗色主题下的调整 */
+@media (prefers-color-scheme: dark) {
+  #fisherai-transpop-id .thinking-content {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}

@@ -310,41 +310,49 @@ function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
  * 加载Ollama模型到快捷翻译的选项中
  */
 function loadOllamaModelsForQuickTrans() {
-  chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
-    const modelInfo = result[OLLAMA_MODEL];
-    if (modelInfo) {
-      const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
-      const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
-      fetch(apiUrl)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error('Network response was not ok.');
-          }
-        })
-        .then(data => {
-          const models = data.models;
-          const customModelsGroup = document.getElementById('ollama-models-quicktrans');
-          if (customModelsGroup) {
-            // 清空现有选项，避免重复添加
-            while (customModelsGroup.firstChild) {
-              customModelsGroup.removeChild(customModelsGroup.firstChild);
-            }
-            
-            // 添加新选项
-            models.forEach(model => {
-              const option = document.createElement('option');
-              option.value = model.model + OLLAMA_MODEL_POSTFIX;
-              option.textContent = model.name;
-              customModelsGroup.appendChild(option);
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Failed to load Ollama models:', error);
-        });
+  // 首先检查 Ollama 提供商是否启用
+  chrome.storage.sync.get('ollama-enabled', (enabledResult) => {
+    // 如果没有保存过状态，默认为启用
+    const isEnabled = enabledResult['ollama-enabled'] !== undefined ? enabledResult['ollama-enabled'] : true;
+    
+    // 如果提供商被禁用，直接返回
+    if (!isEnabled) {
+      return;
     }
+    
+    // 使用默认的 OLLAMA_BASE_URL
+    const baseUrl = OLLAMA_BASE_URL;
+    const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
+    
+    fetch(apiUrl)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Network response was not ok.');
+        }
+      })
+      .then(data => {
+        const models = data.models;
+        const customModelsGroup = document.getElementById('ollama-models-quicktrans');
+        if (customModelsGroup) {
+          // 清空现有选项，避免重复添加
+          while (customModelsGroup.firstChild) {
+            customModelsGroup.removeChild(customModelsGroup.firstChild);
+          }
+          
+          // 添加新选项
+          models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.model + OLLAMA_MODEL_POSTFIX;
+            option.textContent = model.name;
+            customModelsGroup.appendChild(option);
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load Ollama models:', error);
+      });
   });
 }
 
@@ -448,14 +456,32 @@ function setupPasswordToggles() {
 
 // 设置保存按钮事件
 function setupSaveButtons() {
-  // 普通保存按钮
-  var saveButtons = document.querySelectorAll('.save-button');
-  saveButtons.forEach(function(button) {
+  const saveButtons = document.querySelectorAll('.save-button');
+  saveButtons.forEach(button => {
     button.addEventListener('click', function() {
-      // 获取外层div的ID
-      var tabContent = this.closest('.tab-content');
-      var tabId = tabContent.id;
+      const tabContent = this.closest('.tab-content');
+      const tabId = tabContent.id;
+      const baseUrlInput = tabContent.querySelector('.baseurl-input');
+      const baseUrl = baseUrlInput.value.trim();
       
+      // 如果是 Ollama 提供商，只保存 base URL
+      if (tabId === 'ollama') {
+        chrome.storage.sync.set({
+          [OLLAMA_MODEL]: {
+            baseUrl: baseUrl
+          }
+        }, function() {
+          // 显示保存成功消息
+          const saveMessage = tabContent.querySelector('.save-message');
+          saveMessage.style.display = 'block';
+          setTimeout(() => {
+            saveMessage.style.display = 'none';
+          }, 2000);
+        });
+        return;
+      }
+      
+      // 其他提供商的保存逻辑保持不变
       // 获取api key
       var input = tabContent.querySelector('.api-key-input');
       var apiKey = ''; 
@@ -463,13 +489,8 @@ function setupSaveButtons() {
         apiKey = input.value;
       }
 
-      // api 代理地址
-      var baseUrlInput = tabContent.querySelector('.baseurl-input');
-      var baseUrl = baseUrlInput.value;
-
       // 保存KV & 显示保存成功
-      var saveMessage = tabContent.querySelector('.save-message');
-      storeParams(tabId, baseUrl, apiKey, saveMessage);
+      storeParams(tabId, baseUrl, apiKey, null);
     });
   });
   

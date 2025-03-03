@@ -345,50 +345,42 @@ function loadOllamaModels(callback) {
       return;
     }
     
-    // 提供商已启用，继续加载模型
-    chrome.storage.sync.get(OLLAMA_MODEL, function(result) {
-      const modelInfo = result[OLLAMA_MODEL];
-      if (modelInfo) {
-        const baseUrl = modelInfo.baseUrl || OLLAMA_BASE_URL;
-        const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
-        fetch(apiUrl)
-          .then(response => {
-            if (response.ok) {
-              return response.json();
-            } else {
-              throw new Error('Network response was not ok.');
-            }
-          })
-          .then(data => {
-            const models = data.models;
-            // 如果传入了回调函数，直接将模型数据传给回调函数
-            if (typeof callback === 'function') {
-              callback(models);
-            } else {
-              // 兼容旧的直接操作DOM的方式
-              const customModelsGroup = document.getElementById('ollama-models');
-              if (customModelsGroup) {
-                models.forEach(model => {
-                  const option = document.createElement('option');
-                  option.value = model.model + OLLAMA_MODEL_POSTFIX;
-                  option.textContent = model.name;
-                  customModelsGroup.appendChild(option);
-                });
-              }
-            }
-          })
-          .catch(error => {
-            console.error('Error loading Ollama models:', error);
-            if (typeof callback === 'function') {
-              callback([]);
-            }
-          });
-      } else {
+    // 使用默认的 OLLAMA_BASE_URL
+    const baseUrl = OLLAMA_BASE_URL;
+    const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
+    
+    fetch(apiUrl)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Network response was not ok.');
+        }
+      })
+      .then(data => {
+        const models = data.models;
+        // 如果传入了回调函数，直接将模型数据传给回调函数
+        if (typeof callback === 'function') {
+          callback(models);
+        } else {
+          // 兼容旧的直接操作DOM的方式
+          const customModelsGroup = document.getElementById('ollama-models');
+          if (customModelsGroup) {
+            models.forEach(model => {
+              const option = document.createElement('option');
+              option.value = model.model + OLLAMA_MODEL_POSTFIX;
+              option.textContent = model.name;
+              customModelsGroup.appendChild(option);
+            });
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error loading Ollama models:', error);
         if (typeof callback === 'function') {
           callback([]);
         }
-      }
-    });
+      });
   });
 }
 
@@ -488,6 +480,9 @@ function initResultPage() {
   initI18n().then(() => {
     // 加载模型选择
     populateModelSelections();
+    
+    // 初始化模型选择事件监听
+    initModelSelectionHandler();
     
     // 加载模型参数
     loadModelParams();
@@ -1028,8 +1023,52 @@ function populateModelSelections() {
         option.textContent = `${model.name} (Ollama)`;
         ollamaModelsGroup.appendChild(option);
       });
+      
+      // 在所有模型加载完成后，设置保存的模型选择
+      restoreSavedModelSelection();
     });
+  } else {
+    // 如果没有Ollama模型，直接恢复保存的模型选择
+    restoreSavedModelSelection();
   }
+}
+
+/**
+ * 恢复保存的模型选择
+ */
+function restoreSavedModelSelection() {
+  const modelSelection = document.getElementById('model-selection');
+  if (!modelSelection) return;
+  
+  chrome.storage.sync.get(['selectedModel'], function(result) {
+    if (result.selectedModel) {
+      // 检查保存的模型是否在当前可用的选项中
+      const modelExists = Array.from(modelSelection.options).some(option => option.value === result.selectedModel);
+      if (modelExists) {
+        modelSelection.value = result.selectedModel;
+      } else {
+        // 如果保存的模型不可用，使用默认模型
+        modelSelection.value = MODEL_LIST.free_models[0].value;
+      }
+    } else {
+      // 如果没有保存的模型，使用默认模型
+      modelSelection.value = MODEL_LIST.free_models[0].value;
+    }
+    toggleImageUpload(modelSelection.value);
+  });
+}
+
+/**
+ * 初始化模型选择事件监听
+ */
+function initModelSelectionHandler() {
+  const modelSelection = document.getElementById('model-selection');
+  if (!modelSelection) return;
+  
+  modelSelection.addEventListener('change', function() {
+    toggleImageUpload(this.value);
+    chrome.storage.sync.set({'selectedModel': this.value});
+  });
 }
 
 /**
