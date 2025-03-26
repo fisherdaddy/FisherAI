@@ -98,9 +98,11 @@ const FISHERAI_DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct";
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
   'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206',
-  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai'];
+  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
+  'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
 const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp',
-   'gemini-exp-1206', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai'];
+   'gemini-exp-1206', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
+   'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 // 集中定义所有模型列表，便于维护
@@ -108,7 +110,9 @@ const MODEL_LIST = {
   // 免费模型
   free_models: [
     { value: "google/gemini-2.0-flash-exp:free-fisherai", display: "gemini-2.0-flash-exp" },
+    { value: "google/gemini-2.5-pro-exp-03-25:free-fisherai", display: "gemini-2.5-pro-exp" },
     { value: "deepseek/deepseek-r1:free-fisherai", display: "deepseek-r1" },
+    { value: "deepseek/deepseek-chat-v3-0324:free-fisherai", display: "deepseek-v3-0324" },
     { value: "google/gemini-2.0-flash-thinking-exp:free-fisherai", display: "gemini-2.0-flash-thinking-exp" },
     { value: "google/gemini-2.0-flash-lite-preview-02-05:free-fisherai", display: "gemini-2.0-flash-lite" }
   ],
