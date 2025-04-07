@@ -9,19 +9,33 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
     } else if(request.action === ACTION_COPY_PAGE_CONTENT) {
       // 网页html到剪切板
       const content = extractContent();
-      navigator.clipboard.writeText(content).then(() => {
+      // 确保文档有焦点
+      try {
+        window.focus();
+        await navigator.clipboard.writeText(content);
         sendResponse({success: true});
-      }).catch(err => {
-        sendResponse({success: false, error: err});
-      });
+      } catch(err) {
+        console.error("[FisherAI Content Script] Error copying content to clipboard:", err);
+        // 使用备用方法复制到剪贴板
+        copyTextWithExecCommand(content);
+        sendResponse({success: true});
+      }
+      return true;
     } else if(request.action === ACTION_COPY_PURE_PAGE_CONTENT) {
        // 网页文本到剪切板
       const content = extractContent(FORMAT_TEXT);
-      navigator.clipboard.writeText(content).then(() => {
+      // 确保文档有焦点
+      try {
+        window.focus();
+        await navigator.clipboard.writeText(content);
         sendResponse({success: true});
-      }).catch(err => {
-        sendResponse({success: false, error: err});
-      });
+      } catch(err) {
+        console.error("[FisherAI Content Script] Error copying content to clipboard:", err);
+        // 使用备用方法复制到剪贴板
+        copyTextWithExecCommand(content);
+        sendResponse({success: true});
+      }
+      return true;
     } else if(request.action === ACTION_DOWNLOAD_SUBTITLES) {
       // 下载字幕文件
       const subtitles = await extractSubtitles(window.location.href);
@@ -31,6 +45,18 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
       sendResponse({url: window.location.href});
     }
 });
+
+// 备用复制方法，使用document.execCommand
+function copyTextWithExecCommand(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+}
 
 const QUICK_TRANS = "quick-trans";
 
