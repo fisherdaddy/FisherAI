@@ -425,6 +425,7 @@ function populateModelSelections() {
     const option = document.createElement('option');
     option.value = model.value;
     option.textContent = model.display;
+    option.dataset.provider = model.provider; // 添加提供商信息
     freeModelsGroup.appendChild(option);
   });
   
@@ -433,6 +434,7 @@ function populateModelSelections() {
     const option = document.createElement('option');
     option.value = model.value;
     option.textContent = model.display;
+    option.dataset.provider = model.provider; // 添加提供商信息
     customModelsGroup.appendChild(option);
   });
 }
@@ -717,7 +719,7 @@ function getDefaultModels(tabId) {
   // 这里可以根据不同的模型供应商返回不同的默认模型
   const defaultModels = {
     'gpt': ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest'],
-    'gemini': ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206'],
+    'gemini': ['gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-2.5-pro-preview-03-25'],
     'deepseek': ['deepseek-chat-v3', 'deepseek-resonser'],
     'moonshot': ['moonshot-v1-128k', 'moonshot-v1-32k', 'moonshot-v1-32k-vision-preview'],
     'yi': ['yi-lightning', 'yi-vision-v2'],
@@ -885,32 +887,50 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
   const modelItems = modelEditListElement.querySelectorAll('.model-edit-item-name');
   const models = Array.from(modelItems).map(item => item.textContent);
   
-  chrome.storage.sync.set({ [`${tabId}-models`]: models }, () => {
-    // 更新UI显示
-    modelListElement.innerHTML = '';
+  // 先获取现有的映射，然后更新它
+  chrome.storage.sync.get('model-provider-mapping', (result) => {
+    // 获取现有映射或创建新的
+    const existingMapping = result['model-provider-mapping'] || {};
+    
+    // 创建新的映射，保留其他提供商的映射
+    const newMapping = {...existingMapping};
+    
+    // 更新当前提供商的模型映射
     models.forEach(model => {
-      const modelItem = document.createElement('div');
-      modelItem.className = 'model-item';
-      modelItem.textContent = model;
-      modelListElement.appendChild(modelItem);
+      newMapping[model] = tabId;
     });
     
-    // 显示保存成功提示
-    const tabContent = document.getElementById(tabId);
-    const saveMessage = tabContent.querySelector('.save-message');
-    if (saveMessage) {
-      // 使用CSS动画显示保存成功消息
-      // 先重置动画
-      saveMessage.style.animation = 'none';
-      saveMessage.offsetHeight; // 触发重排
-      saveMessage.style.display = 'block';
-      saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+    // 保存模型列表和更新后的映射
+    chrome.storage.sync.set({ 
+      [`${tabId}-models`]: models,
+      'model-provider-mapping': newMapping
+    }, () => {
+      // 更新UI显示
+      modelListElement.innerHTML = '';
+      models.forEach(model => {
+        const modelItem = document.createElement('div');
+        modelItem.className = 'model-item';
+        modelItem.textContent = model;
+        modelListElement.appendChild(modelItem);
+      });
       
-      // 动画结束后隐藏元素
-      setTimeout(() => {
-        saveMessage.style.display = 'none';
-      }, 2000);
-    }
+      // 显示保存成功提示
+      const tabContent = document.getElementById(tabId);
+      const saveMessage = tabContent.querySelector('.save-message');
+      if (saveMessage) {
+        // 使用CSS动画显示保存成功消息
+        // 先重置动画
+        saveMessage.style.animation = 'none';
+        saveMessage.offsetHeight; // 触发重排
+        saveMessage.style.display = 'block';
+        saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+        
+        // 动画结束后隐藏元素
+        setTimeout(() => {
+          saveMessage.style.display = 'none';
+        }, 2000);
+      }
+    });
   });
 }
 

@@ -1621,7 +1621,7 @@ input:checked + .slider:before {
 .toggle-label {
     margin-right: 10px;
     font-size: 14px;
-    color: #555;
+    color: #E2E8F0;
 }
 
 .toggle-switch {

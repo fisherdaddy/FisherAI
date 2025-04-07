@@ -97,50 +97,45 @@ const FISHERAI_DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct";
 
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
-  'gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-exp-1206',
-  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
-  'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
-const ANY_FILE_SUPPORT_MODELS = ['gemini-1.5-pro-latest', 'gemini-1.5-flash-latest', 'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp',
-   'gemini-exp-1206', 'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
-   'google/gemini-2.0-flash-lite-preview-02-05:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
+  'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 
+  'google/gemini-2.0-flash-thinking-exp:free-fisherai',  'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
+const ANY_FILE_SUPPORT_MODELS = [ 'gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+  'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
+  'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 // 集中定义所有模型列表，便于维护
 const MODEL_LIST = {
   // 免费模型
   free_models: [
-    { value: "google/gemini-2.0-flash-exp:free-fisherai", display: "gemini-2.0-flash-exp" },
-    { value: "google/gemini-2.5-pro-exp-03-25:free-fisherai", display: "gemini-2.5-pro-exp" },
-    { value: "deepseek/deepseek-r1:free-fisherai", display: "deepseek-r1" },
-    { value: "deepseek/deepseek-chat-v3-0324:free-fisherai", display: "deepseek-v3-0324" },
-    { value: "google/gemini-2.0-flash-thinking-exp:free-fisherai", display: "gemini-2.0-flash-thinking-exp" },
-    { value: "google/gemini-2.0-flash-lite-preview-02-05:free-fisherai", display: "gemini-2.0-flash-lite" }
+    { value: "google/gemini-2.0-flash-exp:free-fisherai", display: "Gemini 2.0 Flash", provider: "fisherai" },
+    { value: "google/gemini-2.5-pro-exp-03-25:free-fisherai", display: "Gemini 2.5 Pro Preview 03-25", provider: "fisherai" },
+    { value: "deepseek/deepseek-r1:free-fisherai", display: "Deepseek R1", provider: "fisherai" },
+    { value: "deepseek/deepseek-chat-v3-0324:free-fisherai", display: "Deepseek V3 0324", provider: "fisherai" },
+    { value: "google/gemini-2.0-flash-thinking-exp:free-fisherai", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: "fisherai" }
   ],
   // 自定义配置模型
   custom_config_models: [
-    { value: "gpt-4o-mini", display: "gpt-4o-mini" },
-    { value: "gpt-4o", display: "gpt-4o" },
-    { value: "chatgpt-4o-latest", display: "chatgpt-4o-latest" },
-    { value: "gemini-1.5-flash-latest", display: "gemini-1.5-flash-latest" },
-    { value: "gemini-1.5-pro-latest", display: "gemini-1.5-pro-latest" },
-    { value: "gemini-2.0-flash-exp", display: "gemini-2.0-flash-exp" },
-    { value: "gemini-2.0-flash-thinking-exp", display: "gemini-2.0-flash-thinking-exp" },
-    { value: "gemini-exp-1206", display: "gemini-exp-1206" },
-    { value: "deepseek-chat", display: "deepseek-chat-v3" },
-    { value: "deepseek-reasoner", display: "deepseek-reasoner" },
-    { value: "yi-lightning", display: "yi-lightning" },
-    { value: "yi-vision-v2", display: "yi-vision-v2" },
-    { value: "moonshot-v1-128k", display: "moonshot-v1-128k" },
-    { value: "moonshot-v1-32k-vision-preview", display: "moonshot-v1-32k-vision-preview" },
-    { value: "glm-4", display: "glm-4" },
-    { value: "glm-4v", display: "glm-4v" },
-    { value: "glm-3-turbo", display: "glm-3-turbo" },
-    { value: "azure-gpt-35-turbo", display: "azure-gpt-35-turbo" },
-    { value: "azure-gpt-4o", display: "azure-gpt-4o" },
-    { value: "open-mixtral-8x22b", display: "mixtral-8x22b" },
-    { value: "llama3-70b-8192-groq", display: "llama3-70b-groq" },
-    { value: "gpt-3.5-turbo", display: "gpt-3.5-turbo" },
-    { value: "gpt-4-turbo", display: "gpt-4-turbo" }
+    { value: "gpt-4o-mini", display: "GPT-4o mini", provider: "openai" },
+    { value: "gpt-4o", display: "GPT-4o", provider: "openai" },
+    { value: "chatgpt-4o-latest", display: "chatgpt-4o-latest", provider: "openai" },
+    { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: "gemini" },
+    { value: "gemini-2.5-pro-preview-03-25", display: "Gemini 2.5 Pro Preview 03-25", provider: "gemini" },
+    { value: "gemini-2.0-flash-lite", display: "Gemini 2.0 Flash Lite", provider: "gemini" },
+    { value: "gemini-2.0-flash-thinking-exp-01-21", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: "gemini" },
+    { value: "deepseek-chat", display: "Deepseek V3", provider: "deepseek" },
+    { value: "deepseek-reasoner", display: "Deepseek R1", provider: "deepseek" },
+    { value: "yi-lightning", display: "Yi Lightning", provider: "yi" },
+    { value: "yi-vision-v2", display: "Yi Vision V2", provider: "yi" },
+    { value: "moonshot-v1-128k", display: "Moonshot V1", provider: "moonshot" },
+    { value: "moonshot-v1-32k-vision-preview", display: "Moonshot V1 vision", provider: "moonshot" },
+    { value: "glm-4", display: "GLM 4", provider: "zhipu" },
+    { value: "glm-4v", display: "GLM 4V", provider: "zhipu" },
+    { value: "azure-gpt-35-turbo", display: "azure-gpt-35-turbo", provider: "azure" },
+    { value: "azure-gpt-4o", display: "azure-gpt-4o", provider: "azure" },
+    { value: "open-mixtral-8x22b", display: "Mixtral-8x22b", provider: "mistral" },
+    { value: "llama3-70b-8192-groq", display: "Llama3-70b-groq", provider: "groq" },
   ]
 };
 

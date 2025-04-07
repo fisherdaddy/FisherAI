@@ -89,9 +89,41 @@ function initChatHistory() {
 /**
  * 根据不同的模型，选择对应的接口地址
  * @param {string} model 
+ * @param {string} modelProvider 
  * @returns 
  */
-async function getBaseUrlAndApiKey(model) {
+async function getBaseUrlAndApiKey(model, modelProvider) {
+  // 如果未找到存储的提供商信息，则尝试从模型名称中推断
+  if (!modelProvider) {
+    modelProvider = await getProviderFromModel(model);
+  }
+  
+  // 将provider映射到DEFAULT_LLM_URLS中的key
+  let urlKey = modelProvider;
+  
+  // 特殊情况处理
+  if (modelProvider === 'openai') urlKey = GPT_MODEL;
+  if (modelProvider === 'zhipu') urlKey = ZHIPU_MODEL;
+  if (modelProvider === 'mistral') urlKey = MISTRAL_MODEL;
+  
+  for (const { key, baseUrl, apiPath } of DEFAULT_LLM_URLS) {
+    if (key === urlKey) {
+      const modelInfo = await getModelInfoFromChromeStorage(key);
+      let domain = baseUrl;
+      let apiKey = '';
+      if (modelInfo) {
+        if(modelInfo.baseUrl) {
+          domain  = modelInfo.baseUrl;
+        }
+        if(modelInfo.apiKey) {
+          apiKey = modelInfo.apiKey;
+        }
+      }
+      return { baseUrl: `${domain}${apiPath}`, apiKey: apiKey};
+    }
+  }
+  
+  // 如果没有找到匹配的提供商，则回退到原来的代码
   for (const { key, baseUrl, apiPath } of DEFAULT_LLM_URLS) {
     if (model.includes(key)) {
       const modelInfo = await getModelInfoFromChromeStorage(key);
@@ -108,7 +140,8 @@ async function getBaseUrlAndApiKey(model) {
       return { baseUrl: `${domain}${apiPath}`, apiKey: apiKey};
     }
   }
-  return { baseUrl: null, apiKey: null };;
+  
+  return { baseUrl: null, apiKey: null };
 }
 
 async function getModelInfoFromChromeStorage(modelKey) {
@@ -189,9 +222,13 @@ function createRequestParams(additionalHeaders, body) {
  * @returns 
  */
 async function chatWithLLM(model, inputText, base64Images, type) {
-  var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
+  // 获取模型供应商信息
+  let modelProvider = await getValueFromChromeStorage('selectedModelProvider');
+  
+  // 处理URL和API密钥
+  var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model, modelProvider);
 
-  if(!model.includes(FISHERAI_MODEL) && !model.includes(OLLAMA_MODEL)) {
+  if(modelProvider !== 'fisherai' && modelProvider !== 'ollama') {
     if(!baseUrl) {
       throw new Error('模型 ' + model + ' 的 API 代理地址为空，请检查！');
     }
@@ -219,18 +256,16 @@ async function chatWithLLM(model, inputText, base64Images, type) {
   }
 
   let result = { completeText: '', tools: [] };
-  if(model.includes(GEMINI_MODEL) && !model.includes(FISHERAI_MODEL)) {
+  if(modelProvider === 'gemini') {
     baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
-    result = await chatWithGemini(baseUrl, model, type);
+    result = await chatWithGemini(baseUrl, model, type, modelProvider);
   } else {
-    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
+    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, modelProvider);
   }
-
-  
 
   if(result.tools.length > 0) {
     while(result.tools.length > 0) {
-      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type);
+      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type, modelProvider);
     }
   } else {
     if(result.completeText.length > 0) {
@@ -243,7 +278,7 @@ async function chatWithLLM(model, inputText, base64Images, type) {
 }
 
 
-async function parseFunctionCalling(result, baseUrl, apiKey, model, type) {
+async function parseFunctionCalling(result, baseUrl, apiKey, model, type, modelProvider) {
 
   if(result.completeText.length > 0) {
     // 将 AI 回答更新到对话历史
@@ -341,10 +376,10 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type) {
     }
 
     let newResult = { completeText: '', tools: [] };
-    if(model.includes(GEMINI_MODEL)) {
-      newResult = await chatWithGemini(baseUrl, model, type);
+    if(modelProvider === 'gemini') {
+      newResult = await chatWithGemini(baseUrl, model, type, modelProvider);
     } else {
-      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type);
+      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, modelProvider);
     }
 
     return newResult;
@@ -361,7 +396,7 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type) {
  * @param {string} type 
  * @returns 
  */
-async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
+async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, modelProvider) {
   let isFisherAI = false;
 
   if(modelName.includes(FISHERAI_MODEL)) {
@@ -430,7 +465,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
   console.log(baseUrl);
   console.log(params);
 
-  return await fetchAndHandleResponse(baseUrl, params, modelName, type);
+  return await fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider);
 }
 
 /**
@@ -440,7 +475,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type) {
  * @param {string} type 
  * @returns 
  */
-async function chatWithGemini(baseUrl, modelName, type) {
+async function chatWithGemini(baseUrl, modelName, type, modelProvider) {
   const { temperature, topP, maxTokens } = await getModelParameters();
 
   const body = {
@@ -483,7 +518,7 @@ async function chatWithGemini(baseUrl, modelName, type) {
   console.log(baseUrl);
   console.log(params);
 
-  return await fetchAndHandleResponse(baseUrl, params, modelName, type);
+  return await fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider);
 }
 
 /**
@@ -508,7 +543,7 @@ async function getModelParameters() {
  * @param {string} type 
  * @returns 
  */
-async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
+async function fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider) {
   let result = { resultString: '', resultArray: [] };
   try {
     const response = await fetch(baseUrl, params);
@@ -524,7 +559,7 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type) {
       throw new Error("错误信息：" + errorJson.error.message);
     } 
     
-    const result = await parseAndUpdateChatContent(response, modelName, type);
+    const result = await parseAndUpdateChatContent(response, modelName, type, modelProvider);
     return result;
   } catch (error) {
     if (error.name === 'AbortError') {
@@ -732,7 +767,7 @@ async function getCurrentURL() {
  * @param {string} type
  * @returns 
  */
-async function parseAndUpdateChatContent(response, modelName, type) {
+async function parseAndUpdateChatContent(response, modelName, type, modelProvider) {
     // 使用长轮询，服务器会持续发送数据
     const reader = response.body.getReader();
     let completeText = '';
@@ -771,15 +806,16 @@ async function parseAndUpdateChatContent(response, modelName, type) {
             let content = '';
             let reasoningContent = ''; // 用于存储 reasoning/reason 字段内容
             
-            if(modelName.includes(GEMINI_MODEL) && !modelName.includes(FISHERAI_MODEL)) {
+            // 根据提供商确定如何解析响应
+            if (modelProvider === 'gemini') {
               jsonData.candidates[0].content.parts.forEach(part => {
                 // 检查 content 字段
-                if(part.text !== undefined &&  part.text != null) {
+                if (part.text !== undefined && part.text != null) {
                   content += part.text;
                 }
 
                 // 检查 functionCall 字段
-                if(part.functionCall !== undefined) {
+                if (part.functionCall !== undefined) {
                   const func = part.functionCall;
                   tools.push({
                     'id': generateUniqueId(),
@@ -788,7 +824,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                   });
                 }
               });
-            } else if(modelName.includes(OLLAMA_MODEL)) {
+            } else if (modelProvider === 'ollama') {
               content = jsonData.message.content;
             } else {
               jsonData.choices.forEach(choice => {
@@ -804,7 +840,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                   reasoningContent += delta.reasoning;
                 } else if (delta.reason !== undefined && delta.reason !== null) {
                   reasoningContent += delta.reason;
-                } else if(delta.reasoning_content !== undefined && delta.reasoning_content !== null) {
+                } else if (delta.reasoning_content !== undefined && delta.reasoning_content !== null) {
                   reasoningContent += delta.reasoning_content;
                 }
 
@@ -815,7 +851,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                     const func = tool_call.function;
                     if (func) {
                       const index = tool_call.index;
-                      if(tools.length < index+1) {
+                      if (tools.length < index+1) {
                         tools.push({});
                         tools[index]['id'] = tool_call.id;
                         tools[index]['name'] = func.name;
@@ -826,7 +862,7 @@ async function parseAndUpdateChatContent(response, modelName, type) {
                     }
                   });
                 }
-              })
+              });
             }
             
             // 处理 reasoning/reason 字段 (新增)
@@ -1215,5 +1251,71 @@ function setupThinkingBlockToggle() {
         }
       });
     }
+  });
+}
+
+/**
+ * 从模型名称中推断提供商 - 同步版本
+ * @param {string} modelName - 模型名称
+ * @returns {string} - 推断的提供商
+ */
+function getProviderFromModelSync(modelName) {
+  // 从MODEL_LIST中查找
+  for (const modelGroup of [MODEL_LIST.free_models, MODEL_LIST.custom_config_models]) {
+    for (const model of modelGroup) {
+      if (model.value === modelName) {
+        return model.provider;
+      }
+    }
+  }
+  
+  // 如果MODEL_LIST中找不到，根据模型名称推断
+  if (modelName.includes(OLLAMA_MODEL_POSTFIX)) return 'ollama';
+  if (modelName.includes(FISHERAI_MODEL_POSTFIX)) return 'fisherai';
+  if (modelName.includes(GROQ_MODEL_POSTFIX)) return 'groq';
+  if (modelName.includes(AZURE_MODEL)) return 'azure';
+  if (modelName.includes(GEMINI_MODEL)) return 'gemini';
+  if (modelName.includes(GPT_MODEL)) return 'openai';
+  if (modelName.includes(ZHIPU_MODEL)) return 'zhipu';
+  if (modelName.includes(MISTRAL_MODEL)) return 'mistral';
+  if (modelName.includes(MOONSHOT_MODEL)) return 'moonshot';
+  if (modelName.includes(DEEPSEEK_MODEL)) return 'deepseek';
+  if (modelName.includes(YI_MODEL)) return 'yi';
+  
+  // 默认返回unknown
+  return 'unknown';
+}
+
+/**
+ * 从模型名称中推断提供商 - 异步版本，会查询存储的映射
+ * @param {string} modelName - 模型名称
+ * @returns {Promise<string>} - 推断的提供商
+ */
+async function getProviderFromModel(modelName) {
+  // 1. 首先从映射表中查找
+  const mapping = await getModelProviderMapping();
+  
+  // 找出精确匹配的模型名
+  if (mapping && mapping[modelName]) {
+    return mapping[modelName];
+  }
+  
+  // 2. 如果映射表中没有，使用同步方法推断
+  return getProviderFromModelSync(modelName);
+}
+
+/**
+ * 获取模型到提供商的映射关系
+ * @returns {Promise<Object>} - 模型到提供商的映射
+ */
+async function getModelProviderMapping() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get('model-provider-mapping', function(result) {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result['model-provider-mapping'] || {});
+      }
+    });
   });
 }
