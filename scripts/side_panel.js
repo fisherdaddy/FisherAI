@@ -10,6 +10,21 @@ async function initI18n() {
 }
 
 /**
+ * 应用保存的外观模式
+ */
+function applyAppearanceMode() {
+  chrome.storage.sync.get('appearance', function(result) {
+    const appearance = result.appearance || 'dark'; // 默认深色模式
+    
+    if (appearance === 'light') {
+      document.querySelector('.my-extension-resultPage').classList.add('light-mode');
+    } else {
+      document.querySelector('.my-extension-resultPage').classList.remove('light-mode');
+    }
+  });
+}
+
+/**
  * 更新动态文本（那些不通过data-i18n属性设置的文本）
  */
 async function updateDynamicTexts(lang) {
@@ -509,6 +524,12 @@ function getPageTitle() {
  * 初始化结果页面
  */
 function initResultPage() {
+  // 初始化国际化
+  initI18n();
+  
+  // 应用外观模式
+  applyAppearanceMode();
+
   // 添加全局事件委托，捕获设置按钮点击
   document.addEventListener('click', function(event) {
     if (event.target && event.target.id === 'goto-settings-btn') {
@@ -517,11 +538,8 @@ function initResultPage() {
     }
   });
 
-  // 初始化国际化
-  initI18n().then(async () => {
-    // 加载模型选择
-    await populateModelSelections();
-    
+  // 加载模型选择
+  populateModelSelections().then(async () => {
     // 初始化模型选择事件监听
     initModelSelectionHandler();
     

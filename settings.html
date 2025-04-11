@@ -106,13 +106,34 @@
         <!-- Add more tabs here -->
     </div>
 
+    <!-- 增加全局消息通知区域 -->
+    <div class="auto-save-message"></div>
+    
     <div class="tab-content active" id="general">
         <div class="general-container">
             <div class="general-section">
                 <h2 data-i18n="language_settings" class="gradient-heading">语言设置</h2>
                 <div class="language-setting-container">
                     <div class="select-label" data-i18n="language">语言</div>
-                    <select id="language-selector" class="language-select">
+                    <div class="custom-select-container" id="language-select-container">
+                        <div class="custom-select-selected" id="language-selected-value">
+                            <span data-i18n="language_zh">中文</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="custom-select-options" id="language-options">
+                            <div class="custom-select-option" data-value="zh-CN" data-i18n="language_zh">中文</div>
+                            <div class="custom-select-option" data-value="en-US" data-i18n="language_en">English</div>
+                            <div class="custom-select-option" data-value="ja-JP" data-i18n="language_ja">日本語</div>
+                            <div class="custom-select-option" data-value="ko-KR" data-i18n="language_ko">한국어</div>
+                            <div class="custom-select-option" data-value="fr-FR" data-i18n="language_fr">Français</div>
+                            <div class="custom-select-option" data-value="de-DE" data-i18n="language_de">Deutsch</div>
+                            <div class="custom-select-option" data-value="ru-RU" data-i18n="language_ru">Русский</div>
+                        </div>
+                    </div>
+                    <!-- 保留原始选择框但隐藏它，用于维持原有功能 -->
+                    <select id="language-selector" class="language-select" style="display: none;">
                         <option value="zh-CN" data-i18n="language_zh">中文</option>
                         <option value="en-US" data-i18n="language_en">English</option>
                         <option value="ja-JP" data-i18n="language_ja">日本語</option>
@@ -121,6 +142,24 @@
                         <option value="de-DE" data-i18n="language_de">Deutsch</option>
                         <option value="ru-RU" data-i18n="language_ru">Русский</option>
                     </select>
+                </div>
+            </div>
+            
+            <div class="general-section">
+                <h2 data-i18n="appearance_settings" class="gradient-heading">外观设置</h2>
+                <div class="appearance-setting-container">
+                    <div class="appearance-options">
+                        <label class="appearance-option">
+                            <input type="radio" name="appearance" value="dark" id="dark-mode" checked>
+                            <span class="appearance-text" data-i18n="dark_mode">深色</span>
+                            <span class="appearance-preview dark-preview"></span>
+                        </label>
+                        <label class="appearance-option">
+                            <input type="radio" name="appearance" value="light" id="light-mode">
+                            <span class="appearance-text" data-i18n="light_mode">浅色</span>
+                            <span class="appearance-preview light-preview"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
             
@@ -1572,12 +1611,10 @@
     </div>
 
     <div class="tab-content" id="about">
-        <div class="general-container">
-            <div class="general-section">
         <div class="about-container">
             <div class="about-header">
                 <img src="images/logo_128.png" alt="FisherAI Logo" class="about-logo">
-                        <h2 data-i18n="about_slogan" class="gradient-heading">FisherAI —— Your Best Summary Copilot</h2>
+                <h2 data-i18n="about_slogan" class="gradient-heading">FisherAI —— Your Best Summary Copilot</h2>
             </div>
         
             <div class="about-footer">
@@ -1594,10 +1631,5 @@
         </div>
     </div>
 </div>
-    </div>
-</div>
-
-    <!-- 全局浮动通知 -->
-    <div class="save-message auto-save-message" style="display:none; opacity: 0;" data-i18n="auto_save_success">设置已自动保存！</div>
 </body>
 </html>

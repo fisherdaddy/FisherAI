@@ -35,22 +35,42 @@ body {
 .my-extension-header {
   width: 100%;
   text-align: center;
-  margin-bottom: 20px; /* 在标题和选项卡之间添加间隙 */
+  margin-bottom: 30px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   position: relative;
+  gap: 15px;
+  padding: 15px 0;
 }
 
 .my-extension-logo {
   height: 48px;
   width: 48px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.my-extension-logo:hover {
+  transform: scale(1.05);
 }
 
 .my-extension-brand {
-  font-size: 20px;
-  color: white;
-  margin-top: 10px;
+  font-size: 24px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #4776E6, #8E54E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.my-extension-brand:hover {
+  transform: translateY(-2px);
 }
 
 /* 语言切换器样式 */
@@ -347,7 +367,6 @@ input:checked + .slider:before {
     display: flex;
     position: relative;
     align-items: flex-start;
-    margin-bottom: 12px;
 }
 
 .instruction-number {
@@ -409,13 +428,15 @@ input:checked + .slider:before {
   background-color: rgba(45, 55, 72, 0.7);
   padding: 15px;
   border-radius: 8px;
-  margin-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .select-label {
   font-size: 16px;
   color: #E2E8F0;
   margin-right: 15px;
+  font-weight: 500;
+  min-width: 60px; /* 给标签一个最小宽度 */
 }
 
 .language-select {
@@ -451,26 +472,40 @@ input:checked + .slider:before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px;
+  padding: 40px;
   max-width: 800px;
   margin: 0 auto;
-  background: linear-gradient(to bottom, rgba(45, 55, 72, 0.5), rgba(45, 55, 72, 0.3));
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(45, 55, 72, 0.7), rgba(45, 55, 72, 0.4));
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.about-container:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
 }
 
 .about-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   text-align: center;
 }
 
 .about-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.about-logo:hover {
+  transform: scale(1.05);
 }
 
 .about-header h2 {
@@ -518,15 +553,14 @@ input:checked + .slider:before {
   background-color: rgba(45, 55, 72, 0.7);
   padding: 16px 12px;
   border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
   height: auto;
   width: auto;
   text-align: center;
 }
 
 .feature-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
 }
 
 .feature-icon {
@@ -566,6 +600,7 @@ input:checked + .slider:before {
 }
 
 .about-container .feature-icon {
+  margin-right: 0;
   margin-bottom: 10px;
   width: 40px;
   height: 40px;
@@ -616,6 +651,9 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  padding-top: 30px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .social-links {
@@ -628,16 +666,17 @@ input:checked + .slider:before {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background-color: rgba(45, 55, 72, 0.7);
   border-radius: 50%;
-  transition: transform 0.2s, background-color 0.2s;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .social-link:hover {
-  transform: translateY(-3px);
-  background-color: rgba(66, 153, 225, 0.3);
+  transform: translateY(-5px);
+  background-color: rgba(66, 153, 225, 0.5);
 }
 
 .twitter-link svg, .github-svg {
@@ -793,13 +832,15 @@ input:checked + .slider:before {
   background-color: rgba(45, 55, 72, 0.7);
   padding: 15px;
   border-radius: 8px;
-  margin-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .select-label {
   font-size: 16px;
   color: #E2E8F0;
   margin-right: 15px;
+  font-weight: 500;
+  min-width: 60px; /* 给标签一个最小宽度 */
 }
 
 .language-select {
@@ -835,26 +876,35 @@ input:checked + .slider:before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px;
+  padding: 40px;
   max-width: 800px;
   margin: 0 auto;
-  background: linear-gradient(to bottom, rgba(45, 55, 72, 0.5), rgba(45, 55, 72, 0.3));
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(45, 55, 72, 0.7), rgba(45, 55, 72, 0.4));
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .about-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   text-align: center;
 }
 
 .about-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.about-logo:hover {
+  transform: scale(1.05);
 }
 
 .about-header h2 {
@@ -902,15 +952,14 @@ input:checked + .slider:before {
   background-color: rgba(45, 55, 72, 0.7);
   padding: 16px 12px;
   border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
   height: auto;
   width: auto;
   text-align: center;
 }
 
 .feature-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
 }
 
 .feature-icon {
@@ -950,6 +999,7 @@ input:checked + .slider:before {
 }
 
 .about-container .feature-icon {
+  margin-right: 0;
   margin-bottom: 10px;
   width: 40px;
   height: 40px;
@@ -1000,6 +1050,9 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  padding-top: 30px;
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .social-links {
@@ -1012,16 +1065,17 @@ input:checked + .slider:before {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background-color: rgba(45, 55, 72, 0.7);
   border-radius: 50%;
-  transition: transform 0.2s, background-color 0.2s;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .social-link:hover {
-  transform: translateY(-3px);
-  background-color: rgba(66, 153, 225, 0.3);
+  transform: translateY(-5px);
+  background-color: rgba(66, 153, 225, 0.5);
 }
 
 .twitter-link svg, .github-svg {
@@ -1042,18 +1096,21 @@ input:checked + .slider:before {
 
 /* General tab styles */
 .general-container {
+  width: 100%;
+  max-width: 1000px;
+  padding: 20px;
+  margin: 0 auto 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding: 30px;
-  max-width: 800px;
-  margin: 0 auto;
   background: linear-gradient(to bottom, rgba(45, 55, 72, 0.5), rgba(45, 55, 72, 0.3));
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .general-section {
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .gradient-heading {
@@ -1079,15 +1136,14 @@ input:checked + .slider:before {
   background-color: rgba(45, 55, 72, 0.7);
   padding: 16px 12px;
   border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
   height: auto;
   width: auto;
   text-align: center;
 }
 
 .feature-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
 }
 
 .feature-icon {
@@ -1210,24 +1266,33 @@ input:checked + .slider:before {
 }
 
 .auto-save-message {
-  font-size: 14px;
-  color: white;
-  font-weight: 500;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(54, 150, 58, 0.9));
-  border-radius: 8px;
-  opacity: 0;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  text-align: center;
-  min-width: 200px;
-  backdrop-filter: blur(4px);
-  border-left: 3px solid rgba(255, 255, 255, 0.5);
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background-color: #4CAF50;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.auto-save-message svg {
+  stroke: currentColor;
+  width: 16px;
+  height: 16px;
+}
+
+.light-mode .auto-save-message {
+  background-color: #4CAF50;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* 添加动画效果，当消息显示时会有一个轻微上移效果 */
@@ -1677,4 +1742,674 @@ input:focus + .slider {
 
 input:checked + .slider:before {
     transform: translateX(22px);
+}
+
+/* Appearance Settings Styles */
+.appearance-setting-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #2D3748;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.appearance-label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #E2E8F0;
+}
+
+.appearance-options {
+  display: flex;
+  gap: 20px;
+}
+
+.appearance-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100px;
+  transition: background-color 0.2s ease;
+}
+
+.appearance-option:hover {
+  background-color: #EDF2F7;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.appearance-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.appearance-option input[type="radio"]:checked + .appearance-text {
+  color: #38A169;
+  font-weight: bold;
+}
+
+.appearance-text {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #CBD5E0;
+}
+
+.appearance-preview {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dark-preview {
+  background-color: #111827;
+  border: 1px solid #2D3748;
+}
+
+.dark-preview::before {
+  content: "Aa";
+  color: #FFFFFF;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.light-preview {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+}
+
+.light-preview::before {
+  content: "Aa";
+  color: #2D3748;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Light Mode Styles */
+body.light-mode {
+  background-color: #F7FAFC;
+  color: #1A202C;
+}
+
+.light-mode .settings-container {
+  background-color: #FFFFFF;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.light-mode .tab-list {
+  background-color: #FFFFFF;
+  border-right: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .my-extension-brand {
+  background: linear-gradient(90deg, #3182CE, #805AD5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .tab-link {
+  color: #4A5568;
+  border-left: 3px solid transparent;
+}
+
+.light-mode .tab-link:hover, .light-mode .tab-link.active {
+  background-color: #F7FAFC;
+  border-left: 3px solid #4A5568;
+}
+
+.light-mode .tab-content {
+  background-color: #FFFFFF;
+  color: #1A202C;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: none;
+}
+
+.light-mode .tab-content h3 {
+  color: #2D3748;
+}
+
+.light-mode .tab-content li {
+  background-color: #EDF2F7;
+}
+
+.light-mode .language-setting-container,
+.light-mode .appearance-setting-container {
+  background-color: #FFFFFF;
+  border: 1px solid #EDF2F7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .select-label,
+.light-mode .appearance-label {
+  color: #2D3748;
+}
+
+.light-mode .language-select,
+.light-mode .appearance-text {
+  color: #2D3748;
+}
+
+.light-mode .language-select {
+  background-color: #FFFFFF;
+  border-color: #CBD5E0;
+}
+
+.light-mode .language-select option {
+  background-color: #FFFFFF;
+  color: #2D3748;
+}
+
+.light-mode .gradient-heading {
+  color: #2D3748;
+}
+
+/* Fixed feature styles for light mode */
+.light-mode .feature-list {
+  gap: 15px;
+}
+
+.light-mode .feature-item {
+  background-color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.light-mode .feature-item:hover {
+  /* transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+}
+
+.light-mode .feature-icon {
+  background: linear-gradient(135deg, #EDF2F7, #CBD5E0) !important;
+  margin-bottom: 12px;
+}
+
+.light-mode .feature-icon svg {
+  stroke: #4A5568;
+}
+
+.light-mode .feature-text {
+  color: #2D3748;
+}
+
+.light-mode .general-section {
+  border-bottom: 1px solid #EDF2F7;
+  padding-bottom: 20px;
+}
+
+.light-mode .general-section:last-child {
+  border-bottom: none;
+}
+
+.light-mode .model-list-title {
+  color: #2D3748;
+  font-weight: 600;
+}
+
+.light-mode .model-list-container {
+  background-color: #FFFFFF;
+  border: 1px solid #F7FAFC;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .model-list-container,
+.light-mode .model-list-container * {
+  color: #2D3748;
+}
+
+.light-mode .model-item {
+  border: none;
+  background-color: #F7FAFC;
+  color: #2D3748;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .model-item:hover {
+  background-color: #EDF2F7;
+  transform: translateY(-1px);
+}
+
+.light-mode .ollama-instructions {
+  background-color: #FFFFFF;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.light-mode .instruction-step {
+  background-color: transparent;
+  border: none;
+  margin-bottom: 16px;
+}
+
+.light-mode .instruction-step:last-child {
+  margin-bottom: 0;
+}
+
+.light-mode .model-selection-container, 
+.light-mode .toggle-container {
+  background-color: #FFFFFF;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.light-mode .about-container {
+  background: #FFFFFF;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .link-container {
+  background-color: #FFFFFF;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .save-button, 
+.light-mode .quicktrans-save-btn, 
+.light-mode .checkapi-button {
+  background-color: #EDF2F7;
+  color: #2D3748;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .save-button:hover, 
+.light-mode .quicktrans-save-btn:hover, 
+.light-mode .checkapi-button:hover {
+  background-color: #4CAF50;
+  color: white;
+  border: 1px solid #4CAF50;
+}
+
+.light-mode .input-container input {
+  background-color: #FFFFFF;
+  color: #2D3748;
+  border-color: #E2E8F0;
+}
+
+.light-mode .toggle-password svg {
+  stroke: #2D3748;
+}
+
+.light-mode .provider-link {
+  color: #3182CE;
+}
+
+.light-mode .collapsible svg {
+  stroke: #2D3748;
+}
+
+.light-mode .modal {
+  background-color: rgba(237, 242, 247, 0.8);
+}
+
+.light-mode .modal-content {
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .model-list-header {
+  border-bottom: 1px solid #E2E8F0;
+  color: #2D3748;
+}
+
+.light-mode .edit-models-btn {
+  background-color: #F7FAFC;
+  color: #4A5568;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .edit-models-btn:hover {
+  background-color: #EDF2F7;
+}
+
+.light-mode .ollama-explanation {
+  color: #4A5568;
+}
+
+.light-mode .save-message, 
+.light-mode .checkapi-message {
+  background-color: rgba(56, 161, 105, 0.1);
+  color: #38A169;
+}
+
+/* Fix double borders for baseurl-wrapper and ollama-instructions in light mode */
+.light-mode .baseurl-wrapper,
+.light-mode .password-wrapper {
+  background-color: transparent;
+  border: none;
+}
+
+.light-mode .baseurl-input,
+.light-mode .api-key-input {
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  color: #1A202C;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .baseurl-input:focus,
+.light-mode .api-key-input:focus {
+  border-color: #4299E1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+/* General container light mode */
+.light-mode .general-container {
+  background: #FFFFFF;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Feature items special overrides for deep nesting */
+.light-mode .feature-container {
+  background-color: #FFFFFF !important;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Further feature item fixes for general container */
+.light-mode .general-container .feature-item {
+  background-color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .general-container .feature-icon {
+  background: linear-gradient(135deg, #EDF2F7, #CBD5E0) !important;
+}
+
+.light-mode .general-container .feature-text {
+  color: #2D3748 !important;
+}
+
+/* Fix about container features */
+.light-mode .about-container .feature-item {
+  background-color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .about-container .feature-icon {
+  background: linear-gradient(135deg, #EDF2F7, #E2E8F0) !important;
+}
+
+/* Fix select and toggle label issues in light mode */
+.light-mode .language-select,
+.light-mode .model-select {
+  background-color: #FFFFFF;
+  color: #2D3748;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .language-select option,
+.light-mode .language-select optgroup,
+.light-mode .model-select option,
+.light-mode .model-select optgroup {
+  background-color: #FFFFFF !important;
+  color: #2D3748 !important;
+}
+
+.light-mode .toggle-label {
+  color: #2D3748;
+  font-weight: 500;
+}
+
+.light-mode .provider-toggle-container .toggle-label {
+  color: #2D3748;
+  font-weight: 500;
+}
+
+/* Fix language-selector dropdown options in light mode */
+.light-mode #language-selector {
+  background-color: #FFFFFF;
+  color: #2D3748;
+  border-color: #E2E8F0;
+}
+
+.light-mode #language-selector option {
+  background-color: #FFFFFF !important;
+  color: #2D3748 !important;
+}
+
+/* Add browser-specific fixes for select options */
+@-moz-document url-prefix() {
+  .light-mode #language-selector,
+  .light-mode #language-selector option {
+    background-color: #FFFFFF !important;
+    color: #2D3748 !important;
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .light-mode #language-selector,
+  .light-mode #language-selector option {
+    background-color: #FFFFFF !important;
+    color: #2D3748 !important;
+  }
+}
+
+/* Additional fallback for browsers that support it */
+.light-mode #language-selector {
+  -webkit-appearance: menulist;
+  appearance: menulist;
+}
+
+/* Fix social links and copyright in light mode */
+.light-mode .social-link {
+  background-color: #EDF2F7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .social-link:hover {
+  background-color: #E2E8F0;
+  transform: translateY(-3px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.light-mode .twitter-link svg {
+  fill: #1DA1F2;
+}
+
+.light-mode .github-svg {
+  fill: transparent;
+  stroke: #24292E;
+  stroke-width: 2;
+}
+
+.light-mode .copyright {
+  color: #2D3748;
+  font-weight: 500;
+}
+
+/* Fix instruction step text in light mode */
+.light-mode .instruction-step p {
+  color: #1A202C !important;
+  font-weight: 500;
+}
+
+.light-mode .instruction-step .instruction-number {
+  background-color: #4299E1;
+  color: white;
+}
+
+.light-mode .appearance-text {
+  color: #2D3748;
+}
+
+/* Adding style for div with flex:1 to ensure no border */
+div[style*="flex: 1"] {
+  border: none;
+}
+
+/* Light mode fixes */
+.light-mode .feature-item:hover {
+  /* transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); */
+}
+
+/* 自定义选择框样式 */
+.custom-select-container {
+  position: relative;
+  width: 240px; /* 将宽度从100%改为固定宽度 */
+  cursor: pointer;
+  user-select: none;
+  max-width: 100%; /* 确保在小屏幕上不会溢出 */
+}
+
+.custom-select-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap; /* 防止文本换行 */
+  overflow: hidden; /* 防止内容溢出 */
+  text-overflow: ellipsis; /* 文本溢出时显示省略号 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.custom-select-container:hover .custom-select-selected {
+  border-color: #63B3ED; /* 鼠标悬停时边框颜色变化 */
+}
+
+.custom-select-selected span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-select-selected svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+  margin-left: 8px; /* 为图标添加左边距 */
+  flex-shrink: 0; /* 防止图标被压缩 */
+}
+
+.custom-select-container.open .custom-select-selected svg {
+  transform: rotate(180deg);
+}
+
+.custom-select-option.selected {
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.light-mode .custom-select-option.selected {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.custom-select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  z-index: 10;
+  transition: all 0.2s ease;
+  opacity: 0;
+  margin-top: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%; /* 与容器同宽 */
+}
+
+.custom-select-container.open .custom-select-options {
+  max-height: 250px; /* 限制最大高度 */
+  opacity: 1;
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* 自定义滚动条样式 */
+.custom-select-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.light-mode .custom-select-options::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.custom-select-option {
+  padding: 8px 12px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-select-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.custom-select-option.selected {
+  font-weight: 500;
+}
+
+/* 深色模式 */
+.custom-select-selected {
+  background-color: #2D3748;
+  color: #F7FAFC;
+  border-color: #4A5568;
+}
+
+.custom-select-options {
+  background-color: #2D3748;
+  border: 1px solid #4A5568;
+}
+
+.custom-select-option {
+  color: #F7FAFC;
+}
+
+.custom-select-option:hover {
+  background-color: #4A5568;
+}
+
+/* 浅色模式 */
+.light-mode .custom-select-selected {
+  background-color: #FFFFFF;
+  color: #2D3748;
+  border-color: #CBD5E0;
+}
+
+.light-mode .custom-select-options {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E0;
+}
+
+.light-mode .custom-select-option {
+  color: #2D3748;
+}
+
+.light-mode .custom-select-option:hover {
+  background-color: #F7FAFC;
 }

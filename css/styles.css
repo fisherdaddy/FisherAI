@@ -845,3 +845,311 @@
     background-color: rgba(52, 152, 219, 0.15);
   }
 }
+
+/* Light Mode Styles for side panel */
+.light-mode.my-extension-resultPage {
+  background-color: #FFFFFF;
+}
+
+.light-mode .my-extension-header {
+  background-color: #FFFFFF;
+  color: #1A202C;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.light-mode .my-extension-settings-btn svg,
+.light-mode .my-extension-share-btn svg {
+  stroke: #4A5568;
+}
+
+.light-mode .my-extension-content {
+  background-color: #FFFFFF;
+  color: #1A202C;
+}
+
+.light-mode .my-extension-content h1,
+.light-mode .my-extension-content h2,
+.light-mode .my-extension-content h3,
+.light-mode .my-extension-content h4 {
+  color: #2D3748;
+}
+
+.light-mode .my-extension-content a {
+  color: #3182CE;
+}
+
+.light-mode .my-extension-content li {
+  color: #1A202C;
+}
+
+.light-mode .my-extension-content pre,
+.light-mode .my-extension-content code {
+  background-color: #F7FAFC;
+  color: #1A202C;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .my-extension-content p {
+  color: #1A202C;
+}
+
+.light-mode .my-extension-dialogue {
+  background-color: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+}
+
+.light-mode .my-extension-dialogue textarea {
+  border: 1px solid #E2E8F0;
+  background-color: #F7FAFC;
+  color: #1A202C;
+}
+
+.light-mode .my-extension-dialogue-submit,
+.light-mode .my-extension-dialogue-generate {
+  background-color: #E2E8F0;
+  color: #1A202C;
+}
+
+.light-mode .user-message:not(:first-of-type) {
+  border-top: 1px solid #E2E8F0;
+}
+
+.light-mode .my-extension-loading {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #1A202C;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .my-extension-slogan {
+  color: #2D3748;
+}
+
+.light-mode .feature-container {
+  background-color: #F7FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .feature-title {
+  color: #2D3748;
+}
+
+.light-mode .feature-item {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .feature-item a {
+  color: #1A202C;
+}
+
+.light-mode .feature-name {
+  color: #2D3748;
+}
+
+.light-mode .feature-desc {
+  color: #4A5568;
+}
+
+.light-mode .navigation-bar {
+  background-color: #F7FAFC;
+  border-top: 1px solid #E2E8F0;
+}
+
+.light-mode #model-selection {
+  background-color: #FFFFFF;
+  color: #1A202C;
+  border: 1px solid #CBD5E0;
+}
+
+.light-mode #image-upload-label,
+.light-mode #newchat-label,
+.light-mode #params-label,
+.light-mode #tools-label {
+  background-color: #E2E8F0;
+  color: #1A202C;
+}
+
+.light-mode #image-upload-label svg,
+.light-mode #newchat-label svg,
+.light-mode #params-label svg,
+.light-mode #tools-label svg {
+  stroke: #4A5568;
+}
+
+.light-mode .image-preview-area {
+  border: none;
+  background-color: #F7FAFC;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .shortcut-menu,
+.light-mode .model-params,
+.light-mode .tool-store {
+  background-color: #FFFFFF;
+  border: none;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+}
+
+.light-mode .shortcut-menu div {
+  color: #1A202C;
+}
+
+.light-mode .shortcut-menu div:hover {
+  background-color: #F7FAFC;
+}
+
+.light-mode .shortcut-menu svg {
+  stroke: #4A5568;
+}
+
+.light-mode .shortcut-text-span {
+  color: #1A202C;
+}
+
+.light-mode .tool-store h2,
+.light-mode .model-params h2 {
+  color: #2D3748;
+}
+
+.light-mode .tool-item div {
+  color: #1A202C;
+}
+
+.light-mode .params-item label {
+  color: #2D3748;
+}
+
+.light-mode .params-item input[type="number"] {
+  background-color: #FFFFFF;
+  color: #1A202C;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .user-message {
+  color: #2D3748;
+}
+
+.light-mode .icon-copy {
+  color: rgba(45, 55, 72, 0.7);
+}
+
+.light-mode .icon-copy:hover {
+  color: #2D3748;
+}
+
+.light-mode .edit-message-btn svg {
+  color: #4A5568;
+}
+
+.light-mode .save-message-btn, 
+.light-mode .cancel-message-btn {
+  background-color: #E2E8F0;
+  color: #1A202C;
+}
+
+.light-mode .edit-message-textarea {
+  background-color: #F7FAFC;
+  color: #1A202C;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .thinking-block {
+  border: none;
+  box-shadow: 0 1px 3px rgba(66, 153, 225, 0.2);
+}
+
+.light-mode .thinking-header {
+  border-bottom: 1px solid rgba(66, 153, 225, 0.1);
+}
+
+.light-mode .thinking-title,
+.light-mode .thinking-icon,
+.light-mode .toggle-icon {
+  color: #3182CE;
+}
+
+.light-mode .thinking-content {
+  color: #1A202C;
+}
+
+.light-mode .thinking-content code {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .thinking-content pre {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .error-message {
+  color: #E53E3E;
+  border: 1px solid #FEB2B2;
+  background-color: #FFF5F5;
+}
+
+/* Additional Light Mode Refinements */
+.light-mode .image-preview-area {
+  border: none;
+  background-color: #F7FAFC;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .navigation-bar {
+  border-top: none;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .feature-container {
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .feature-item {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .feature-item:hover {
+  /* transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); */
+}
+
+.light-mode .my-extension-content pre,
+.light-mode .my-extension-content code {
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .model-params,
+.light-mode .tool-store,
+.light-mode .shortcut-menu {
+  border: none;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+}
+
+.light-mode .thinking-block {
+  border: none;
+  box-shadow: 0 1px 3px rgba(66, 153, 225, 0.2);
+}
+
+.light-mode .thinking-header {
+  border-bottom: 1px solid rgba(66, 153, 225, 0.1);
+}
+
+.light-mode .user-message:not(:first-of-type) {
+  border-top: 1px solid rgba(203, 213, 224, 0.5);
+}
+
+.light-mode #model-selection {
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .my-extension-dialogue {
+  border-top: none;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-mode .my-extension-dialogue textarea {
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) inset;
+}

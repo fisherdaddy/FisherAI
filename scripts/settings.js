@@ -489,6 +489,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化供应商开关状态
     initProviderToggles();
+    
+    // 设置外观模式
+    setupAppearanceMode();
+    
+    // 加载设置并初始化自定义选择框
+    loadSettings();
   });
 });
 
@@ -1229,4 +1235,188 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
     }
   }
 });
+
+/**
+ * 设置和应用外观模式 (深色/浅色)
+ */
+function setupAppearanceMode() {
+  // 获取当前主题设置
+  chrome.storage.sync.get('appearance', function(result) {
+    const appearance = result.appearance || 'dark'; // 默认深色模式
+    
+    // 设置对应的单选按钮
+    const radioBtn = document.getElementById(`${appearance}-mode`);
+    if (radioBtn) {
+      radioBtn.checked = true;
+    }
+    
+    // 应用到当前页面
+    applyAppearanceMode(appearance);
+    
+    // 监听单选按钮变化
+    const appearanceOptions = document.querySelectorAll('input[name="appearance"]');
+    appearanceOptions.forEach(option => {
+      option.addEventListener('change', function() {
+        if (this.checked) {
+          const newAppearance = this.value;
+          
+          // 存储设置
+          chrome.storage.sync.set({ appearance: newAppearance }, function() {
+            // 应用到当前页面
+            applyAppearanceMode(newAppearance);
+          });
+        }
+      });
+    });
+  });
+}
+
+/**
+ * 应用外观模式到界面
+ * @param {string} mode - 'dark' 或 'light'
+ */
+function applyAppearanceMode(mode) {
+  if (mode === 'light') {
+    document.body.classList.add('light-mode');
+  } else {
+    document.body.classList.remove('light-mode');
+  }
+}
+
+/**
+ * 获取当前活跃的标签页ID
+ * @returns {string} 活跃标签页的ID
+ */
+function getTabName() {
+  // 获取当前显示的标签内容
+  const activeTab = document.querySelector('.tab-content[style*="display: block"]');
+  if (activeTab) {
+    return activeTab.id;
+  }
+  
+  // 如果没有找到显示的标签内容，则尝试从激活的标签链接获取
+  const activeTabLink = document.querySelector('.tab-link.active');
+  if (activeTabLink) {
+    return activeTabLink.getAttribute('data-tab');
+  }
+  
+  // 默认返回general标签
+  return 'general';
+}
+
+// 在初始化结束后，加载当前设置，然后初始化自定义选择框
+function loadSettings() {
+  const provider = getTabName();
+  chrome.storage.sync.get(provider, function(result) {
+    const modelInfo = result[provider];
+    if (modelInfo) {
+      const activeTabContent = document.querySelector('.tab-content[style*="display: block"]');
+      
+      const apiKey = modelInfo.apiKey;
+      if(apiKey && activeTabContent) {
+        const apiKeyInput = activeTabContent.querySelector('.api-key-input');
+        if (apiKeyInput) apiKeyInput.value = apiKey;
+      }
+      
+      const baseUrl = modelInfo.baseUrl;
+      if(baseUrl && activeTabContent) {
+        const baseUrlInput = activeTabContent.querySelector('.baseurl-input');
+        if (baseUrlInput) baseUrlInput.value = baseUrl;
+      }
+      
+      const enabled = modelInfo.enabled;
+      if(enabled !== undefined) {
+        const toggleSwitch = document.getElementById('quickTransToggle');
+        if (toggleSwitch) toggleSwitch.checked = enabled;
+      }
+      
+      const selectedModel = modelInfo.selectedModel;
+      if(selectedModel) {
+        const modelSelection = document.querySelector('#model-select');
+        if (modelSelection) modelSelection.value = selectedModel;
+      }
+    }
+    
+    // 加载设置后初始化自定义选择框
+    initializeCustomSelects();
+  });
+}
+
+// 自定义选择框组件的实现
+function initializeCustomSelects() {
+  // 初始化语言选择器
+  initializeCustomSelect('language-select-container', 'language-selector');
+  
+  // 将来可以在这里初始化其他选择框
+  // initializeCustomSelect('other-select-container', 'other-selector');
+}
+
+function initializeCustomSelect(containerID, originalSelectID) {
+  const container = document.getElementById(containerID);
+  if (!container) return;
+  
+  const originalSelect = document.getElementById(originalSelectID);
+  if (!originalSelect) return;
+  
+  const selectedValue = container.querySelector('.custom-select-selected');
+  const options = container.querySelector('.custom-select-options');
+  const optionItems = container.querySelectorAll('.custom-select-option');
+  
+  // 初始化选中值显示
+  updateSelectedDisplay(container, originalSelect.value);
+  
+  // 点击选择框显示/隐藏选项
+  selectedValue.addEventListener('click', function(e) {
+    e.stopPropagation();
+    container.classList.toggle('open');
+    
+    // 关闭其他打开的选择框
+    document.querySelectorAll('.custom-select-container.open').forEach(openContainer => {
+      if (openContainer !== container) {
+        openContainer.classList.remove('open');
+      }
+    });
+  });
+  
+  // 点击选项更新选中值
+  optionItems.forEach(option => {
+    option.addEventListener('click', function() {
+      const value = this.getAttribute('data-value');
+      
+      // 更新原始选择框的值并触发change事件
+      originalSelect.value = value;
+      
+      // 手动触发原始选择框的change事件
+      const event = new Event('change', { bubbles: true });
+      originalSelect.dispatchEvent(event);
+      
+      // 更新选中显示
+      updateSelectedDisplay(container, value);
+      
+      // 关闭选项列表
+      container.classList.remove('open');
+    });
+  });
+  
+  // 点击页面其他地方关闭选项列表
+  document.addEventListener('click', function(e) {
+    if (!container.contains(e.target)) {
+      container.classList.remove('open');
+    }
+  });
+}
+
+function updateSelectedDisplay(container, value) {
+  const selectedDisplay = container.querySelector('.custom-select-selected span');
+  const options = container.querySelectorAll('.custom-select-option');
+  
+  options.forEach(option => {
+    if (option.getAttribute('data-value') === value) {
+      selectedDisplay.textContent = option.textContent;
+      option.classList.add('selected');
+    } else {
+      option.classList.remove('selected');
+    }
+  });
+}
 

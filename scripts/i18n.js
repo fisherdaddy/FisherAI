@@ -34,6 +34,10 @@ const i18n = {
         'network_tools': '联网工具',
         'image_tools': '画图工具',
         'enable_provider': '启用此供应商',
+        'appearance_settings': '外观设置',
+        'appearance_mode': '外观模式',
+        'dark_mode': '深色',
+        'light_mode': '浅色',
 
 
         // ollama 说明
@@ -168,6 +172,10 @@ const i18n = {
         'network_tools': 'Network Tools',
         'image_tools': 'Image Tools',
         'enable_provider': 'Enable Provider',
+        'appearance_settings': 'Appearance Settings',
+        'appearance_mode': 'Appearance Mode',
+        'dark_mode': 'Dark Mode',
+        'light_mode': 'Light Mode',
         
         // ollama 说明
         'ollama_step1': 'The plugin now supports using Ollama to start local models. When starting the service, you need to enable cross-domain when using the plugin. Specific command: OLLAMA_ORIGINS=* ollama serve',
@@ -300,6 +308,10 @@ const i18n = {
         "network_tools": "ネットワークツール",
         "image_tools": "画像ツール",
         "enable_provider": "このプロバイダーを有効にする",
+        "appearance_settings": "外観設定",
+        "appearance_mode": "外観モード",
+        "dark_mode": "ダークモード",
+        "light_mode": "ライトモード",
 
         // ollama 说明
         "ollama_step1": "プラグインはOllamaを使用してローカルモデルを起動することをサポートしています。サービスを開始する際には、プラグイン使用時のクロスオリジンを有効にする必要があります。具体的なコマンド：OLLAMA_ORIGINS=* ollama serve",
@@ -432,6 +444,10 @@ const i18n = {
         "network_tools": "네트워크 도구",
         "image_tools": "이미지 도구",
         "enable_provider": "이 공급자 활성화",
+        "appearance_settings": "외관 설정",
+        "appearance_mode": "외관 모드",
+        "dark_mode": "다크 모드",
+        "light_mode": "라이트 모드",
 
         // ollama 说明
         "ollama_step1": "플러그인은 Ollama를 사용하여 로컬 모델을 시작하는 것을 지원합니다. 서비스를 시작할 때 플러그인 사용 시 크로스 오리진을 활성화해야 합니다. 구체적인 명령어: OLLAMA_ORIGINS=* ollama serve",
@@ -564,6 +580,10 @@ const i18n = {
         "network_tools": "Outils réseau",
         "image_tools": "Outils d'image",
         "enable_provider": "Activer ce fournisseur",
+        "appearance_settings": "Paramètres d'apparence",
+        "appearance_mode": "Mode d'apparence",
+        "dark_mode": "Mode sombre",
+        "light_mode": "Mode clair",
 
         // ollama 说明
         "ollama_step1": "Le plugin prend en charge l'utilisation d'Ollama pour démarrer un modèle local. Lors du démarrage du service, il est nécessaire d'activer le cross-origin lors de l'utilisation du plugin. Commande spécifique : OLLAMA_ORIGINS=* ollama serve",
@@ -696,6 +716,10 @@ const i18n = {
         "network_tools": "Netzwerk-Tools",
         "image_tools": "Bildbearbeitungswerkzeuge",
         "enable_provider": "Diesen Anbieter aktivieren",
+        "appearance_settings": "Anzeigeeinstellungen",
+        "appearance_mode": "Anzeigemodus",
+        "dark_mode": "Dunkler Modus",
+        "light_mode": "Hellmodus",
 
         // ollama 说明
         "ollama_step1": "Das Plugin unterstützt die Verwendung von Ollama zum Starten eines lokalen Modells. Beim Starten des Dienstes muss Cross-Origin bei der Verwendung des Plugins aktiviert werden. Spezifischer Befehl: OLLAMA_ORIGINS=* ollama serve",
@@ -828,6 +852,10 @@ const i18n = {
         "network_tools": "Сетевые инструменты",
         "image_tools": "Инструменты для работы с изображениями",
         "enable_provider": "Включить этого провайдера",
+        "appearance_settings": "Настройки отображения",
+        "appearance_mode": "Режим отображения",
+        "dark_mode": "Темный режим",
+        "light_mode": "Светлый режим",
 
         // ollama 说明
         "ollama_step1": "Плагин поддерживает использование Ollama для запуска локальных моделей. Для работы плагина необходимо включить CORS. Команда для запуска: OLLAMA_ORIGINS=* ollama serve",
