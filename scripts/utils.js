@@ -599,9 +599,14 @@ async function getEnabledModels(callback) {
   await Promise.all(providers.map(provider => {
     return new Promise(resolve => {
       chrome.storage.sync.get([`${provider}-enabled`, `${provider}-models`], (result) => {
-        // 如果没有保存过状态，默认为启用
-        providerStates[provider] = result[`${provider}-enabled`] !== undefined ? 
-          result[`${provider}-enabled`] : true;
+        // 如果没有保存过状态，使用 DEFAULT_LLM_URLS 中的默认值
+        if (result[`${provider}-enabled`] !== undefined) {
+          providerStates[provider] = result[`${provider}-enabled`];
+        } else {
+          // 从 DEFAULT_LLM_URLS 中查找该提供商的默认启用状态
+          const providerConfig = DEFAULT_LLM_URLS.find(p => p.key === provider);
+          providerStates[provider] = providerConfig ? providerConfig.enabled : true;
+        }
         
         // 保存该提供商的自定义模型列表（如果有）
         providerCustomModels[provider] = result[`${provider}-models`] || [];

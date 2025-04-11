@@ -92,20 +92,20 @@ const PROVIDER_DOUBAO = "doubao";
 
 // 各模型默认的baseurl
 const DEFAULT_LLM_URLS = [
-  { key: PROVIDER_FISHERAI, baseUrl: FISHERAI_BASE_URL, apiPath: FISHERAI_CHAT_API_PATH },
-  { key: PROVIDER_OPENAI, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH},
-  { key: PROVIDER_GOOGLE, baseUrl: GOOGLE_BASE_URL, apiPath: GOOGLE_CHAT_API_PATH },
-  { key: PROVIDER_GROQ, baseUrl: GROQ_BASE_URL, apiPath: GROQ_CHAT_API_PATH },
-  { key: PROVIDER_OLLAMA, baseUrl: OLLAMA_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH },
-  { key: PROVIDER_MISTRAL, baseUrl: MISTRAL_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH },
-  { key: PROVIDER_ZHIPU, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH },
-  { key: PROVIDER_MOONSHOT, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH },
-  { key: PROVIDER_DEEPSEEK, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH },
-  { key: PROVIDER_YI, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH },
-  { key: PROVIDER_OPENROUTER, baseUrl: OPENROUTER_BASE_URL, apiPath: OPENROUTER_CHAT_API_PATH },
-  { key: PROVIDER_SILICONFLOW, baseUrl: SILICONFLOW_BASE_URL, apiPath: SILICONFLOW_CHAT_API_PATH },
-  { key: PROVIDER_XAI, baseUrl: XAI_BASE_URL, apiPath: XAI_CHAT_API_PATH },
-  { key: PROVIDER_DOUBAO, baseUrl: DOUBAO_BASE_URL, apiPath: DOUBAO_CHAT_API_PATH },
+  { key: PROVIDER_FISHERAI, baseUrl: FISHERAI_BASE_URL, apiPath: FISHERAI_CHAT_API_PATH, enabled: true },
+  { key: PROVIDER_OPENAI, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_GOOGLE, baseUrl: GOOGLE_BASE_URL, apiPath: GOOGLE_CHAT_API_PATH, enabled: true },
+  { key: PROVIDER_GROQ, baseUrl: GROQ_BASE_URL, apiPath: GROQ_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_OLLAMA, baseUrl: OLLAMA_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, enabled: true },
+  { key: PROVIDER_MISTRAL, baseUrl: MISTRAL_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_ZHIPU, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_MOONSHOT, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_DEEPSEEK, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, enabled: true },
+  { key: PROVIDER_YI, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_OPENROUTER, baseUrl: OPENROUTER_BASE_URL, apiPath: OPENROUTER_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_SILICONFLOW, baseUrl: SILICONFLOW_BASE_URL, apiPath: SILICONFLOW_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_XAI, baseUrl: XAI_BASE_URL, apiPath: XAI_CHAT_API_PATH, enabled: false },
+  { key: PROVIDER_DOUBAO, baseUrl: DOUBAO_BASE_URL, apiPath: DOUBAO_CHAT_API_PATH, enabled: false },
 ];
 
 // 支持图像的模型
@@ -161,25 +161,8 @@ const MODEL_LIST = {
   ]
 };
 
-  // 供应商默认启用状态配置
-const providerDefaultStates = {
-  PROVIDER_OPENAI: false,
-  PROVIDER_GOOGLE: true,
-  PROVIDER_DEEPSEEK: true,
-  PROVIDER_MOONSHOT: false,
-  PROVIDER_YI: false,
-  PROVIDER_GROQ: false,
-  PROVIDER_MISTRAL: false,
-  PROVIDER_OLLAMA: true,
-  PROVIDER_ZHIPU: false,
-  PROVIDER_OPENROUTER: false,
-  PROVIDER_SILICONFLOW: false,
-  PROVIDER_XAI: false,
-  PROVIDER_DOUBAO: false,
-};
-
 // 将配置暴露为全局变量，确保其他脚本可以访问
-window.providerDefaultStates = providerDefaultStates;
+window.DEFAULT_LLM_URLS = DEFAULT_LLM_URLS;
 
 // 任务类型
 const CHAT_TYPE = "chat";

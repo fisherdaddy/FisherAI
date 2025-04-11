@@ -1174,11 +1174,12 @@ function initProviderToggles() {
       // 获取该供应商的默认状态，如未设置则默认为 true
       let defaultEnabled = true;
       
-      // 尝试从全局变量中获取默认状态
-      const providerConstant = `PROVIDER_${provider.toUpperCase()}`;
-      if (typeof providerDefaultStates !== 'undefined' && 
-          providerConstant in providerDefaultStates) {
-        defaultEnabled = providerDefaultStates[providerConstant];
+      // 尝试从 DEFAULT_LLM_URLS 中获取默认状态
+      if (typeof DEFAULT_LLM_URLS !== 'undefined') {
+        const providerConfig = DEFAULT_LLM_URLS.find(p => p.key === provider);
+        if (providerConfig) {
+          defaultEnabled = providerConfig.enabled;
+        }
       }
       
       // 如果没有保存过状态，使用默认值
