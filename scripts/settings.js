@@ -50,12 +50,13 @@ async function updateDynamicTexts(lang) {
   }
 }
 
-function storeParams(tabName, param1, param2, saveMessage) {
+function storeParams(tabName, param1, param2, saveMessage, showTips = true, provider = '') {
   let modelInfo = {};
   if(tabName == 'quick-trans') {
     modelInfo[tabName] = {
       enabled: param1,
-      selectedModel: param2
+      selectedModel: param2,
+      provider: provider
     };
   } else {
     modelInfo[tabName] = {
@@ -70,22 +71,44 @@ function storeParams(tabName, param1, param2, saveMessage) {
     
     // 检查是否是自动保存消息（划词翻译模块）
     if (tabName == 'quick-trans' && globalSaveMessage) {
-      // 为自动保存显示提供平滑的淡入淡出动画
-      globalSaveMessage.style.display = 'block';
-      // 给浏览器一点时间来应用display变化
-      setTimeout(() => {
-        globalSaveMessage.style.opacity = '1';
-        // 显示2秒后开始淡出
-        setTimeout(() => {
-          // 淡出并向下移动
+      if(showTips) {
+        // 清除可能存在的计时器，防止动画重叠
+        if (globalSaveMessage._entryTimer) clearTimeout(globalSaveMessage._entryTimer);
+        if (globalSaveMessage._exitTimer) clearTimeout(globalSaveMessage._exitTimer);
+        if (globalSaveMessage._hideTimer) clearTimeout(globalSaveMessage._hideTimer);
+        
+        globalSaveMessage.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>SUCCESS</span>';
+        globalSaveMessage.style.display = 'flex';
+        globalSaveMessage.style.alignItems = 'center';
+        globalSaveMessage.style.gap = '8px';
+        globalSaveMessage.style.backgroundColor = '#4CAF50';
+        globalSaveMessage.style.color = '#ffffff';
+        globalSaveMessage.style.fontWeight = '600';
+        globalSaveMessage.style.fontSize = '14px';
+        globalSaveMessage.style.padding = '10px 16px';
+        globalSaveMessage.style.borderRadius = '6px';
+        globalSaveMessage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        globalSaveMessage.style.transform = 'translateY(20px)';
+        globalSaveMessage.style.opacity = '0';
+        globalSaveMessage.style.transition = 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        
+        // 触发入场动画
+        globalSaveMessage._entryTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(0)';
+          globalSaveMessage.style.opacity = '1';
+        }, 10);
+        
+        // 设置退场动画
+        globalSaveMessage._exitTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(-20px)';
           globalSaveMessage.style.opacity = '0';
-          globalSaveMessage.style.transform = 'translateX(-50%)';
-          // 等待淡出动画完成后隐藏
-          setTimeout(() => {
+          
+          // 等待动画完成后再隐藏元素
+          globalSaveMessage._hideTimer = setTimeout(() => {
             globalSaveMessage.style.display = 'none';
-          }, 300); // 等待淡出动画完成
-        }, 2000); // 显示2秒
-      }, 10); // 短暂延迟以确保CSS过渡生效
+          }, 300);
+        }, 2000);
+      }
     } else if (saveMessage) {
       // 使用CSS动画显示保存成功消息
       // 先重置动画
@@ -167,70 +190,87 @@ function togglePasswordVisibility(button) {
 /**
  * 获取模型基础信息，以便于检查模型接口配置的可用性
  * @param {string} baseUrl 
- * @param {string} model 
+ * @param {string} tabId
  * @param {string} apiKey 
  * @returns 
  */
-function getModelBaseParamForCheck(baseUrl, model, apiKey) {
-  let body = '';
-  for (const { key, defaultBaseUrl, apiPath, defaultModel } of DEFAULT_LLM_URLS) {
-    if (model.includes(key)) {
-      let apiUrl = baseUrl || defaultBaseUrl;
-      apiUrl += apiPath;
+function getModelBaseParamForCheck(baseUrl, tabId, apiKey) {
+  return new Promise((resolve) => {
+    let body = '';
+    for (const { key, defaultBaseUrl, apiPath } of DEFAULT_LLM_URLS) {
+      if (tabId.includes(key)) {
+        // 从Chrome存储中获取用户保存的模型列表
+        chrome.storage.sync.get(`${tabId}-models`, (result) => {
+          const userModels = result[`${tabId}-models`];
+          let testModel = '';
+          
+          // 首先尝试使用用户编辑的模型列表中的第一个模型
+          if (userModels && Array.isArray(userModels) && userModels.length > 0) {
+            testModel = userModels[0];
+            console.log(`使用用户编辑的测试模型: ${testModel} (来自 ${tabId})`);
+          } else {
+            // 如果没有用户编辑的模型，则回退到默认模型
+            const providerModels = getDefaultModels(tabId);
+            if (providerModels && providerModels.length > 0) {
+              testModel = providerModels[0];
+              console.log(`使用默认测试模型: ${testModel} (来自 ${tabId})`);
+            } else {
+              console.log(`未找到 ${tabId} 的模型列表，无法获取测试模型`);
+            }
+          }
+          
+          let apiUrl = baseUrl || defaultBaseUrl;
+          apiUrl += apiPath;
 
-      if(model.includes(GEMINI_MODEL)) {
-        apiUrl = apiUrl.replace('{MODEL_NAME}', defaultModel).replace('{API_KEY}', apiKey);
+          if(tabId.includes(PROVIDER_GOOGLE)) {
+            apiUrl = apiUrl.replace('{MODEL_NAME}', testModel).replace('{API_KEY}', apiKey);
+            
+            body = JSON.stringify({
+              contents: [{
+                "role": "user",
+                "parts": [{
+                  "text": "hi"
+                }]
+              }]
+            });
+          } else if(tabId.includes(PROVIDER_OLLAMA)) {
+            apiUrl = baseUrl || defaultBaseUrl;
+            apiUrl += OLLAMA_LIST_MODEL_PATH;
+          } else {
+            body = JSON.stringify({
+              model: testModel,
+              stream: true,
+              messages: [
+                {
+                  "role": "user",
+                  "content": "hi"
+                }
+              ]
+            });
+          }
+
+          resolve({apiUrl, body});
+        });
         
-        body = JSON.stringify({
-          contents: [{
-            "role": "user",
-            "parts": [{
-              "text": "hi"
-            }]
-          }]
-        });
-      } else if(model.includes(AZURE_MODEL)) {
-        apiUrl = apiUrl.replace('{MODEL_NAME}', defaultModel);
-        body = JSON.stringify({
-          stream: true,
-          messages: [
-            {
-              "role": "user",
-              "content": "hi"
-            }
-          ]
-        });
-      } else if(model.includes(OLLAMA_MODEL)) {
-        apiUrl = baseUrl || defaultBaseUrl;
-        apiUrl += OLLAMA_LIST_MODEL_PATH;
-      } else {
-        body = JSON.stringify({
-          model: defaultModel,
-          stream: true,
-          messages: [
-            {
-              "role": "user",
-              "content": "hi"
-            }
-          ]
-        });
+        return; // 确保在回调中处理
       }
-
-      return {apiUrl, body};
     }
-  }
+    
+    // 如果没有匹配的提供商，返回空结果
+    resolve({});
+  });
 }
 
-function getToolsParamForCheck(baseUrl, model, apiKey) {
+function getToolsParamForCheck(baseUrl, tabId, apiKey) {
   let body = '';
   for (const { key, defaultBaseUrl, apiPath, defaultModel } of DEFAULT_TOOL_URLS) {
-    if(model.includes(key)) {
+    if(tabId.includes(key)) {
       let apiUrl = baseUrl || defaultBaseUrl;
       apiUrl += apiPath;
 
-      if(model.includes(SERPAPI_KEY)) {
+      if(tabId.includes(SERPAPI_KEY)) {
         apiUrl = apiUrl.replace('{API_KEY}', apiKey).replace('{QUERY}', 'apple');
-      } else if(model.includes(DALLE_KEY)) {
+      } else if(tabId.includes(DALLE_KEY)) {
         body = JSON.stringify({
           model: defaultModel,
           prompt: "A cute baby sea otter",
@@ -248,86 +288,133 @@ function getToolsParamForCheck(baseUrl, model, apiKey) {
  * 用于连通性测试
  * @param {string} baseUrl 
  * @param {string} apiKey 
- * @param {string} model 
+ * @param {string} tabId
  * @param {object} resultElement 
  */
-function checkAPIAvailable(baseUrl, apiKey, model, resultElement) {
-
-  var apiUrl, body;
-
-  // 为了复用该函数，这里做一些trick
-  if (model.includes(TOOL_KEY)) {
-    ({ apiUrl, body } = getToolsParamForCheck(baseUrl, model, apiKey));
-  } else {
-    ({ apiUrl, body } = getModelBaseParamForCheck(baseUrl, model, apiKey));
+function checkAPIAvailable(baseUrl, apiKey, tabId, resultElement) {
+  // Check if a check is already in progress for this element
+  if (resultElement._isChecking) {
+    console.log('Check already in progress for:', tabId);
+    return;
   }
-  
-  
-  const headers = {
-    'Content-Type': 'application/json'
-  };
+  resultElement._isChecking = true; // Set flag
 
-  if (model.includes(AZURE_MODEL)) {
-    headers['api-key'] = apiKey;
-  } else if(!model.includes(GEMINI_MODEL)) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
+  // Clear any previous hide timeout
+  if (resultElement._hideTimeoutId) {
+    clearTimeout(resultElement._hideTimeoutId);
+    resultElement._hideTimeoutId = null;
   }
 
-  let params = {
-    method: "POST",
-    headers: headers,
-    body: body
-  };
+  // Reset animation and show loading status
+  resultElement.style.animation = 'none';
+  resultElement.offsetHeight; // Trigger reflow
+  resultElement.textContent = '检查中...';
+  resultElement.style.display = "block"; // Make sure it's visible
 
-  if(model.includes(OLLAMA_MODEL) || model.includes(SERPAPI_KEY)) {
-    params = {
-      method: "GET"
+  const checkAPI = async () => {
+    let apiUrl, body;
+
+    // 为了复用该函数，这里做一些trick
+    if (tabId.includes(TOOL_KEY)) {
+      ({ apiUrl, body } = getToolsParamForCheck(baseUrl, tabId, apiKey));
+    } else {
+      // 处理Promise
+      ({ apiUrl, body } = await getModelBaseParamForCheck(baseUrl, tabId, apiKey));
     }
-  }
 
-  fetch(apiUrl, params)
-  .then(response => {
-      if (response.ok) {
-        resultElement.textContent = '检查通过';
-        setTimeout(() => {
-          resultElement.style.display = "block";
-          setTimeout(() => {
-            resultElement.style.display = 'none';
-          }, 1000);
-        }, 1000);
-      } else {
-          throw new Error('API 请求失败，状态码：' + response.status);
+    if (!apiUrl) {
+      // Reset animation before showing error
+      resultElement.style.animation = 'none';
+      resultElement.offsetHeight; // Trigger reflow
+      resultElement.textContent = '检查未通过：无效的API URL';
+      // Set timeout to hide and clear flag
+      resultElement._hideTimeoutId = setTimeout(() => {
+        resultElement.style.display = 'none';
+        resultElement._isChecking = false; // Reset flag
+        resultElement._hideTimeoutId = null;
+      }, 2000);
+      return;
+    }
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    if(!tabId.includes(PROVIDER_GOOGLE)) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
+    let params = {
+      method: "POST",
+      headers: headers,
+      body: body
+    };
+
+    if(tabId.includes(PROVIDER_OLLAMA) || tabId.includes(SERPAPI_KEY)) {
+      params = {
+        method: "GET"
       }
-  })
-  .catch(error => {
-      resultElement.textContent = '检查未通过';
-      setTimeout(() => {
-        resultElement.style.display = "block";
-        setTimeout(() => {
+    }
+
+    try {
+      const response = await fetch(apiUrl, params);
+      if (response.ok) {
+        // Reset animation before showing success
+        resultElement.style.animation = 'none';
+        resultElement.offsetHeight; // Trigger reflow
+        resultElement.textContent = '检查通过';
+        // Set timeout to hide and clear flag
+        resultElement._hideTimeoutId = setTimeout(() => {
           resultElement.style.display = 'none';
-        }, 1000);
-      }, 1000);
-  });
+          resultElement._isChecking = false; // Reset flag
+          resultElement._hideTimeoutId = null;
+        }, 2000);
+      } else {
+        // Use status text if available, otherwise default message
+        const errorText = response.statusText || `状态码：${response.status}`;
+        throw new Error('API 请求失败: ' + errorText);
+      }
+    } catch (error) {
+       // Reset animation before showing error
+       resultElement.style.animation = 'none';
+       resultElement.offsetHeight; // Trigger reflow
+       // Display a more user-friendly error message
+       const errorMessage = error instanceof Error ? error.message : String(error);
+       resultElement.textContent = '检查未通过：' + errorMessage;
+       console.error('API Check Error:', error); // Log the full error for debugging
+       // Set timeout to hide and clear flag
+       resultElement._hideTimeoutId = setTimeout(() => {
+         resultElement.style.display = 'none';
+         resultElement._isChecking = false; // Reset flag
+         resultElement._hideTimeoutId = null;
+       }, 3000); // Give slightly longer time for error messages
+    }
+  };
+
+  // 执行检查
+  checkAPI();
 }
 
 /**
  * 加载Ollama模型到快捷翻译的选项中
  */
 function loadOllamaModelsForQuickTrans() {
-  // 首先检查 Ollama 提供商是否启用
-  chrome.storage.sync.get('ollama-enabled', (enabledResult) => {
-    // 如果没有保存过状态，默认为启用
-    const isEnabled = enabledResult['ollama-enabled'] !== undefined ? enabledResult['ollama-enabled'] : true;
+  
+  // 使用通用函数检查Ollama提供商是否启用
+  getEnabledModels(({ providerStates }) => {
+    const isEnabled = providerStates[PROVIDER_OLLAMA] !== undefined ? 
+      providerStates[PROVIDER_OLLAMA] : true;
     
     // 如果提供商被禁用，直接返回
     if (!isEnabled) {
+      console.log("Ollama provider is disabled, not loading models");
       return;
     }
     
     // 使用默认的 OLLAMA_BASE_URL
     const baseUrl = OLLAMA_BASE_URL;
     const apiUrl = baseUrl + OLLAMA_LIST_MODEL_PATH;
-    
+        
     fetch(apiUrl)
       .then(response => {
         if (response.ok) {
@@ -338,6 +425,7 @@ function loadOllamaModelsForQuickTrans() {
       })
       .then(data => {
         const models = data.models;
+        
         const customModelsGroup = document.getElementById('ollama-models-quicktrans');
         if (customModelsGroup) {
           // 清空现有选项，避免重复添加
@@ -348,10 +436,13 @@ function loadOllamaModelsForQuickTrans() {
           // 添加新选项
           models.forEach(model => {
             const option = document.createElement('option');
-            option.value = model.model + OLLAMA_MODEL_POSTFIX;
+            option.value = model.model;
             option.textContent = model.name;
             customModelsGroup.appendChild(option);
           });
+          
+        } else {
+          console.log("Could not find ollama-models-quicktrans element");
         }
       })
       .catch(error => {
@@ -365,14 +456,14 @@ function loadOllamaModelsForQuickTrans() {
  */
 document.addEventListener('DOMContentLoaded', function() {
   // 初始化国际化
-  initI18n().then(() => {
+  initI18n().then(async () => {
     // 为所有模型供应商创建编辑界面
     createModelEditorForProviders();
     
-    // 填充模型选择下拉框
-    populateModelSelections();
+    // 使用异步方式填充模型选择下拉框
+    await populateModelSelections();
     
-    // 加载Ollama模型
+    // 在模型填充完成后加载Ollama模型
     loadOllamaModelsForQuickTrans();
     
     // 加载划词翻译设置
@@ -402,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 使用常量中定义的模型列表填充模型选择下拉框
-function populateModelSelections() {
+async function populateModelSelections() {
   const modelSelect = document.getElementById('model-select');
   if (!modelSelect) return;
   
@@ -420,22 +511,29 @@ function populateModelSelections() {
     customModelsGroup.removeChild(customModelsGroup.firstChild);
   }
   
-  // 添加免费模型
-  MODEL_LIST.free_models.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.value;
-    option.textContent = model.display;
-    option.dataset.provider = model.provider; // 添加提供商信息
-    freeModelsGroup.appendChild(option);
-  });
-  
-  // 添加自定义配置模型
-  MODEL_LIST.custom_config_models.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.value;
-    option.textContent = model.display;
-    option.dataset.provider = model.provider; // 添加提供商信息
-    customModelsGroup.appendChild(option);
+  // 使用通用函数获取启用的模型，等待所有数据加载完成
+  return new Promise(resolve => {
+    getEnabledModels(({ filteredFreeModels, filteredCustomConfigModels }) => {
+      // 添加免费模型
+      filteredFreeModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.value;
+        option.textContent = model.display;
+        option.dataset.provider = model.provider; // 添加提供商信息
+        freeModelsGroup.appendChild(option);
+      });
+      
+      // 添加自定义配置模型
+      filteredCustomConfigModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.value;
+        option.textContent = model.display;
+        option.dataset.provider = model.provider; // 添加提供商信息
+        customModelsGroup.appendChild(option);
+      });
+      
+      resolve();
+    });
   });
 }
 
@@ -471,9 +569,9 @@ function setupSaveButtons() {
       const baseUrl = baseUrlInput.value.trim();
       
       // 如果是 Ollama 提供商，只保存 base URL
-      if (tabId === 'ollama') {
+      if (tabId === PROVIDER_OLLAMA) {
         chrome.storage.sync.set({
-          [OLLAMA_MODEL]: {
+          [PROVIDER_OLLAMA]: {
             baseUrl: baseUrl
           }
         }, function() {
@@ -519,9 +617,11 @@ function setupSaveButtons() {
       // 获取开关状态和模型选择
       const enabled = toggleSwitch.checked;
       const selectedModel = modelSelection.value;
-      
+      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+      let provider = selectedOption.dataset.provider;
+
       // 自动保存设置
-      storeParams('quick-trans', enabled, selectedModel, null);
+      storeParams('quick-trans', enabled, selectedModel, null, false, provider);
     });
   }
   
@@ -530,9 +630,11 @@ function setupSaveButtons() {
       // 获取开关状态和模型选择
       const enabled = toggleSwitch.checked;
       const selectedModel = modelSelection.value;
+      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+      let provider = selectedOption.dataset.provider;
       
       // 自动保存设置
-      storeParams('quick-trans', enabled, selectedModel, null);
+      storeParams('quick-trans', enabled, selectedModel, null, true, provider);
     });
   }
 }
@@ -601,7 +703,7 @@ function loadQuickTransSettings() {
         
         // 如果没有找到匹配的选项，可能是Ollama模型还没加载
         // 设置一个定时器，稍后再尝试设置
-        if (!optionExists && quickTransInfo.selectedModel.includes('ollama')) {
+        if (!optionExists && quickTransInfo.selectedModel.includes(PROVIDER_OLLAMA)) {
           setTimeout(() => {
             for (let i = 0; i < modelSelection.options.length; i++) {
               if (modelSelection.options[i].value === quickTransInfo.selectedModel) {
@@ -618,8 +720,8 @@ function loadQuickTransSettings() {
 
 // 处理模型列表自定义功能的代码
 function setupModelCustomization() {
-  // 支持多个模型供应商标签
-  const modelTabs = ['gpt', 'gemini', 'deepseek', 'moonshot', 'yi', 'glm', 'groq', 'open-mixtral', 'ollama', 'azure'];
+  // 从DEFAULT_LLM_URLS获取所有供应商的key
+  const modelTabs = DEFAULT_LLM_URLS.map(provider => provider.key);
   
   modelTabs.forEach(tabId => {
     // 检查是否存在编辑按钮和模态框
@@ -699,38 +801,49 @@ function setupModelCustomization() {
 function loadModelList(tabId, modelListElement) {
   chrome.storage.sync.get(`${tabId}-models`, (result) => {
     const models = result[`${tabId}-models`];
+    // 清空当前列表
+    modelListElement.innerHTML = '';
+
+    let modelsToDisplay = [];
     if (models && Array.isArray(models) && models.length > 0) {
-      // 清空默认模型
-      modelListElement.innerHTML = '';
-      
-      // 添加保存的模型
-      models.forEach(model => {
+      // 如果有保存的模型，使用它们
+      modelsToDisplay = models;
+    } else {
+      // 否则，使用默认模型
+      modelsToDisplay = getDefaultModels(tabId);
+    }
+
+    // 添加模型到列表
+    if (modelsToDisplay.length > 0) {
+      modelsToDisplay.forEach(model => {
         const modelItem = document.createElement('div');
         modelItem.className = 'model-item';
         modelItem.textContent = model;
         modelListElement.appendChild(modelItem);
       });
+    } else {
+      // 如果既没有保存的模型，也没有默认模型（例如 Ollama）
+      // 可以选择显示一条消息或保持为空
+      // modelListElement.textContent = 'No models configured.'; // 示例消息
     }
   });
 }
 
 // 获取默认模型列表
 function getDefaultModels(tabId) {
-  // 这里可以根据不同的模型供应商返回不同的默认模型
-  const defaultModels = {
-    'gpt': ['gpt-4o-mini', 'gpt-4o', 'chatgpt-4o-latest'],
-    'gemini': ['gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 'gemini-2.5-pro-preview-03-25'],
-    'deepseek': ['deepseek-chat-v3', 'deepseek-resonser'],
-    'moonshot': ['moonshot-v1-128k', 'moonshot-v1-32k', 'moonshot-v1-32k-vision-preview'],
-    'yi': ['yi-lightning', 'yi-vision-v2'],
-    'glm': ['GLM-4', 'GLM-4V', 'GLM-3-Turbo'],
-    'groq': ['llama3-70b-8192'],
-    'open-mixtral': ['open-mixtral-8x22b'],
-    'azure': ['azure-gpt-35-turbo', 'azure-gpt-4-turbo', 'azure-gpt-4o']
-    // Ollama模型是从本地服务加载的，不需要默认模型
-  };
+  // Extract models from MODEL_LIST.custom_config_models based on provider
+  const models = MODEL_LIST.custom_config_models
+    .filter(model => model.provider === tabId)
+    .map(model => {
+      return model.value;
+    });
+
+  // Handle special case for Ollama models
+  if (tabId === 'ollama') {
+    return []; // Ollama models are loaded dynamically from local service
+  }
   
-  return defaultModels[tabId] || [];
+  return models;
 }
 
 // 填充模型编辑列表
@@ -904,7 +1017,7 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
     chrome.storage.sync.set({ 
       [`${tabId}-models`]: models,
       'model-provider-mapping': newMapping
-    }, () => {
+    }, async () => {
       // 更新UI显示
       modelListElement.innerHTML = '';
       models.forEach(model => {
@@ -913,6 +1026,10 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
         modelItem.textContent = model;
         modelListElement.appendChild(modelItem);
       });
+      
+      // 重新加载模型选择下拉框
+      console.log("模型列表已保存，正在刷新下拉列表...");
+      await populateModelSelections();
       
       // 显示保存成功提示
       const tabContent = document.getElementById(tabId);
@@ -936,8 +1053,8 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
 
 // 为未实现编辑功能的模型供应商创建编辑界面
 function createModelEditorForProviders() {
-  // 支持所有模型供应商标签
-  const modelTabs = ['deepseek', 'moonshot', 'yi', 'glm', 'groq', 'open-mixtral', 'ollama', 'azure'];
+  // 从DEFAULT_LLM_URLS获取所有供应商的key
+  const modelTabs = DEFAULT_LLM_URLS.map(provider => provider.key);
   
   modelTabs.forEach(tabId => {
     const tabContent = document.getElementById(tabId);
@@ -1034,18 +1151,15 @@ function createModelEditorForProviders() {
 
 // 获取模型名称示例
 function getModelExample(tabId) {
-  const examples = {
-    'deepseek': 'deepseek-chat',
-    'moonshot': 'moonshot-v1',
-    'yi': 'yi-large',
-    'glm': 'glm-4',
-    'groq': 'llama-3',
-    'open-mixtral': 'mixtral-8x22b',
-    'ollama': 'llama3',
-    'azure': 'gpt-4'
-  };
+  // 从MODEL_LIST中尝试获取一个模型作为示例
+  const modelsForProvider = MODEL_LIST.custom_config_models.filter(model => model.provider === tabId);
   
-  return examples[tabId] || 'model-name';
+  if (modelsForProvider.length > 0) {
+    // 返回第一个匹配的模型值
+    return modelsForProvider[0].value;
+  }
+  
+  return 'model-name';
 }
 
 // 初始化供应商开关状态
@@ -1057,35 +1171,61 @@ function initProviderToggles() {
     
     // 从存储中加载状态
     chrome.storage.sync.get(`${provider}-enabled`, (result) => {
-      // 如果没有保存过状态，默认为启用
-      const isEnabled = result[`${provider}-enabled`] !== undefined ? result[`${provider}-enabled`] : true;
+      // 获取该供应商的默认状态，如未设置则默认为 true
+      let defaultEnabled = true;
+      
+      // 尝试从全局变量中获取默认状态
+      const providerConstant = `PROVIDER_${provider.toUpperCase()}`;
+      if (typeof providerDefaultStates !== 'undefined' && 
+          providerConstant in providerDefaultStates) {
+        defaultEnabled = providerDefaultStates[providerConstant];
+      }
+      
+      // 如果没有保存过状态，使用默认值
+      const isEnabled = result[`${provider}-enabled`] !== undefined ? result[`${provider}-enabled`] : defaultEnabled;
       toggle.checked = isEnabled;
     });
     
     // 添加变更事件监听
-    toggle.addEventListener('change', (event) => {
+    toggle.addEventListener('change', async (event) => {
+      console.log(`Provider ${provider} toggle changed to: ${event.target.checked}`);
+      
       const isEnabled = event.target.checked;
       const storageObj = {};
       storageObj[`${provider}-enabled`] = isEnabled;
       
-      chrome.storage.sync.set(storageObj, () => {
-        // 显示自动保存消息
-        const globalSaveMessage = document.querySelector('.auto-save-message');
-        if (globalSaveMessage) {
-          globalSaveMessage.style.display = 'block';
-          setTimeout(() => {
-            globalSaveMessage.style.opacity = '1';
-            setTimeout(() => {
-              globalSaveMessage.style.opacity = '0';
-              globalSaveMessage.style.transform = 'translateX(-50%)';
-              setTimeout(() => {
-                globalSaveMessage.style.display = 'none';
-              }, 300);
-            }, 2000);
-          }, 10);
+      chrome.storage.sync.set(storageObj, async () => {
+        console.log(`Provider ${provider} state saved, refreshing model lists`);
+        
+        // 保存设置后刷新模型列表
+        await populateModelSelections();
+        
+        // 如果是Ollama提供商，还需要重新加载Ollama模型
+        if (provider === 'ollama') {
+          loadOllamaModelsForQuickTrans();
         }
       });
     });
   });
 }
+
+// 监听存储变化，当模型列表或提供商启用状态更新时刷新模型选择
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  if (namespace === 'sync') {
+    // 检查是否有模型列表变化
+    const modelChanges = Object.keys(changes).filter(key => key.endsWith('-models'));
+    // 检查是否有提供商启用状态变化
+    const providerEnabledChanges = Object.keys(changes).filter(key => key.endsWith('-enabled'));
+    // 检查是否有模型提供商映射变化
+    const mappingChange = changes['model-provider-mapping'];
+    
+    if (modelChanges.length > 0 || providerEnabledChanges.length > 0 || mappingChange) {
+      // 如果有模型列表或提供商启用状态变化，重新加载模型选择
+      console.log("检测到模型列表或提供商状态变化，重新加载模型选择");
+      populateModelSelections().catch(err => {
+        console.error('Error updating model selections:', err);
+      });
+    }
+  }
+});
 

@@ -478,15 +478,6 @@ function generateFisherAIHeaders(apiKey, apiSecret, body) {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const bodyStr = JSON.stringify(body);
     const messageToSign = `${apiKey}${timestamp}${bodyStr}`;
-
-    // console.log('apiKey');
-    // console.log(apiKey);
-    // console.log('apiSecret');
-    // console.log(apiSecret);
-    // console.log('body');
-    // console.log(body);
-    // console.log('messageToSign');
-    // console.log(messageToSign);
     
     // Generate HMAC SHA-256 signature
     const encoder = new TextEncoder();
@@ -592,6 +583,100 @@ async function getThreeStepsTransPrompt() {
       // 出错时使用默认的中文
       return THREE_STEPS_TRANSLATION_PROMPT.replace(/{language}/g, '中文');
     }
+}
+
+/**
+ * 获取启用的提供商列表和过滤后的模型列表
+ * @param {Function} callback 在获取到启用的提供商列表后调用的回调函数
+ */
+async function getEnabledModels(callback) {
+  // 获取所有提供商
+  const providers = DEFAULT_LLM_URLS.map(provider => provider.key);
+  const providerStates = {};
+  const providerCustomModels = {};
+  
+  // 异步获取所有提供商的启用状态和自定义模型列表
+  await Promise.all(providers.map(provider => {
+    return new Promise(resolve => {
+      chrome.storage.sync.get([`${provider}-enabled`, `${provider}-models`], (result) => {
+        // 如果没有保存过状态，默认为启用
+        providerStates[provider] = result[`${provider}-enabled`] !== undefined ? 
+          result[`${provider}-enabled`] : true;
+        
+        // 保存该提供商的自定义模型列表（如果有）
+        providerCustomModels[provider] = result[`${provider}-models`] || [];
+        
+        resolve();
+      });
+    });
+  }));
+  
+  // 根据启用状态过滤免费模型和自定义配置模型
+  const filteredFreeModels = MODEL_LIST.free_models.filter(model => {
+    const provider = model.provider;
+    // 对于 fisherai 提供商特殊处理
+    const isEnabled = provider === PROVIDER_FISHERAI ? 
+      (providerStates[provider] !== undefined ? providerStates[provider] : true) : 
+      providerStates[provider];
+    
+    // 调试 - 打印模型过滤结果
+    if (!isEnabled) {
+      console.log(`Filtered out free model: ${model.display} (${model.provider})`);
+    }
+    
+    return isEnabled;
+  });
+  
+  // 构建自定义配置模型列表（包含默认模型和用户自定义模型）
+  let customConfigModels = [];
+  
+  // 先处理默认的自定义配置模型
+  const defaultCustomModels = MODEL_LIST.custom_config_models.filter(model => {
+    return providerStates[model.provider];
+  });
+  
+  // 然后处理用户自定义的模型
+  const userCustomModels = [];
+  providers.forEach(provider => {
+    if (providerStates[provider] && providerCustomModels[provider].length > 0) {
+      providerCustomModels[provider].forEach(modelName => {
+        userCustomModels.push({
+          value: modelName,
+          display: modelName,
+          provider: provider
+        });
+      });
+    }
+  });
+  
+  // 如果提供商有自定义模型，使用自定义模型；否则使用默认模型
+  providers.forEach(provider => {
+    if (providerStates[provider]) {
+      if (providerCustomModels[provider].length > 0) {
+        // 该提供商有自定义模型，使用自定义模型
+        const providerModels = userCustomModels.filter(model => model.provider === provider);
+        customConfigModels = customConfigModels.concat(providerModels);
+      } else {
+        // 该提供商没有自定义模型，使用默认模型
+        const providerModels = defaultCustomModels.filter(model => model.provider === provider);
+        customConfigModels = customConfigModels.concat(providerModels);
+      }
+    }
+  });
+  
+  // 启用的提供商列表
+  const enabledProviders = providers.filter(provider => providerStates[provider]);
+  
+  // 调用回调函数，传递所有相关数据
+  if (typeof callback === 'function') {
+    callback({
+      enabledProviders,
+      providerStates,
+      providerCustomModels,
+      filteredFreeModels,
+      filteredCustomConfigModels: customConfigModels
+    });
+  }
 }
 
 

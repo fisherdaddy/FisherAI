@@ -1213,26 +1213,32 @@ input:checked + .slider:before {
   font-size: 14px;
   color: white;
   font-weight: 500;
-  padding: 10px 20px;
-  background-color: rgba(76, 175, 80, 0.9);
-  border-radius: 6px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(54, 150, 58, 0.9));
+  border-radius: 8px;
   opacity: 0;
   position: fixed;
-  top: auto;
-  bottom: 51%;
-  left: 60%;
-  transform: translateX(-50%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: opacity 0.3s ease, transform 0.3s ease;
   text-align: center;
   min-width: 200px;
   backdrop-filter: blur(4px);
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
 }
 
-/* 添加动画效果，当消息显示时会有一个轻微上浮效果 */
+/* 添加动画效果，当消息显示时会有一个轻微上移效果 */
 .auto-save-message[style*="opacity: 1"] {
-  transform: translate(-50%, -10px);
+  transform: translate(-50%, -60%);
+}
+
+/* 当保存失败时的样式 */
+.auto-save-message.error {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(210, 51, 45, 0.9));
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
 }
 
 /* 为GPT页面和其他供应商页面添加样式 */

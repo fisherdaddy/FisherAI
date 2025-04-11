@@ -37,6 +37,17 @@ async function updateDynamicTexts(lang) {
   SHORTCUT_CODE_EXPLAIN = messages.shortcut_code_explain;
   SHORTCUT_IMAGE2TEXT = messages.shortcut_image2text;
   
+  // 为API KEY设置按钮添加点击事件（如果存在）
+  document.addEventListener('DOMContentLoaded', function() {
+    const setupKeyBtn = document.getElementById('goto-settings-btn');
+    if (setupKeyBtn) {
+      setupKeyBtn.addEventListener('click', function() {
+        console.log('Settings button clicked');
+        chrome.runtime.sendMessage({ action: "openSettings" });
+      });
+    }
+  });
+  
   // 更新模型选择下拉框的 optgroup 标签
   const modelSelect = document.getElementById('model-selection');
   if (modelSelect) {
@@ -63,11 +74,13 @@ async function updateDynamicTexts(lang) {
  * 判断是否设置api key
  * @returns
  */
-async function verifyApiKeyConfigured(model) {
-  const {baseUrl, apiKey} = await getBaseUrlAndApiKey(model);
-  // console.log('baseulr', baseUrl);
-  // console.log('apiKey', apiKey);
-  if(baseUrl == null || (!model.includes(OLLAMA_MODEL) && apiKey == null)) {
+async function verifyApiKeyConfigured(provider) {
+  const {baseUrl, apiKey} = await getBaseUrlAndApiKey(provider);
+
+  if(provider.includes(PROVIDER_FISHERAI) || provider.includes(PROVIDER_OLLAMA)) {
+    return true;
+  }
+  if(baseUrl == null || apiKey == null || apiKey === '') {
     // 隐藏初始推荐内容
     const sloganDiv = document.querySelector('.my-extension-slogan');
     sloganDiv.style.display = 'none';
@@ -76,8 +89,21 @@ async function verifyApiKeyConfigured(model) {
     // 初始化对话内容 
     var contentDiv = document.querySelector('.chat-content');
     contentDiv.innerHTML = DEFAULT_TIPS;
+    
+    // 立即绑定设置按钮事件
+    setTimeout(() => {
+      const setupKeyBtn = document.getElementById('goto-settings-btn');
+      if (setupKeyBtn) {
+        setupKeyBtn.addEventListener('click', function() {
+          console.log('Settings button clicked from verify function');
+          chrome.runtime.sendMessage({ action: "openSettings" });
+        });
+      }
+    }, 0);
+    
     return false;
   }
+
   return true;
 }
 
@@ -104,7 +130,7 @@ function showRecommandContent() {
 /**
  * 定义清空并加载内容的函数
  */
-async function clearAndGenerate(model, inputText, base64Images) {
+async function clearAndGenerate(model, provider, inputText, base64Images) {
   // 隐藏初始推荐内容
   hideRecommandContent();
 
@@ -113,16 +139,17 @@ async function clearAndGenerate(model, inputText, base64Images) {
   contentDiv.innerHTML = '';
 
   // generate
-  await chatLLMAndUIUpdate(model, inputText, base64Images);
+  await chatLLMAndUIUpdate(model, provider, inputText, base64Images);
 }
 
 /**
  * 调用模型 & 更新ui
  * @param {string} model 
+ * @param {string} provider 
  * @param {string} inputText 
  * @param {Array} base64Images 
  */
-async function chatLLMAndUIUpdate(model, inputText, base64Images) {
+async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
   // loading
   displayLoading();
 
@@ -141,7 +168,7 @@ async function chatLLMAndUIUpdate(model, inputText, base64Images) {
   }
     
   try {
-    const completeText = await chatWithLLM(model, inputText, base64Images, CHAT_TYPE);
+    const completeText = await chatWithLLM(model, provider, inputText, base64Images, CHAT_TYPE);
     createCopyButton(completeText);
   } catch (error) {
     hiddenLoadding();
@@ -332,10 +359,10 @@ function handleUploadFiles(event) {
 
 // 检测是否启用ollama，拉去ollama模型列表并追加到模型选择列表中
 function loadOllamaModels(callback) {
-  // 首先检查 Ollama 提供商是否启用
-  chrome.storage.sync.get('ollama-enabled', (enabledResult) => {
-    // 如果没有保存过状态，默认为启用
-    const isEnabled = enabledResult['ollama-enabled'] !== undefined ? enabledResult['ollama-enabled'] : true;
+  // 使用通用函数检查Ollama提供商是否启用
+  getEnabledModels(({ providerStates }) => {
+    const isEnabled = providerStates[PROVIDER_OLLAMA] !== undefined ? 
+      providerStates[PROVIDER_OLLAMA] : true;
     
     // 如果提供商被禁用，直接返回空数组
     if (!isEnabled) {
@@ -368,7 +395,7 @@ function loadOllamaModels(callback) {
           if (customModelsGroup) {
             models.forEach(model => {
               const option = document.createElement('option');
-              option.value = model.model + OLLAMA_MODEL_POSTFIX;
+              option.value = model.model;
               option.textContent = model.name;
               customModelsGroup.appendChild(option);
             });
@@ -398,18 +425,6 @@ function initModelSelectionHandler() {
     // 获取所选选项的provider信息
     const selectedOption = modelSelection.options[modelSelection.selectedIndex];
     let provider = selectedOption.dataset.provider;
-    
-    // 所有option都应该有provider属性，如果没有是个异常情况
-    if (!provider) {
-      console.warn(`选中的模型 ${this.value} 没有提供商信息，将使用默认值`);
-      // 使用模型名称的前缀作为兜底方案
-      if (this.value.startsWith('gpt-')) provider = 'openai';
-      else if (this.value.startsWith('gemini-')) provider = 'gemini';
-      else if (this.value.includes('-ollama')) provider = 'ollama';
-      else if (this.value.includes('-groq')) provider = 'groq';
-      else if (this.value.includes('azure-')) provider = 'azure';
-      else provider = 'unknown';
-    }
     
     // 保存所选模型和provider信息
     chrome.storage.sync.set({
@@ -494,6 +509,14 @@ function getPageTitle() {
  * 初始化结果页面
  */
 function initResultPage() {
+  // 添加全局事件委托，捕获设置按钮点击
+  document.addEventListener('click', function(event) {
+    if (event.target && event.target.id === 'goto-settings-btn') {
+      console.log('Settings button clicked through delegation');
+      chrome.runtime.sendMessage({ action: "openSettings" });
+    }
+  });
+
   // 初始化国际化
   initI18n().then(async () => {
     // 加载模型选择
@@ -637,7 +660,9 @@ function initResultPage() {
     summaryButton.addEventListener('click', async function() {
       const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
-      const apiKeyValid = await verifyApiKeyConfigured(model);
+      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+      const provider = selectedOption.dataset.provider;
+      const apiKeyValid = await verifyApiKeyConfigured(provider);
       if(!apiKeyValid) {
         return;
       }
@@ -665,7 +690,7 @@ function initResultPage() {
         return;
       }
 
-      await clearAndGenerate(model, SUMMARY_PROMPT + inputText, null);
+      await clearAndGenerate(model, provider, SUMMARY_PROMPT + inputText, null);
     });
 
     // 网页翻译
@@ -673,7 +698,9 @@ function initResultPage() {
     translateButton.addEventListener('click', async function() {
       const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
-      const apiKeyValid = await verifyApiKeyConfigured(model);
+      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+      const provider = selectedOption.dataset.provider;
+      const apiKeyValid = await verifyApiKeyConfigured(provider);
       if(!apiKeyValid) {
         return;
       }
@@ -711,7 +738,9 @@ function initResultPage() {
     videoTranslateButton.addEventListener('click', async function() {
       const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
-      const apiKeyValid = await verifyApiKeyConfigured(model);
+      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+      const provider = selectedOption.dataset.provider;
+      const apiKeyValid = await verifyApiKeyConfigured(provider);
       if(!apiKeyValid) {
         return;
       }
@@ -901,7 +930,9 @@ function initResultPage() {
         submitButton.addEventListener('click', async function() {
           const modelSelection = document.getElementById('model-selection');
           const model = modelSelection.value;
-          const apiKeyValid = await verifyApiKeyConfigured(model);
+          const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+          const provider = selectedOption.dataset.provider;
+          const apiKeyValid = await verifyApiKeyConfigured(provider);
           if(!apiKeyValid) {
             return;
           }
@@ -982,7 +1013,7 @@ function initResultPage() {
             previewArea.innerHTML = '';
 
             // AI 回答
-            chatLLMAndUIUpdate(model, newInputText, base64Images);
+            chatLLMAndUIUpdate(model, provider, newInputText, base64Images);
           }
         });
     }
@@ -1027,13 +1058,16 @@ async function populateModelSelections() {
     }
   }
   
-  // 添加免费模型
-  MODEL_LIST.free_models.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.value;
-    option.textContent = model.display;
-    option.dataset.provider = model.provider;
-    freeModelsGroup.appendChild(option);
+  // 使用通用函数获取启用的模型
+  await getEnabledModels(({ filteredFreeModels }) => {
+    // 添加免费模型
+    filteredFreeModels.forEach(model => {
+      const option = document.createElement('option');
+      option.value = model.value;
+      option.textContent = model.display;
+      option.dataset.provider = model.provider;
+      freeModelsGroup.appendChild(option);
+    });
   });
   
   // 从设置页面加载自定义配置模型
@@ -1045,8 +1079,8 @@ async function populateModelSelections() {
       loadOllamaModels((models) => {
         models.forEach(model => {
           const option = document.createElement('option');
-          option.value = `${model.name}-ollama`;
-          option.textContent = `${model.name} (Ollama)`;
+          option.value = `${model.name}`;
+          option.textContent = `${model.name}`;
           option.dataset.provider = 'ollama';
           ollamaModelsGroup.appendChild(option);
         });
@@ -1089,178 +1123,27 @@ function restoreSavedModelSelection() {
  * @param {HTMLElement} customModelsGroup - 自定义模型的optgroup元素
  */
 async function loadCustomModelsFromSettings(customModelsGroup) {
-  // 定义要加载的模型提供商，按照settings.html中的顺序排列
-  const providers = [
-    'gpt', 'gemini', 'deepseek', 'moonshot', 
-    'yi', 'glm', 'groq', 'open-mixtral', 'azure', 'ollama'
-  ];
-  
-  // 获取模型-提供商映射
-  const modelProviderMapping = await getModelProviderMapping();
-  
-  // 首先添加默认的自定义模型作为备选
-  MODEL_LIST.custom_config_models.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.value;
-    option.textContent = model.display;
-    option.dataset.provider = model.provider;
-    customModelsGroup.appendChild(option);
-  });
-  
-  // 存储每个提供商的模型，以便按顺序添加
-  const providerModels = {};
-  
-  // 从Chrome存储中获取每个提供商的模型和启用状态
-  const loadPromises = providers.map(provider => {
-    return new Promise(resolve => {
-      chrome.storage.sync.get([`${provider}-models`, `${provider}-enabled`], (result) => {
-        const models = result[`${provider}-models`];
-        // 如果没有保存过状态，默认为启用
-        const isEnabled = result[`${provider}-enabled`] !== undefined ? result[`${provider}-enabled`] : true;
-        
-        // 存储该提供商的模型和启用状态
-        providerModels[provider] = {
-          models: models && Array.isArray(models) && models.length > 0 ? models : [],
-          enabled: isEnabled
-        };
-        
-        resolve();
-      });
-    });
-  });
-  
-  // 等待所有提供商数据加载完成
-  await Promise.all(loadPromises);
-  
   // 清空现有选项
   while (customModelsGroup.firstChild) {
     customModelsGroup.removeChild(customModelsGroup.firstChild);
   }
   
-  // 按照providers数组的顺序添加模型
-  providers.forEach(providerName => {
-    const providerData = providerModels[providerName];
-    
-    // 如果提供商被禁用，跳过
-    if (!providerData.enabled) {
-      return;
-    }
-    
-    // 如果有模型，添加到下拉列表
-    if (providerData.models.length > 0) {
-      providerData.models.forEach(model => {
+  // 使用通用函数直接获取所有启用的自定义模型
+  await new Promise(resolve => {
+    getEnabledModels(({ filteredCustomConfigModels }) => {
+      // 添加所有过滤后的自定义模型
+      filteredCustomConfigModels.forEach(model => {
         const option = document.createElement('option');
-        // 根据提供商设置正确的值
-        option.value = getModelValue(model, providerName);
-        option.textContent = model;
-        option.dataset.provider = providerName;
+        option.value = model.value;
+        option.textContent = model.display;
+        option.dataset.provider = model.provider;
         customModelsGroup.appendChild(option);
       });
-    } else {
-      // 如果没有自定义模型，使用默认模型
-      MODEL_LIST.custom_config_models
-        .filter(model => model.provider === providerName)
-        .forEach(model => {
-          const option = document.createElement('option');
-          option.value = model.value;
-          option.textContent = model.display;
-          option.dataset.provider = providerName;
-          customModelsGroup.appendChild(option);
-        });
-    }
-  });
-}
-
-/**
- * 根据模型名称和提供商获取正确的模型值
- * @param {string} modelName - 模型名称
- * @param {string} provider - 提供商ID
- * @returns {string} - 模型值
- */
-function getModelValue(modelName, provider) {
-  // 根据不同提供商设置正确的模型值
-  switch(provider) {
-    case 'gpt':
-      return modelName; // OpenAI模型值与名称相同
-    case 'gemini':
-      return modelName; // Gemini模型值与名称相同
-    case 'azure':
-      return modelName; // Azure模型值与名称相同
-    case 'deepseek':
-      // 处理deepseek模型，如果是deepseek-chat-v3，值应为deepseek-chat
-      if (modelName === 'deepseek-chat-v3') return 'deepseek-chat';
-      if (modelName === 'deepseek-resonser') return 'deepseek-reasoner';
-      return modelName.toLowerCase();
-    case 'yi':
-      return modelName.toLowerCase();
-    case 'moonshot':
-      return modelName.toLowerCase();
-    case 'glm':
-      return modelName.toLowerCase();
-    case 'groq':
-      return `${modelName.toLowerCase()}-groq`;
-    case 'open-mixtral':
-      return modelName.toLowerCase();
-    default:
-      return modelName.toLowerCase();
-  }
-}
-
-/**
- * 从模型名称中推断提供商
- * @param {string} modelName - 模型名称
- * @returns {Promise<string>} - 推断的提供商
- */
-async function getProviderFromModel(modelName) {
-  // 1. 首先从映射表中查找
-  const mapping = await getModelProviderMapping();
-  
-  // 找出精确匹配的模型名
-  if (mapping && mapping[modelName]) {
-    return mapping[modelName];
-  }
-  
-  // 2. 如果映射表中没有，从MODEL_LIST中查找
-  for (const modelGroup of [MODEL_LIST.free_models, MODEL_LIST.custom_config_models]) {
-    for (const model of modelGroup) {
-      if (model.value === modelName) {
-        return model.provider;
-      }
-    }
-  }
-  
-  // 3. 如果MODEL_LIST中找不到，根据模型名称推断
-  if (modelName.includes(OLLAMA_MODEL_POSTFIX)) return 'ollama';
-  if (modelName.includes(FISHERAI_MODEL_POSTFIX)) return 'fisherai';
-  if (modelName.includes(GROQ_MODEL_POSTFIX)) return 'groq';
-  if (modelName.includes(AZURE_MODEL)) return 'azure';
-  if (modelName.includes(GEMINI_MODEL)) return 'gemini';
-  if (modelName.includes(GPT_MODEL)) return 'openai';
-  if (modelName.includes(ZHIPU_MODEL)) return 'zhipu';
-  if (modelName.includes(MISTRAL_MODEL)) return 'mistral';
-  if (modelName.includes(MOONSHOT_MODEL)) return 'moonshot';
-  if (modelName.includes(DEEPSEEK_MODEL)) return 'deepseek';
-  if (modelName.includes(YI_MODEL)) return 'yi';
-  
-  // 默认返回unknown
-  return 'unknown';
-}
-
-/**
- * 获取模型到提供商的映射关系
- * @returns {Promise<Object>} - 模型到提供商的映射
- */
-async function getModelProviderMapping() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get('model-provider-mapping', function(result) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(result['model-provider-mapping'] || {});
-      }
+      resolve();
     });
   });
 }
+
 
 /**
  * 是否是视频页面

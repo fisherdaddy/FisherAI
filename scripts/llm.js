@@ -88,44 +88,12 @@ function initChatHistory() {
 
 /**
  * 根据不同的模型，选择对应的接口地址
- * @param {string} model 
- * @param {string} modelProvider 
+ * @param {string} provider 
  * @returns 
  */
-async function getBaseUrlAndApiKey(model, modelProvider) {
-  // 如果未找到存储的提供商信息，则尝试从模型名称中推断
-  if (!modelProvider) {
-    modelProvider = await getProviderFromModel(model);
-  }
-  
-  // 将provider映射到DEFAULT_LLM_URLS中的key
-  let urlKey = modelProvider;
-  
-  // 特殊情况处理
-  if (modelProvider === 'openai') urlKey = GPT_MODEL;
-  if (modelProvider === 'zhipu') urlKey = ZHIPU_MODEL;
-  if (modelProvider === 'mistral') urlKey = MISTRAL_MODEL;
-  
+async function getBaseUrlAndApiKey(provider) {
   for (const { key, baseUrl, apiPath } of DEFAULT_LLM_URLS) {
-    if (key === urlKey) {
-      const modelInfo = await getModelInfoFromChromeStorage(key);
-      let domain = baseUrl;
-      let apiKey = '';
-      if (modelInfo) {
-        if(modelInfo.baseUrl) {
-          domain  = modelInfo.baseUrl;
-        }
-        if(modelInfo.apiKey) {
-          apiKey = modelInfo.apiKey;
-        }
-      }
-      return { baseUrl: `${domain}${apiPath}`, apiKey: apiKey};
-    }
-  }
-  
-  // 如果没有找到匹配的提供商，则回退到原来的代码
-  for (const { key, baseUrl, apiPath } of DEFAULT_LLM_URLS) {
-    if (model.includes(key)) {
+    if (key === provider) {
       const modelInfo = await getModelInfoFromChromeStorage(key);
       let domain = baseUrl;
       let apiKey = '';
@@ -198,11 +166,8 @@ function createRequestParams(additionalHeaders, body) {
   currentController = controller;
   headers = {...headers, ...additionalHeaders};
 
-   // 设置30秒超时
-   const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-
-  console.log('body>>>', body);
+  // 设置30秒超时
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   return {
     method: 'POST',
@@ -216,19 +181,19 @@ function createRequestParams(additionalHeaders, body) {
 /**
  * call llm
  * @param {string} model 
+ * @param {string} provider 
  * @param {string} inputText 
  * @param {Array} base64Images 
  * @param {string} type 
  * @returns 
  */
-async function chatWithLLM(model, inputText, base64Images, type) {
-  // 获取模型供应商信息
-  let modelProvider = await getValueFromChromeStorage('selectedModelProvider');
-  
+async function chatWithLLM(model, provider, inputText, base64Images, type) {
   // 处理URL和API密钥
-  var {baseUrl, apiKey} = await getBaseUrlAndApiKey(model, modelProvider);
+  var {baseUrl, apiKey} = await getBaseUrlAndApiKey(provider);
 
-  if(modelProvider !== 'fisherai' && modelProvider !== 'ollama') {
+  console.log('baseUrl>>>', baseUrl);
+
+  if(provider !== PROVIDER_FISHERAI && provider !== PROVIDER_OLLAMA) {
     if(!baseUrl) {
       throw new Error('模型 ' + model + ' 的 API 代理地址为空，请检查！');
     }
@@ -238,13 +203,14 @@ async function chatWithLLM(model, inputText, base64Images, type) {
     }
   }
 
-  // 如果是划词或划句场景，把system prompt置空
+  // 如果是划词或划句场景，把system prompt 和 历史记录置空
   if(type == HUACI_TRANS_TYPE) {
-    dialogueHistory[0].content = '';
+    dialogueHistory = [];
+    geminiDialogueHistory = [];
   }
 
-  const openaiDialogueEntry = createDialogueEntry('user', 'content', inputText, base64Images, model);
-  const geminiDialogueEntry = createDialogueEntry('user', 'parts', inputText, base64Images, model);
+  const openaiDialogueEntry = createDialogueEntry('user', 'content', inputText, base64Images, model, provider);
+  const geminiDialogueEntry = createDialogueEntry('user', 'parts', inputText, base64Images, model, provider);
 
   // 将用户提问更新到对话历史
   dialogueHistory.push(openaiDialogueEntry);
@@ -256,16 +222,16 @@ async function chatWithLLM(model, inputText, base64Images, type) {
   }
 
   let result = { completeText: '', tools: [] };
-  if(modelProvider === 'gemini') {
+  if(provider === PROVIDER_GOOGLE) {
     baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
-    result = await chatWithGemini(baseUrl, model, type, modelProvider);
+    result = await chatWithGemini(baseUrl, type, provider);
   } else {
-    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, modelProvider);
+    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider);
   }
 
   if(result.tools.length > 0) {
     while(result.tools.length > 0) {
-      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type, modelProvider);
+      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type, provider);
     }
   } else {
     if(result.completeText.length > 0) {
@@ -278,7 +244,7 @@ async function chatWithLLM(model, inputText, base64Images, type) {
 }
 
 
-async function parseFunctionCalling(result, baseUrl, apiKey, model, type, modelProvider) {
+async function parseFunctionCalling(result, baseUrl, apiKey, model, type, provider) {
 
   if(result.completeText.length > 0) {
     // 将 AI 回答更新到对话历史
@@ -376,10 +342,10 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type, modelP
     }
 
     let newResult = { completeText: '', tools: [] };
-    if(modelProvider === 'gemini') {
-      newResult = await chatWithGemini(baseUrl, model, type, modelProvider);
+    if(provider === PROVIDER_GOOGLE) {
+      newResult = await chatWithGemini(baseUrl, type, provider);
     } else {
-      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, modelProvider);
+      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider);
     }
 
     return newResult;
@@ -396,65 +362,57 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type, modelP
  * @param {string} type 
  * @returns 
  */
-async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, modelProvider) {
+async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider) {
   let isFisherAI = false;
 
-  if(modelName.includes(FISHERAI_MODEL)) {
+  if(provider.includes(PROVIDER_FISHERAI)) {
     isFisherAI = true;
   }
-
-  let realModelName = modelName.replace(new RegExp(GROQ_MODEL_POSTFIX, 'g'), "")
-                                .replace(new RegExp(OLLAMA_MODEL_POSTFIX, 'g'), "")
-                                .replace(new RegExp(FISHERAI_MODEL_POSTFIX, 'g'), "");
   
   const { temperature, topP, maxTokens, frequencyPenalty, presencePenalty } = await getModelParameters();
 
   const body = {
-    model: realModelName,
+    model: modelName,
     max_tokens: maxTokens,
     stream: true,
     messages: dialogueHistory,
     tools: []
   };
 
-  if(!modelName.includes(DEEPSEEK_REASONER)) {
+  if(!provider.includes(PROVIDER_DEEPSEEK)) {
     body.temperature = temperature;
     body.top_p = topP;
   }
    
   // mistral 和 deepseek-reasoner 的模型传以下两个参数会报错，这里过滤掉
-  if(!modelName.includes(MISTRAL_MODEL) && !modelName.includes(DEEPSEEK_REASONER)) {
+  if(!provider.includes(PROVIDER_MISTRAL) && !provider.includes(PROVIDER_DEEPSEEK)) {
     body.frequency_penalty = frequencyPenalty;
     body.presence_penalty = presencePenalty;
   }
   
+  if(!type.includes(HUACI_TRANS_TYPE)) {
+    // 获取工具选择情况
+    const serpapi_checked = await getValueFromChromeStorage(SERPAPI);
+    const dalle_checked = await getValueFromChromeStorage(DALLE);
+    let tools_list_prompt = TOOL_PROMPT_PREFIX;
+    if(serpapi_checked != null && serpapi_checked) {
+      tools_list_prompt += WEB_SEARCH_PROMTP;
+      body.tools.push(FUNCTION_SERAPI);
+    }
+    if(dalle_checked != null && dalle_checked) {
+      tools_list_prompt += IMAGE_GEN_PROMTP;
+      body.tools.push(FUNCTION_DALLE);
+    }
+    // 如果tools数组为空，则删除tools属性
+    if (body.tools.length === 0) {
+      delete body.tools;
+    }
 
-  // 获取工具选择情况
-  const serpapi_checked = await getValueFromChromeStorage(SERPAPI);
-  const dalle_checked = await getValueFromChromeStorage(DALLE);
-  let tools_list_prompt = TOOL_PROMPT_PREFIX;
-  if(serpapi_checked != null && serpapi_checked) {
-    tools_list_prompt += WEB_SEARCH_PROMTP;
-    body.tools.push(FUNCTION_SERAPI);
+    // 根据选择的工具状态来更新 system prompt
+    dialogueHistory[0].content = systemPrompt.replace('{tools-list}', tools_list_prompt);
   }
-  if(dalle_checked != null && dalle_checked) {
-    tools_list_prompt += IMAGE_GEN_PROMTP;
-    body.tools.push(FUNCTION_DALLE);
-  }
-  // 如果tools数组为空，则删除tools属性
-  if (body.tools.length === 0) {
-    delete body.tools;
-  }
-
-  // 根据选择的工具状态来更新 system prompt
-  dialogueHistory[0].content = systemPrompt.replace('{tools-list}', tools_list_prompt);
 
   let additionalHeaders = { 'Authorization': 'Bearer ' + apiKey };
-
-  if (modelName.includes(AZURE_MODEL)) {
-    baseUrl = baseUrl.replace('{MODEL_NAME}', realModelName);
-    additionalHeaders = { 'api-key': apiKey };
-  }
 
   // FisherAI 模型需要特殊的认证头
   if(isFisherAI) {
@@ -465,17 +423,17 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, modelProvi
   console.log(baseUrl);
   console.log(params);
 
-  return await fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider);
+  return await fetchAndHandleResponse(baseUrl, params, type, provider);
 }
 
 /**
  * 处理 gemini 接口数据格式
  * @param {string} baseUrl 
- * @param {string} modelName 
  * @param {string} type 
+ * @param {string} provider
  * @returns 
  */
-async function chatWithGemini(baseUrl, modelName, type, modelProvider) {
+async function chatWithGemini(baseUrl, type, provider) {
   const { temperature, topP, maxTokens } = await getModelParameters();
 
   const body = {
@@ -518,7 +476,7 @@ async function chatWithGemini(baseUrl, modelName, type, modelProvider) {
   console.log(baseUrl);
   console.log(params);
 
-  return await fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider);
+  return await fetchAndHandleResponse(baseUrl, params, type, provider);
 }
 
 /**
@@ -539,11 +497,11 @@ async function getModelParameters() {
  * LLM 接口请求 & 解析
  * @param {string} baseUrl 
  * @param {string} params 
- * @param {string} modelName 
  * @param {string} type 
+ * @param {string} provider
  * @returns 
  */
-async function fetchAndHandleResponse(baseUrl, params, modelName, type, modelProvider) {
+async function fetchAndHandleResponse(baseUrl, params, type, provider) {
   let result = { resultString: '', resultArray: [] };
   try {
     const response = await fetch(baseUrl, params);
@@ -559,11 +517,11 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type, modelPro
       throw new Error("错误信息：" + errorJson.error.message);
     } 
     
-    const result = await parseAndUpdateChatContent(response, modelName, type, modelProvider);
+    const result = await parseAndUpdateChatContent(response, type, provider);
     return result;
   } catch (error) {
     if (error.name === 'AbortError') {
-      console.log('Fetch aborted...', completeText, '<<');
+      console.log('Fetch aborted...');
       return result;
     } else {
       console.error(error.message);
@@ -578,9 +536,10 @@ async function fetchAndHandleResponse(baseUrl, params, modelName, type, modelPro
  * @param {string} partsKey 
  * @param {string} text 
  * @param {string} images 
+ * @param {string} provider
  * @returns 
  */
-function createDialogueEntry(role, partsKey, text, images, model) {
+function createDialogueEntry(role, partsKey, text, images, provider) {
   const entry = { "role": role };
   
   // geimini
@@ -614,7 +573,7 @@ function createDialogueEntry(role, partsKey, text, images, model) {
       }
       images.forEach(imageBase64 => {
         // 智谱的兼容OpenAI格式没做太好，这里的base64不能带前缀，特殊处理一下
-        if(model.includes(ZHIPU_MODEL)) {
+        if(provider.includes(PROVIDER_ZHIPU)) {
           imageBase64 = imageBase64.split(',')[1];
         }
         entry[partsKey].push({
@@ -763,11 +722,11 @@ async function getCurrentURL() {
 /**
  * 解析模型返回结果，并更新到对话界面中
  * @param {object} response 
- * @param {string} modelName 
  * @param {string} type
+ * @param {string} provider
  * @returns 
  */
-async function parseAndUpdateChatContent(response, modelName, type, modelProvider) {
+async function parseAndUpdateChatContent(response, type, provider) {
     // 使用长轮询，服务器会持续发送数据
     const reader = response.body.getReader();
     let completeText = '';
@@ -780,7 +739,7 @@ async function parseAndUpdateChatContent(response, modelName, type, modelProvide
     try {
       while (true) {
         const { value, done } = await reader.read();
-        // console.log('done..', done);
+        console.log('done..', done);
         if (done) break;
   
         // 处理接收到的数据
@@ -801,13 +760,13 @@ async function parseAndUpdateChatContent(response, modelName, type, modelProvide
           // 尝试解析找到的JSON对象
           let jsonText = buffer.substring(start, end + 1);
           try {
-            // console.log('jsonText...', jsonText);
+            console.log('jsonText...', jsonText);
             const jsonData = JSON.parse(jsonText);
             let content = '';
             let reasoningContent = ''; // 用于存储 reasoning/reason 字段内容
             
             // 根据提供商确定如何解析响应
-            if (modelProvider === 'gemini') {
+            if (provider === PROVIDER_GOOGLE) {
               jsonData.candidates[0].content.parts.forEach(part => {
                 // 检查 content 字段
                 if (part.text !== undefined && part.text != null) {
@@ -824,7 +783,7 @@ async function parseAndUpdateChatContent(response, modelName, type, modelProvide
                   });
                 }
               });
-            } else if (modelProvider === 'ollama') {
+            } else if (provider === PROVIDER_OLLAMA) {
               content = jsonData.message.content;
             } else {
               jsonData.choices.forEach(choice => {
@@ -1013,6 +972,7 @@ async function parseAndUpdateChatContent(response, modelName, type, modelProvide
         }
       }
     } catch(error) {
+      console.error('parseAndUpdateChatContent error...', error);
       throw error;
     } finally {
       return {
@@ -1115,14 +1075,16 @@ function updateChatContent(completeText, type) {
     if (isAtBottom) {
       contentDiv.scrollTop = contentDiv.scrollHeight; // 滚动到底部
     }
-
-  } else if(type == HUACI_TRANS_TYPE) {
+  } else if (type == HUACI_TRANS_TYPE) {
     // popup
     const translationPopup = document.querySelector('#fisherai-transpop-id');
     translationPopup.style.display = 'block';  
     const button = document.querySelector('#fisherai-button-id');
     button.style.display = 'none';
 
+    // 找到内容容器
+    const contentContainer = translationPopup.querySelector('#fisherai-transpop-content');
+    
     // 检查是否存在思考区块
     const thinkingBlock = translationPopup.querySelector('.thinking-block');
     
@@ -1145,12 +1107,26 @@ function updateChatContent(completeText, type) {
         ],
         throwOnError: false
       });
+      
+      // 添加复制按钮到regularContentDiv
+      addCopyButtonToTranslation(regularContentDiv, completeText);
     } else {
-      // 如果没有思考区块，直接更新整个内容
-      translationPopup.innerHTML = marked.parse(completeText);
+      // 如果没有思考区块，直接更新内容容器
+      if (contentContainer) {
+        contentContainer.innerHTML = marked.parse(completeText);
+        
+        // 添加复制按钮到contentContainer
+        addCopyButtonToTranslation(contentContainer, completeText);
+      } else {
+        // 如果找不到容器，则更新整个弹窗（应该不会走到这个分支）
+        translationPopup.innerHTML = marked.parse(completeText);
+        
+        // 添加复制按钮到translationPopup
+        addCopyButtonToTranslation(translationPopup, completeText);
+      }
       
       // 渲染数学公式
-      renderMathInElement(translationPopup, {
+      renderMathInElement(contentContainer || translationPopup, {
         delimiters: [
           {left: '$$', right: '$$', display: true},
           {left: '$', right: '$', display: false}
@@ -1159,6 +1135,85 @@ function updateChatContent(completeText, type) {
       });
     }
   }
+}
+
+/**
+ * 为翻译弹窗添加复制按钮
+ * @param {HTMLElement} container 内容容器
+ * @param {string} textToCopy 要复制的文本
+ */
+function addCopyButtonToTranslation(container, textToCopy) {
+  // 创建复制按钮容器，使用绝对定位放在右下角
+  const copyButtonContainer = document.createElement('div');
+  copyButtonContainer.style.position = 'relative';
+  copyButtonContainer.style.width = '100%';
+  copyButtonContainer.style.height = '24px';
+  copyButtonContainer.style.marginTop = '10px';
+  
+  // 创建复制按钮
+  const copyButton = document.createElement('div');
+  copyButton.style.position = 'absolute';
+  copyButton.style.right = '5px';
+  copyButton.style.bottom = '0';
+  copyButton.style.cursor = 'pointer';
+  copyButton.style.color = 'rgba(66, 153, 225, 0.8)';
+  copyButton.style.padding = '4px';
+  copyButton.style.borderRadius = '4px';
+  copyButton.style.fontSize = '12px';
+  copyButton.style.display = 'flex';
+  copyButton.style.alignItems = 'center';
+  copyButton.style.transition = 'background-color 0.2s';
+  copyButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v1"></path>
+    </svg>
+    <span>复制</span>
+  `;
+  
+  // 添加悬停效果
+  copyButton.addEventListener('mouseover', function() {
+    copyButton.style.backgroundColor = 'rgba(66, 153, 225, 0.1)';
+  });
+  
+  copyButton.addEventListener('mouseout', function() {
+    copyButton.style.backgroundColor = 'transparent';
+  });
+  
+  // 添加点击事件
+  copyButton.addEventListener('click', function() {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      // 复制成功，更改按钮样式和文本
+      const originalHtml = copyButton.innerHTML;
+      copyButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" style="margin-right: 4px;">
+          <path fill="currentColor" fill-rule="evenodd" d="M18.063 5.674a1 1 0 0 1 .263 1.39l-7.5 11a1 1 0 0 1-1.533.143l-4.5-4.5a1 1 0 1 1 1.414-1.414l3.647 3.647 6.82-10.003a1 1 0 0 1 1.39-.263" clip-rule="evenodd"></path>
+        </svg>
+        <span>已复制</span>
+      `;
+      copyButton.style.color = '#48BB78'; // 成功绿色
+      
+      // 在几秒后恢复为原始状态
+      setTimeout(() => {
+        copyButton.innerHTML = originalHtml;
+        copyButton.style.color = 'rgba(66, 153, 225, 0.8)';
+      }, 2000);
+    }).catch(err => {
+      console.error('复制失败:', err);
+      copyButton.textContent = '复制失败';
+      copyButton.style.color = '#F56565'; // 错误红色
+      
+      // 在几秒后恢复为原始状态
+      setTimeout(() => {
+        copyButton.innerHTML = originalHtml;
+        copyButton.style.color = 'rgba(66, 153, 225, 0.8)';
+      }, 2000);
+    });
+  });
+  
+  // 添加按钮到容器
+  copyButtonContainer.appendChild(copyButton);
+  container.appendChild(copyButtonContainer);
 }
 
 async function callSerpAPI(query) {
@@ -1251,71 +1306,5 @@ function setupThinkingBlockToggle() {
         }
       });
     }
-  });
-}
-
-/**
- * 从模型名称中推断提供商 - 同步版本
- * @param {string} modelName - 模型名称
- * @returns {string} - 推断的提供商
- */
-function getProviderFromModelSync(modelName) {
-  // 从MODEL_LIST中查找
-  for (const modelGroup of [MODEL_LIST.free_models, MODEL_LIST.custom_config_models]) {
-    for (const model of modelGroup) {
-      if (model.value === modelName) {
-        return model.provider;
-      }
-    }
-  }
-  
-  // 如果MODEL_LIST中找不到，根据模型名称推断
-  if (modelName.includes(OLLAMA_MODEL_POSTFIX)) return 'ollama';
-  if (modelName.includes(FISHERAI_MODEL_POSTFIX)) return 'fisherai';
-  if (modelName.includes(GROQ_MODEL_POSTFIX)) return 'groq';
-  if (modelName.includes(AZURE_MODEL)) return 'azure';
-  if (modelName.includes(GEMINI_MODEL)) return 'gemini';
-  if (modelName.includes(GPT_MODEL)) return 'openai';
-  if (modelName.includes(ZHIPU_MODEL)) return 'zhipu';
-  if (modelName.includes(MISTRAL_MODEL)) return 'mistral';
-  if (modelName.includes(MOONSHOT_MODEL)) return 'moonshot';
-  if (modelName.includes(DEEPSEEK_MODEL)) return 'deepseek';
-  if (modelName.includes(YI_MODEL)) return 'yi';
-  
-  // 默认返回unknown
-  return 'unknown';
-}
-
-/**
- * 从模型名称中推断提供商 - 异步版本，会查询存储的映射
- * @param {string} modelName - 模型名称
- * @returns {Promise<string>} - 推断的提供商
- */
-async function getProviderFromModel(modelName) {
-  // 1. 首先从映射表中查找
-  const mapping = await getModelProviderMapping();
-  
-  // 找出精确匹配的模型名
-  if (mapping && mapping[modelName]) {
-    return mapping[modelName];
-  }
-  
-  // 2. 如果映射表中没有，使用同步方法推断
-  return getProviderFromModelSync(modelName);
-}
-
-/**
- * 获取模型到提供商的映射关系
- * @returns {Promise<Object>} - 模型到提供商的映射
- */
-async function getModelProviderMapping() {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get('model-provider-mapping', function(result) {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(result['model-provider-mapping'] || {});
-      }
-    });
   });
 }

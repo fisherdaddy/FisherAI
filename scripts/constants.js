@@ -4,12 +4,12 @@ const FORMAT_HTML = "HTML";
 const FORMAT_SRT = "SRT";
 
 // action
-ACTION_FETCH_PAGE_CONTENT = 'fetchPageContent';
-ACTION_FETCH_TEXT_CONTENT = 'fetchTextContent';
-ACTION_COPY_PAGE_CONTENT = 'copyPageContent';
-ACTION_COPY_PURE_PAGE_CONTENT = 'copyPurePageContent';
-ACTION_DOWNLOAD_SUBTITLES = 'downloadSubtitles';
-ACTION_GET_PAGE_URL = 'getPageURL';
+const ACTION_FETCH_PAGE_CONTENT = 'fetchPageContent';
+const ACTION_FETCH_TEXT_CONTENT = 'fetchTextContent';
+const ACTION_COPY_PAGE_CONTENT = 'copyPageContent';
+const ACTION_COPY_PURE_PAGE_CONTENT = 'copyPurePageContent';
+const ACTION_DOWNLOAD_SUBTITLES = 'downloadSubtitles';
+const ACTION_GET_PAGE_URL = 'getPageURL';
 
 // default tips
 // 将在初始化时替换为当前语言的版本
@@ -31,11 +31,8 @@ const OPENAI_BASE_URL = "https://api.openai.com";
 const OPENAI_CHAT_API_PATH = "/v1/chat/completions";
 const OPENAI_DALLE_API_PATH = "/v1/images/generations";
 
-const AZURE_OPENAI_BASE_URL = "https://{YOUR_RESOURCE_NAME}.openai.azure.com";
-const AZURE_OPENAI_CHAT_API_PATH = "/openai/deployments/{MODEL_NAME}/chat/completions?api-version=2024-04-01-preview";
-
-const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com";
-const GEMINI_CHA_API_PAH = "/v1beta/models/{MODEL_NAME}:streamGenerateContent?alt=sse&key={API_KEY}";
+const GOOGLE_BASE_URL = "https://generativelanguage.googleapis.com";
+const GOOGLE_CHAT_API_PATH = "/v1beta/models/{MODEL_NAME}:streamGenerateContent?alt=sse&key={API_KEY}";
 
 const GROQ_BASE_URL = "https://api.groq.com";
 const GROQ_CHAT_API_PATH = "/openai/v1/chat/completions";
@@ -59,6 +56,18 @@ const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
 const OLLAMA_CHAT_API_PATH = "/api/chat";
 const OLLAMA_LIST_MODEL_PATH = "/api/tags";
 
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api";
+const OPENROUTER_CHAT_API_PATH = "/v1/chat/completions";
+
+const SILICONFLOW_BASE_URL = "https://api.siliconflow.cn";
+const SILICONFLOW_CHAT_API_PATH = "/v1/chat/completions";
+
+const XAI_BASE_URL = "https://api.x.ai";
+const XAI_CHAT_API_PATH = "/v1/chat/completions";
+
+const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3";
+const DOUBAO_CHAT_API_PATH = "/chat/completions";
+
 // 这些值将从环境变量中获取
 const FISHERAI_BASE_URL = "https://www.heytransl.com";
 const FISHERAI_API_KEY = "28c81f920240b0fdbca940e07b86b8db";
@@ -66,94 +75,111 @@ const FISHERAI_API_SECRET = "d6e57784b134d09a8bed9ca004c98b4f";
 const FISHERAI_CHAT_API_PATH = "/api/chat";
 
 // 模型名称包含的关键字
-const GPT_MODEL = "gpt";
-const AZURE_MODEL = "azure";
-const GEMINI_MODEL = 'gemini';
-const GROQ_MODEL = "groq";
-const GROQ_MODEL_POSTFIX = "-" + GROQ_MODEL;
-const MISTRAL_MODEL = "open-mixtral";
-const DEEPSEEK_REASONER = "deepseek-reasoner";
-const ZHIPU_MODEL = "glm";
-const MOONSHOT_MODEL = "moonshot";
-const DEEPSEEK_MODEL = 'deepseek';
-const YI_MODEL = "yi";
-const OLLAMA_MODEL = "ollama";
-const OLLAMA_MODEL_POSTFIX = "-" + OLLAMA_MODEL;
-const FISHERAI_MODEL = "fisherai";
-const FISHERAI_MODEL_POSTFIX = "-" + FISHERAI_MODEL;
+const PROVIDER_OPENAI = "openai";
+const PROVIDER_GOOGLE = 'google';
+const PROVIDER_GROQ = "groq";
+const PROVIDER_MISTRAL = "mistral";
+const PROVIDER_ZHIPU = "zhipu";
+const PROVIDER_MOONSHOT = "moonshot";
+const PROVIDER_DEEPSEEK = 'deepseek';
+const PROVIDER_YI = "yi";
+const PROVIDER_OLLAMA = "ollama";
+const PROVIDER_FISHERAI = "fisherai";
+const PROVIDER_OPENROUTER = "openrouter";
+const PROVIDER_SILICONFLOW = "siliconflow";
+const PROVIDER_XAI = "xai";
+const PROVIDER_DOUBAO = "doubao";
 
-// 默认模型
-const GPT_DEFAULT_MODEL = "gpt-4o-mini";
-const AZURE_GPT_DEFAULT_MODEL = "azure-gpt-35-turbo";
-const GEMINI_DEFAULT_MODEL = "gemini-1.5-flash-latest";
-const GROQ_DEFAULT_MODEL = "gemma-7b-it";
-const MISTRA_DEFAULTL_MODEL = "open-mixtral-8x7b";
-const ZHIPU_DEFAULT_MODEL = "glm-3-turbo";
-const MOONSHOT_DEFAULT_MODEL = "moonshot-v1-8k";
-const DEEPSEEK_DEFAULT_MODEL = 'deepseek-chat';
-const YI_DEFAULT_MODEL = "yi-lightning";
-const FISHERAI_DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct";
-
+// 各模型默认的baseurl
+const DEFAULT_LLM_URLS = [
+  { key: PROVIDER_FISHERAI, baseUrl: FISHERAI_BASE_URL, apiPath: FISHERAI_CHAT_API_PATH },
+  { key: PROVIDER_OPENAI, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH},
+  { key: PROVIDER_GOOGLE, baseUrl: GOOGLE_BASE_URL, apiPath: GOOGLE_CHAT_API_PATH },
+  { key: PROVIDER_GROQ, baseUrl: GROQ_BASE_URL, apiPath: GROQ_CHAT_API_PATH },
+  { key: PROVIDER_OLLAMA, baseUrl: OLLAMA_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH },
+  { key: PROVIDER_MISTRAL, baseUrl: MISTRAL_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH },
+  { key: PROVIDER_ZHIPU, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH },
+  { key: PROVIDER_MOONSHOT, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH },
+  { key: PROVIDER_DEEPSEEK, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH },
+  { key: PROVIDER_YI, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH },
+  { key: PROVIDER_OPENROUTER, baseUrl: OPENROUTER_BASE_URL, apiPath: OPENROUTER_CHAT_API_PATH },
+  { key: PROVIDER_SILICONFLOW, baseUrl: SILICONFLOW_BASE_URL, apiPath: SILICONFLOW_CHAT_API_PATH },
+  { key: PROVIDER_XAI, baseUrl: XAI_BASE_URL, apiPath: XAI_CHAT_API_PATH },
+  { key: PROVIDER_DOUBAO, baseUrl: DOUBAO_BASE_URL, apiPath: DOUBAO_CHAT_API_PATH },
+];
 
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
   'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 
-  'google/gemini-2.0-flash-thinking-exp:free-fisherai',  'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
-const ANY_FILE_SUPPORT_MODELS = [ 'gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
-  'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 
-  'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
+  'google/gemini-2.0-flash-thinking-exp:free-fisherai',  'google/gemini-2.5-pro-exp-03-25:free-fisherai', 'doubao-1-5-vision-pro-32k-250115'];
+
+const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+  'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
+
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
 // 集中定义所有模型列表，便于维护
 const MODEL_LIST = {
   // 免费模型
   free_models: [
-    { value: "google/gemini-2.0-flash-exp:free-fisherai", display: "Gemini 2.0 Flash", provider: "fisherai" },
-    { value: "google/gemini-2.5-pro-exp-03-25:free-fisherai", display: "Gemini 2.5 Pro Preview 03-25", provider: "fisherai" },
-    { value: "deepseek/deepseek-r1:free-fisherai", display: "Deepseek R1", provider: "fisherai" },
-    { value: "deepseek/deepseek-chat-v3-0324:free-fisherai", display: "Deepseek V3 0324", provider: "fisherai" },
-    { value: "google/gemini-2.0-flash-thinking-exp:free-fisherai", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: "fisherai" }
+    { value: "google/gemini-2.0-flash-exp:free", display: "Gemini 2.0 Flash", provider: PROVIDER_FISHERAI },
+    { value: "google/gemini-2.5-pro-exp-03-25:free", display: "Gemini 2.5 Pro Preview 03-25", provider: PROVIDER_FISHERAI },
+    { value: "deepseek/deepseek-r1:free", display: "Deepseek R1", provider: PROVIDER_FISHERAI },
+    { value: "deepseek/deepseek-chat-v3-0324:free", display: "Deepseek V3 0324", provider: PROVIDER_FISHERAI },
+    { value: "google/gemini-2.0-flash-thinking-exp:free", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: PROVIDER_FISHERAI }
   ],
   // 自定义配置模型
   custom_config_models: [
-    { value: "gpt-4o-mini", display: "GPT-4o mini", provider: "openai" },
-    { value: "gpt-4o", display: "GPT-4o", provider: "openai" },
-    { value: "chatgpt-4o-latest", display: "chatgpt-4o-latest", provider: "openai" },
-    { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: "gemini" },
-    { value: "gemini-2.5-pro-preview-03-25", display: "Gemini 2.5 Pro Preview 03-25", provider: "gemini" },
-    { value: "gemini-2.0-flash-lite", display: "Gemini 2.0 Flash Lite", provider: "gemini" },
-    { value: "gemini-2.0-flash-thinking-exp-01-21", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: "gemini" },
-    { value: "deepseek-chat", display: "Deepseek V3", provider: "deepseek" },
-    { value: "deepseek-reasoner", display: "Deepseek R1", provider: "deepseek" },
-    { value: "yi-lightning", display: "Yi Lightning", provider: "yi" },
-    { value: "yi-vision-v2", display: "Yi Vision V2", provider: "yi" },
-    { value: "moonshot-v1-128k", display: "Moonshot V1", provider: "moonshot" },
-    { value: "moonshot-v1-32k-vision-preview", display: "Moonshot V1 vision", provider: "moonshot" },
-    { value: "glm-4", display: "GLM 4", provider: "zhipu" },
-    { value: "glm-4v", display: "GLM 4V", provider: "zhipu" },
-    { value: "azure-gpt-35-turbo", display: "azure-gpt-35-turbo", provider: "azure" },
-    { value: "azure-gpt-4o", display: "azure-gpt-4o", provider: "azure" },
-    { value: "open-mixtral-8x22b", display: "Mixtral-8x22b", provider: "mistral" },
-    { value: "llama3-70b-8192-groq", display: "Llama3-70b-groq", provider: "groq" },
+    { value: "gpt-4o-mini", display: "GPT-4o mini", provider: PROVIDER_OPENAI },
+    { value: "gpt-4o", display: "GPT-4o", provider: PROVIDER_OPENAI },
+    { value: "chatgpt-4o-latest", display: "ChatGPT-4o-latest", provider: PROVIDER_OPENAI },
+    { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: PROVIDER_GOOGLE },
+    { value: "gemini-2.5-pro-preview-03-25", display: "Gemini 2.5 Pro Preview 03-25", provider: PROVIDER_GOOGLE },
+    { value: "gemini-2.0-flash-lite", display: "Gemini 2.0 Flash Lite", provider: PROVIDER_GOOGLE },
+    { value: "gemini-2.0-flash-thinking-exp-01-21", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: PROVIDER_GOOGLE },
+    { value: "deepseek-chat", display: "Deepseek V3", provider: PROVIDER_DEEPSEEK },
+    { value: "deepseek-reasoner", display: "Deepseek R1", provider: PROVIDER_DEEPSEEK },
+    { value: "yi-lightning", display: "Yi Lightning", provider: PROVIDER_YI },
+    { value: "yi-vision-v2", display: "Yi Vision V2", provider: PROVIDER_YI },
+    { value: "moonshot-v1-128k", display: "Moonshot V1", provider: PROVIDER_MOONSHOT },
+    { value: "moonshot-v1-32k-vision-preview", display: "Moonshot V1 vision", provider: PROVIDER_MOONSHOT },
+    { value: "glm-4", display: "GLM 4", provider: PROVIDER_ZHIPU },
+    { value: "glm-4v", display: "GLM 4V", provider: PROVIDER_ZHIPU },
+    { value: "open-mixtral-8x22b", display: "Mixtral-8x22b", provider: PROVIDER_MISTRAL },
+    { value: "llama-3.3-70b-versatile", display: "Llama3.3 70b versatile", provider: PROVIDER_GROQ },
+    { value: "openai/gpt-4o", display: "GPT-4o", provider: PROVIDER_OPENROUTER },
+    { value: "google/gemini-2.0-flash-001", display: "Gemini 2.0 Flash", provider: PROVIDER_OPENROUTER },
+    { value: "anthropic/claude-3.7-sonnet", display: "Claude 3.7 Sonnet", provider: PROVIDER_OPENROUTER },
+    { value: "openrouter/quasar-alpha", display: "Quasar Alpha", provider: PROVIDER_OPENROUTER },
+    { value: "deepseek-ai/DeepSeek-V3", display: "DeepSeek V3", provider: PROVIDER_SILICONFLOW },
+    { value: "Qwen/QwQ-32B", display: "QwQ 32B", provider: PROVIDER_SILICONFLOW },
+    { value: "grok-3", display: "Grok 3", provider: PROVIDER_XAI },
+    { value: "grok-3-mini", display: "Grok 3 mini", provider: PROVIDER_XAI },
+    { value: "doubao-1-5-pro-32k-250115", display: "Doubao 1.5 pro", provider: PROVIDER_DOUBAO },
+    { value: "doubao-1-5-vision-pro-32k-250115", display: "Doubao 1.5 vision pro", provider: PROVIDER_DOUBAO }
   ]
 };
 
-// 各模型默认的baseurl
-const DEFAULT_LLM_URLS = [
-  { key: FISHERAI_MODEL, baseUrl: FISHERAI_BASE_URL, apiPath: FISHERAI_CHAT_API_PATH, defaultModel: FISHERAI_DEFAULT_MODEL },
-  { key: AZURE_MODEL, baseUrl: AZURE_OPENAI_BASE_URL, apiPath: AZURE_OPENAI_CHAT_API_PATH, defaultModel: AZURE_GPT_DEFAULT_MODEL },
-  { key: GPT_MODEL, baseUrl: OPENAI_BASE_URL, apiPath: OPENAI_CHAT_API_PATH, defaultModel: GPT_DEFAULT_MODEL },
-  { key: GEMINI_MODEL, baseUrl: GEMINI_BASE_URL, apiPath: GEMINI_CHA_API_PAH, defaultModel: GEMINI_DEFAULT_MODEL },
-  { key: GROQ_MODEL, baseUrl: GROQ_BASE_URL, apiPath: GROQ_CHAT_API_PATH, defaultModel: GROQ_DEFAULT_MODEL }, // groq 要放在 mistral 之前，因为 groq 部署的开源名称会和 mistral 等开源模型一样，区别在最后的后缀'-groq'，需要优先判断
-  { key: OLLAMA_MODEL, baseUrl: OLLAMA_BASE_URL, apiPath: OLLAMA_CHAT_API_PATH, defaultModel: '' },
-  { key: MISTRAL_MODEL, baseUrl: MISTRAL_BASE_URL, apiPath: MISTRAL_CHAT_API_PATH, defaultModel: MISTRA_DEFAULTL_MODEL },
-  { key: ZHIPU_MODEL, baseUrl: ZHIPU_BASE_URL, apiPath: ZHIPU_CHAT_API_PATH, defaultModel: ZHIPU_DEFAULT_MODEL },
-  { key: MOONSHOT_MODEL, baseUrl: MOONSHOT_BASE_URL, apiPath: MOONSHOT_CHAT_API_PATH, defaultModel: MOONSHOT_DEFAULT_MODEL },
-  { key: DEEPSEEK_MODEL, baseUrl: DEEPSEEK_BASE_URL, apiPath: DEEPSEEK_CHAT_API_PATH, defaultModel: DEEPSEEK_DEFAULT_MODEL },
-  { key: YI_MODEL, baseUrl: YI_BASE_URL, apiPath: YI_CHAT_API_PATH, defaultModel: YI_DEFAULT_MODEL },
-];
+  // 供应商默认启用状态配置
+const providerDefaultStates = {
+  PROVIDER_OPENAI: false,
+  PROVIDER_GOOGLE: true,
+  PROVIDER_DEEPSEEK: true,
+  PROVIDER_MOONSHOT: false,
+  PROVIDER_YI: false,
+  PROVIDER_GROQ: false,
+  PROVIDER_MISTRAL: false,
+  PROVIDER_OLLAMA: true,
+  PROVIDER_ZHIPU: false,
+  PROVIDER_OPENROUTER: false,
+  PROVIDER_SILICONFLOW: false,
+  PROVIDER_XAI: false,
+  PROVIDER_DOUBAO: false,
+};
 
+// 将配置暴露为全局变量，确保其他脚本可以访问
+window.providerDefaultStates = providerDefaultStates;
 
 // 任务类型
 const CHAT_TYPE = "chat";

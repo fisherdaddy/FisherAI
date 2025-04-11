@@ -761,3 +761,87 @@
     color: rgba(255, 255, 255, 0.9);
   }
 }
+
+/* API密钥通知样式 */
+.api-key-notice {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  color: #333;
+  margin: 20px auto;
+  max-width: 90%;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.key-notice-icon {
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.api-key-notice h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+}
+
+.api-key-notice p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+  color: #34495e;
+}
+
+.key-notice-info {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-left: 4px solid #3498db;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 0 8px 8px 0;
+  text-align: left;
+}
+
+.info-icon {
+  margin-right: 8px;
+  color: #3498db;
+}
+
+.setup-key-btn {
+  display: inline-block;
+  background-color: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.setup-key-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .api-key-notice {
+    background: linear-gradient(135deg, #2c3e50 0%, #1a2530 100%);
+    color: #ecf0f1;
+  }
+  
+  .api-key-notice h3 {
+    color: #ecf0f1;
+  }
+  
+  .api-key-notice p {
+    color: #bdc3c7;
+  }
+  
+  .key-notice-info {
+    background-color: rgba(52, 152, 219, 0.15);
+  }
+}

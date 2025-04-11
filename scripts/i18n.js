@@ -70,7 +70,7 @@ const i18n = {
         'about': '关于',
         
         // 提示文本
-        'default_tips': '<p>请先去设置 <b>Model</b> 和 <b>API KEY</b>.</p><p class="note"><b>Note:</b> API KEY仅缓存在 Chrome 本地存储空间，不会上传服务器，以保证安全和隐私.</p>',
+        'default_tips': '<div class="api-key-notice"><div class="key-notice-icon">🔑</div><h3>请设置API密钥</h3><p>您需要先配置<b>Model</b>和<b>API KEY</b>才能开始使用。</p><div class="key-notice-info"><p><span class="info-icon">ℹ️</span> API KEY仅保存在您的浏览器本地存储中，不会上传到任何服务器，确保您的隐私和安全。</p></div><a class="setup-key-btn" id="goto-settings-btn">立即设置</a></div>',
         
         // 快捷功能
         'shortcut_summary': '摘要',
@@ -202,7 +202,7 @@ const i18n = {
         'about': 'About',
         
         // Tips
-        'default_tips': '<p>Please first set up your <b>Model</b> and <b>API KEY</b>.</p><p class="note"><b>Note:</b> API KEY is only cached in Chrome local storage and will not be uploaded to the server to ensure security and privacy.</p>',
+        'default_tips': '<div class="api-key-notice"><div class="key-notice-icon">🔑</div><h3>API Key Required</h3><p>Please configure your <b>Model</b> and <b>API KEY</b> to get started.</p><div class="key-notice-info"><p><span class="info-icon">ℹ️</span> Your API KEY is only stored in your browser\'s local storage and will never be uploaded to any server, ensuring your privacy and security.</p></div><a class="setup-key-btn" id="goto-settings-btn">Setup Now</a></div>',
         
         // Shortcuts
         'shortcut_summary': 'Summary',

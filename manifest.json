@@ -41,6 +41,8 @@
           "scripts/third/Readability.js", 
           "scripts/third/youtube-transcript.js", 
           "scripts/third/marked.min.js", 
+          "scripts/third/katex/auto-render.min.js",
+          "scripts/third/katex/katex.min.js",
           "scripts/third/pdf.worker.min.js", 
           "scripts/third/pdf.min.js", 
           "scripts/constants.js", 
