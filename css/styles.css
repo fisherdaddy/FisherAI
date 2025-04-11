@@ -895,7 +895,8 @@
 
 .light-mode .my-extension-dialogue {
   background-color: #FFFFFF;
-  border-top: 1px solid #E2E8F0;
+  border-top: none;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .light-mode .my-extension-dialogue textarea {
@@ -931,6 +932,7 @@
 
 .light-mode .feature-title {
   color: #2D3748;
+  background-color: #FFFFFF;
 }
 
 .light-mode .feature-item {
@@ -951,8 +953,9 @@
 }
 
 .light-mode .navigation-bar {
-  background-color: #F7FAFC;
-  border-top: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  border-top: none;
+  box-shadow: none;
 }
 
 .light-mode #model-selection {
@@ -965,7 +968,7 @@
 .light-mode #newchat-label,
 .light-mode #params-label,
 .light-mode #tools-label {
-  background-color: #E2E8F0;
+  background-color: #fafcff;
   color: #1A202C;
 }
 
@@ -1095,7 +1098,7 @@
 
 .light-mode .navigation-bar {
   border-top: none;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 .light-mode .feature-container {

@@ -748,7 +748,7 @@ function initResultPage() {
 
       const translatePrompt = await getTranslatePrompt();
 
-      await clearAndGenerate(model, translatePrompt + inputText, null);
+      await clearAndGenerate(model, provider, translatePrompt + inputText, null);
     });
 
     // 视频翻译
@@ -781,7 +781,7 @@ function initResultPage() {
 
       const subTitleTransPrompt = await getSubTitleTransPrompt();
      
-      await clearAndGenerate(model, subTitleTransPrompt + inputText, null);
+      await clearAndGenerate(model, provider, subTitleTransPrompt + inputText, null);
     });
 
 

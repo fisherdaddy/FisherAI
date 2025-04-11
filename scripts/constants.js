@@ -111,11 +111,11 @@ const DEFAULT_LLM_URLS = [
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
   'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
-  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free-fisherai', 
-  'google/gemini-2.0-flash-thinking-exp:free-fisherai',  'google/gemini-2.5-pro-exp-03-25:free-fisherai', 'doubao-1-5-vision-pro-32k-250115'];
+  'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
+  'google/gemini-2.0-flash-thinking-exp:free',  'google/gemini-2.5-pro-exp-03-25:free', 'doubao-1-5-vision-pro-32k-250115'];
 
 const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
-  'google/gemini-2.0-flash-exp:free-fisherai', 'google/gemini-2.0-flash-thinking-exp:free-fisherai', 'google/gemini-2.5-pro-exp-03-25:free-fisherai'];
+  'google/gemini-2.0-flash-exp:free', 'google/gemini-2.0-flash-thinking-exp:free', 'google/gemini-2.5-pro-exp-03-25:free'];
 
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 
