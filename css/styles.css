@@ -1156,3 +1156,121 @@
   border: 1px solid #E2E8F0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) inset;
 }
+
+/* 划词翻译弹窗适配浅色模式 */
+.light-mode#fisherai-transpop-id,
+.light-mode #fisherai-transpop-content {
+  background-color: #FFFFFF;
+  color: #1A202C;
+  border-color: #E2E8F0;
+}
+
+.light-mode#fisherai-transpop-id code,
+.light-mode #fisherai-transpop-content code {
+  background-color: #F7FAFC;
+  color: #1A202C;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode#fisherai-transpop-id pre,
+.light-mode #fisherai-transpop-content pre {
+  background-color: #F7FAFC;
+  color: #1A202C;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode#fisherai-transpop-id h1, 
+.light-mode#fisherai-transpop-id h2, 
+.light-mode#fisherai-transpop-id h3, 
+.light-mode#fisherai-transpop-id h4,
+.light-mode #fisherai-transpop-content h1,
+.light-mode #fisherai-transpop-content h2,
+.light-mode #fisherai-transpop-content h3,
+.light-mode #fisherai-transpop-content h4 {
+  color: #2D3748;
+}
+
+.light-mode#fisherai-transpop-id a,
+.light-mode #fisherai-transpop-content a {
+  color: #3182CE;
+}
+
+.light-mode#fisherai-transpop-id ul,
+.light-mode#fisherai-transpop-id ol,
+.light-mode #fisherai-transpop-content ul,
+.light-mode #fisherai-transpop-content ol {
+  color: #1A202C;
+}
+
+/* 思考区块浅色模式适配 */
+.light-mode#fisherai-transpop-id .thinking-block,
+.light-mode #fisherai-transpop-content .thinking-block {
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.light-mode#fisherai-transpop-id .thinking-content,
+.light-mode #fisherai-transpop-content .thinking-content {
+  color: #1A202C;
+}
+
+.light-mode#fisherai-transpop-id .thinking-content code,
+.light-mode #fisherai-transpop-content .thinking-content code {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light-mode#fisherai-transpop-id .thinking-content pre,
+.light-mode #fisherai-transpop-content .thinking-content pre {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 默认暗色模式下弹窗样式 */
+#fisherai-transpop-id,
+#fisherai-transpop-content {
+  background-color: #1E293B;
+  color: #E2E8F0;
+  border-color: #4A5568;
+}
+
+#fisherai-transpop-id code,
+#fisherai-transpop-content code {
+  background-color: #2D3748;
+  color: #E2E8F0;
+  border: 1px solid #4A5568;
+}
+
+#fisherai-transpop-id pre,
+#fisherai-transpop-content pre {
+  background-color: #2D3748;
+  color: #E2E8F0;
+  border: 1px solid #4A5568;
+}
+
+#fisherai-transpop-id h1, 
+#fisherai-transpop-id h2, 
+#fisherai-transpop-id h3, 
+#fisherai-transpop-id h4,
+#fisherai-transpop-content h1,
+#fisherai-transpop-content h2,
+#fisherai-transpop-content h3,
+#fisherai-transpop-content h4 {
+  color: #90CDF4;
+}
+
+#fisherai-transpop-id a,
+#fisherai-transpop-content a {
+  color: #63B3ED;
+}
+
+#fisherai-transpop-id ul,
+#fisherai-transpop-id ol,
+#fisherai-transpop-content ul,
+#fisherai-transpop-content ol {
+  color: #E2E8F0;
+}
+
+#fisherai-transpop-id .thinking-block,
+#fisherai-transpop-content .thinking-block {
+  background-color: rgba(66, 153, 225, 0.15);
+  border: 1px solid rgba(66, 153, 225, 0.3);
+}

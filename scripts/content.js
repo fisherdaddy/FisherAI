@@ -87,18 +87,14 @@ if (!document.getElementById('fisherai-transpop-id')) {
     translationPopup.style.display = 'none';
     translationPopup.style.position = 'absolute';
     translationPopup.style.zIndex = '9999';
-    translationPopup.style.backgroundColor = '#ffffff';
-    translationPopup.style.color = '#333333';
     translationPopup.style.padding = '16px';
     translationPopup.style.borderRadius = '12px';
-    translationPopup.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.1)';
     translationPopup.style.width = '320px';
     translationPopup.style.minHeight = '80px';
     translationPopup.style.maxHeight = '400px';
     translationPopup.style.overflowY = 'auto';
     translationPopup.style.fontSize = '14px';
     translationPopup.style.lineHeight = '1.6';
-    translationPopup.style.border = '1px solid rgba(226, 232, 240, 0.8)';
     translationPopup.style.backdropFilter = 'blur(8px)';
     translationPopup.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     translationPopup.style.boxSizing = 'border-box';
@@ -153,6 +149,10 @@ if (!document.getElementById('fisherai-transpop-id')) {
     contentContainer = document.createElement('div');
     contentContainer.id = 'fisherai-transpop-content'; // Keep ID for potential external use/styling
     contentContainer.style.marginTop = '5px'; // Adjust as needed relative to close button etc.
+
+    // Apply theme based on stored appearance setting
+    applyThemeToTranslationPopup();
+
     translationPopup.appendChild(contentContainer);
 
 } else {
@@ -165,6 +165,10 @@ if (!document.getElementById('fisherai-transpop-id')) {
         contentContainer = document.createElement('div');
         contentContainer.id = 'fisherai-transpop-content';
         contentContainer.style.marginTop = '5px';
+        
+        // Apply theme based on stored appearance setting
+        applyThemeToTranslationPopup();
+        
         // Make sure it's appended correctly, e.g., after the close button if it exists
         const closeBtn = translationPopup.querySelector('div[style*="position: absolute"]');
         if (closeBtn) {
@@ -172,6 +176,9 @@ if (!document.getElementById('fisherai-transpop-id')) {
         } else {
           translationPopup.appendChild(contentContainer);
         }
+    } else {
+        // Apply theme to existing container
+        applyThemeToTranslationPopup();
     }
 }
 
@@ -428,4 +435,46 @@ document.addEventListener('mousedown', function (event) {
 //     }
 //   }
 // });
+
+// Function to apply theme to the translation popup based on user settings
+function applyThemeToTranslationPopup() {
+    chrome.storage.sync.get('appearance', function(result) {
+        const appearance = result.appearance || 'dark'; // Default to dark mode
+        
+        if (contentContainer) {
+            if (appearance === 'light') {
+                contentContainer.classList.add('light-mode');
+                contentContainer.style.backgroundColor = '#FFFFFF';
+                contentContainer.style.color = '#1A202C';
+            } else {
+                contentContainer.classList.remove('light-mode');
+                contentContainer.style.backgroundColor = '#1E293B';
+                contentContainer.style.color = '#E2E8F0';
+            }
+        }
+        
+        if (translationPopup) {
+            if (appearance === 'light') {
+                translationPopup.classList.add('light-mode');
+                translationPopup.style.backgroundColor = '#FFFFFF';
+                translationPopup.style.color = '#1A202C';
+                translationPopup.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                translationPopup.style.border = '1px solid #E2E8F0';
+            } else {
+                translationPopup.classList.remove('light-mode');
+                translationPopup.style.backgroundColor = '#1E293B';
+                translationPopup.style.color = '#E2E8F0';
+                translationPopup.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
+                translationPopup.style.border = '1px solid #4A5568';
+            }
+        }
+    });
+}
+
+// Listen for changes to appearance setting
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+    if (namespace === 'sync' && changes.appearance) {
+        applyThemeToTranslationPopup();
+    }
+});
 

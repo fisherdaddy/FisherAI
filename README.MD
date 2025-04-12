@@ -52,8 +52,8 @@ FisherAI 是一款强大的 Chrome 插件，专注于提升您的网页浏览和
 
 1. [Chrome 应用商店安装](https://chromewebstore.google.com/detail/fisherai-your-best-summar/ipfiijaobcenaibdpaacbbpbjefgekbj)（推荐）
 2. 下载源码本地安装：
-   - 下载并解压源代码
-   - 打开 Chrome 扩展管理页面 (`chrome://extensions/`)
+   - 下载源码：`git clone https://github.com/fisherdaddy/FisherAI.git`
+   - 打开 Chrome 扩展管理页面 (输入：`chrome://extensions/`)
    - 开启"开发者模式"
    - 点击"加载已解压的扩展程序"，选择解压目录
 
