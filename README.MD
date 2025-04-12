@@ -11,7 +11,7 @@
 
 ## 📖 简介
 
-FisherAI 是一款强大的 Chrome 插件，专注于提升您的网页浏览和学习体验。支持多种顶级 AI 模型，包括 GPT、Azure、Gemini、Deepseek、Mistral、Groq、Yi、Moonshot 等。
+FisherAI 是一款强大的 Chrome 插件，专注于提升您的网页浏览和学习体验。支持多种顶级 AI 模型，包括 OpenAI、Gemini、Deepseek、OpenRouter、SiliconFlow、Doubao、Mistral、Groq、Yi、Moonshot、Ollama 等。
 
 ### ✨ 主要特性
 
@@ -25,10 +25,26 @@ FisherAI 是一款强大的 Chrome 插件，专注于提升您的网页浏览和
 ## 🖼️ 界面预览
 
 <div align="center">
-    <img src="public/home.png" alt="FisherAI 主界面" width="80%">
-    <br/>
-    <img src="public/settings.png" alt="FisherAI 设置界面" width="80%">
+    <img src="public/main.png" alt="FisherAI 主界面" width="80%">
 </div>
+<br/>
+<div align="center">
+    <img src="public/settings-general.png" alt="FisherAI 设置界面" width="80%">
+</div>
+<br/>
+<div align="center">
+    <img src="public/settings-provider.png" alt="FisherAI 设置界面" width="80%">
+</div>
+<br/>
+<div align="center">
+    <img src="public/settings-toolbox.png" alt="FisherAI 设置界面" width="80%">
+</div>
+<br/>
+<div align="center">
+    <img src="public/settings-quicktrans.png" alt="FisherAI 设置界面" width="80%">
+</div>
+<br/>
+
 
 ## 🚀 快速开始
 
@@ -61,6 +77,7 @@ OLLAMA_ORIGINS=* ollama serve
 ### 2025-04-11
 - ✨ **支持更多模型供应商**: 支持更多模型供应商，如 OpenAI、Gemini、xAI、OpenRouter、Siliconflow、DeepSeek、Doubao 等。
 - 🚀 **体验改进**: 优化快捷翻译展示界面
+- 🚀 **支持浅色模式和黑色模式**
 
 ### 2025-02-10
 - ✨ **新增模型支持**: 集成 DeepSeek-R1、Gemini-2.0-flash 等先进模型。
