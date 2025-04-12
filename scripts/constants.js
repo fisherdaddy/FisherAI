@@ -170,39 +170,9 @@ const AGENT_TYPE = "agent";
 const HUACI_TRANS_TYPE = "huaci-translate";
 
 // 一些常用prompt
-const SYSTEM_PROMPT = `
-你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题（现在时间是{current_time}）。
-
-具体要求如下：
-# 回答格式
-  - 请使用 Markdown 格式，以确保回答内容清晰易读。
-  - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
-# 语言要求
-  - 所有思考和回复必须使用 {language} 语言。
-# 回答内容
-  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
-
-{tools-list}
-
-最后，请记住，思考和回复时一定要使用 {language} 语言。`;
-
-const TOOL_PROMPT_PREFIX = `
-# 工具箱
-你可以选择以下工具来更好地回答问题：`;
-
-const WEB_SEARCH_PROMTP = `
-## search engine
-You have the tool 'search engine'. Use 'search engine' in the following circumstances:
-- User is asking about current events or something that requires real-time information (weather, sports scores, etc.)
-- User is asking about some term you are totally unfamiliar with (it might be new)
-- User explicitly asks you to search engine or provide links to references`;
-
-const IMAGE_GEN_PROMTP = `
-## dalle
-// Whenever a description of an image is given, create a prompt that dalle can use to generate the image.`;
-
-
-const SUMMARY_PROMPT = `
+// Define the default prompt templates
+const DEFAULT_PROMPTS = {
+  SUMMARY_PROMPT: `
 你这次的任务是提供一个简洁而全面的摘要，这个摘要需要捕捉给定文本的主要观点和关键细节，同时准确地传达作者的意图。
 请确保摘要结构清晰、组织有序，便于阅读。使用清晰的标题和小标题来指导读者了解每一部分的内容。摘要的长度应该适中，既能覆盖文本的主要点和关键细节，又不包含不必要的信息或变得过长。
 
@@ -216,9 +186,9 @@ const SUMMARY_PROMPT = `
 8  保留特定的英文术语、数字或名字，并在其前后加上空格，例如："生成式 AI 产品"
 9. 给出本次摘要后，后续的对话请忽略本次任务指令，遵循 system 指令即可。
 
-你要摘要的内容如下：\n\n`;
+你要摘要的内容如下：\n\n`,
 
-const DIRECT_TRANSLATE_PROMPT = `
+  DIRECT_TRANSLATE_PROMPT: `
 你是一位精通各国语言的专业翻译，你能将用户输入的任何内容翻译成 {language} 语言。
 
 具体要求如下：
@@ -244,10 +214,9 @@ const DIRECT_TRANSLATE_PROMPT = `
   * token -> token
   * tokens -> tokens
 
-你要翻译成 {language} 语言的内容如下：\n\n`;
+你要翻译成 {language} 语言的内容如下：\n\n`,
 
-
-const SUBTITLE_TRANSLATE_PROMPT = `
+  SUBTITLE_TRANSLATE_PROMPT: `
 你是一位精通 {language} 语言的专业翻译，擅长将视频字幕翻译为 {language} 语言。
 
 请按照以下具体要求进行翻译：
@@ -263,10 +232,9 @@ const SUBTITLE_TRANSLATE_PROMPT = `
 10. Markdown格式：请使用 Markdown 格式进行回答。
 请记住，回答时一定要用 {language} 语言。
 
-请翻译以下视频字幕内容：\n\n`;
+请翻译以下视频字幕内容：\n\n`,
 
-
-const DICTION_PROMPT = `
+  DICTION_PROMPT: `
 你是一位熟读各种中英词典的专家，擅长给出任意单词或短语的讲解。
 
 具体要求如下：
@@ -288,10 +256,9 @@ const DICTION_PROMPT = `
     ### 音标
     / feɪs /
 
-你要查询的单词或短语如下：\n\n`;
+你要查询的单词或短语如下：\n\n`,
 
-     
-const THREE_STEPS_TRANSLATION_PROMPT = `
+  THREE_STEPS_TRANSLATION_PROMPT: `
 你是一位精通 {language} 语言的专业翻译，尤其擅长将专业学术论文翻译成浅显易懂的科普文章。请你帮我将以下段落翻译成 {language} 语言，风格与科普读物相似。
 
 规则：
@@ -335,10 +302,9 @@ const THREE_STEPS_TRANSLATION_PROMPT = `
 ### 意译
 {意译结果}
 
-现在请按照上面的要求从第一行开始翻译以下内容为 {language} 语言：\n\n`;
+现在请按照上面的要求从第一行开始翻译以下内容为 {language} 语言：\n\n`,
 
-
-const TEXT_POLISH_PROMTP = `
+  TEXT_POLISH_PROMPT: `
 你是一名专业的编辑，擅长对句子或文章进行润色，使其更加流畅、优美和准确。
 
 具体要求如下：  
@@ -347,9 +313,9 @@ const TEXT_POLISH_PROMTP = `
 - 此外，如果有可能，请增强文本的说服力或吸引力，使其更加引人入胜。
 - 一定要保留原有格式不变。
 
-你要润色的内容如下：\n\n`;
+你要润色的内容如下：\n\n`,
 
-const CODE_EXPLAIN_PROMTP = `
+  CODE_EXPLAIN_PROMPT: `
 你是一名代码解释助手。你的任务是帮助开发者解释和分析任何编程语言中的代码，能够自动识别给定代码片段的编程语言。目标是提供简洁而全面的解释，即使是不熟悉该编程语言的人也能理解实现的逻辑。
 
 具体要求如下：  
@@ -358,15 +324,86 @@ const CODE_EXPLAIN_PROMTP = `
 3. Clarification: 当代码语言或目标不明确时请求澄清，但通过清晰而简洁的解释尽量减少这种需要。
 4. Personalization: 使用友好而专业的语气，旨在教育和协助开发者提高他们的编码技能，使代码背后的逻辑即使对那些不熟悉语言的人也是可理解的。
 
-你要解释的代码如下：\n\n`;
+你要解释的代码如下：\n\n`,
 
-const IMAGE2TEXT_PROMPT = `
+  IMAGE2TEXT_PROMPT: `
 你是一个图像识别助手，你的任务是将图像转为文字。 
 
 具体要求如下：  
 1. 如果图像中文本占主要部分，则将图中的文本识别出来并保留原始格式，以 Markdown 格式输出。 
 2. 如果图像不包含文本，或者主题是风景或物体，则直接用文本描述图像。
-`;
+`
+};
+
+// Initialize prompt constants with default values
+let SUMMARY_PROMPT = DEFAULT_PROMPTS.SUMMARY_PROMPT;
+let DIRECT_TRANSLATE_PROMPT = DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
+let SUBTITLE_TRANSLATE_PROMPT = DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
+let DICTION_PROMPT = DEFAULT_PROMPTS.DICTION_PROMPT;
+let THREE_STEPS_TRANSLATION_PROMPT = DEFAULT_PROMPTS.THREE_STEPS_TRANSLATION_PROMPT;
+let TEXT_POLISH_PROMTP = DEFAULT_PROMPTS.TEXT_POLISH_PROMPT; // Note: There's a typo in the original variable name
+let CODE_EXPLAIN_PROMTP = DEFAULT_PROMPTS.CODE_EXPLAIN_PROMPT; // Note: There's a typo in the original variable name
+let IMAGE2TEXT_PROMPT = DEFAULT_PROMPTS.IMAGE2TEXT_PROMPT;
+
+// Function to load prompt templates from Chrome storage
+function loadPromptTemplates() {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    chrome.storage.sync.get([
+      'summary_prompt',
+      'direct_translate_prompt',
+      'subtitle_translate_prompt',
+      'diction_prompt',
+      'three_steps_translation_prompt',
+      'text_polish_prompt',
+      'code_explain_prompt',
+      'image2text_prompt'
+    ], function(result) {
+      // Update prompt constants with stored values or defaults
+      SUMMARY_PROMPT = result.summary_prompt || DEFAULT_PROMPTS.SUMMARY_PROMPT;
+      DIRECT_TRANSLATE_PROMPT = result.direct_translate_prompt || DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
+      SUBTITLE_TRANSLATE_PROMPT = result.subtitle_translate_prompt || DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
+      DICTION_PROMPT = result.diction_prompt || DEFAULT_PROMPTS.DICTION_PROMPT;
+      THREE_STEPS_TRANSLATION_PROMPT = result.three_steps_translation_prompt || DEFAULT_PROMPTS.THREE_STEPS_TRANSLATION_PROMPT;
+      TEXT_POLISH_PROMTP = result.text_polish_prompt || DEFAULT_PROMPTS.TEXT_POLISH_PROMPT;
+      CODE_EXPLAIN_PROMTP = result.code_explain_prompt || DEFAULT_PROMPTS.CODE_EXPLAIN_PROMPT;
+      IMAGE2TEXT_PROMPT = result.image2text_prompt || DEFAULT_PROMPTS.IMAGE2TEXT_PROMPT;
+    });
+  }
+}
+
+// Call the function to load prompt templates
+loadPromptTemplates();
+
+const SYSTEM_PROMPT = `
+你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题（现在时间是{current_time}）。
+
+具体要求如下：
+# 回答格式
+  - 请使用 Markdown 格式，以确保回答内容清晰易读。
+  - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
+# 语言要求
+  - 所有思考和回复必须使用 {language} 语言。
+# 回答内容
+  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
+
+{tools-list}
+
+最后，请记住，思考和回复时一定要使用 {language} 语言。`;
+
+const TOOL_PROMPT_PREFIX = `
+# 工具箱
+你可以选择以下工具来更好地回答问题：`;
+
+const WEB_SEARCH_PROMTP = `
+## search engine
+You have the tool 'search engine'. Use 'search engine' in the following circumstances:
+- User is asking about current events or something that requires real-time information (weather, sports scores, etc.)
+- User is asking about some term you are totally unfamiliar with (it might be new)
+- User explicitly asks you to search engine or provide links to references`;
+
+const IMAGE_GEN_PROMTP = `
+## dalle
+// Whenever a description of an image is given, create a prompt that dalle can use to generate the image.`;
 
 
 // 对话时取的最大历史对话长度

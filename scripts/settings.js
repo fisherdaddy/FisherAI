@@ -493,6 +493,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 设置外观模式
     setupAppearanceMode();
     
+    // 设置提示词设置
+    setupPromptSettings();
+    
     // 加载设置并初始化自定义选择框
     loadSettings();
   });
@@ -1351,6 +1354,12 @@ function initializeCustomSelects() {
   // initializeCustomSelect('other-select-container', 'other-selector');
 }
 
+// 确保DOM加载完成后初始化自定义选择框
+document.addEventListener('DOMContentLoaded', function() {
+  // 再次确保选择框初始化
+  initializeCustomSelects();
+});
+
 function initializeCustomSelect(containerID, originalSelectID) {
   const container = document.getElementById(containerID);
   if (!container) return;
@@ -1365,8 +1374,12 @@ function initializeCustomSelect(containerID, originalSelectID) {
   // 初始化选中值显示
   updateSelectedDisplay(container, originalSelect.value);
   
+  // 清除可能存在的旧事件监听器
+  const newSelectedValue = selectedValue.cloneNode(true);
+  selectedValue.parentNode.replaceChild(newSelectedValue, selectedValue);
+  
   // 点击选择框显示/隐藏选项
-  selectedValue.addEventListener('click', function(e) {
+  newSelectedValue.addEventListener('click', function(e) {
     e.stopPropagation();
     container.classList.toggle('open');
     
@@ -1380,7 +1393,11 @@ function initializeCustomSelect(containerID, originalSelectID) {
   
   // 点击选项更新选中值
   optionItems.forEach(option => {
-    option.addEventListener('click', function() {
+    // 清除旧事件监听器
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+    
+    newOption.addEventListener('click', function() {
       const value = this.getAttribute('data-value');
       
       // 更新原始选择框的值并触发change事件
@@ -1419,4 +1436,215 @@ function updateSelectedDisplay(container, value) {
     }
   });
 }
+
+// Handle prompt settings functionality
+function setupPromptSettings() {
+  // Get all prompt textareas and reset buttons
+  const summaryPrompt = document.getElementById('summary-prompt');
+  const directTranslatePrompt = document.getElementById('direct-translate-prompt');
+  const subtitleTranslatePrompt = document.getElementById('subtitle-translate-prompt');
+  const dictionPrompt = document.getElementById('diction-prompt');
+  const threeStepsTranslationPrompt = document.getElementById('three-steps-translation-prompt');
+  const textPolishPrompt = document.getElementById('text-polish-prompt');
+  const codeExplainPrompt = document.getElementById('code-explain-prompt');
+  const image2textPrompt = document.getElementById('image2text-prompt');
+  
+  const resetButtons = document.querySelectorAll('.reset-prompt-btn');
+  const savePromptButtons = document.querySelectorAll('.save-prompt-btn');
+  
+  // Load saved prompt values or defaults
+  function loadPromptValues() {
+    chrome.storage.sync.get([
+      'summary_prompt',
+      'direct_translate_prompt',
+      'subtitle_translate_prompt',
+      'diction_prompt',
+      'three_steps_translation_prompt',
+      'text_polish_prompt',
+      'code_explain_prompt',
+      'image2text_prompt'
+    ], function(result) {
+      summaryPrompt.value = result.summary_prompt || DEFAULT_PROMPTS.SUMMARY_PROMPT;
+      directTranslatePrompt.value = result.direct_translate_prompt || DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
+      subtitleTranslatePrompt.value = result.subtitle_translate_prompt || DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
+      dictionPrompt.value = result.diction_prompt || DEFAULT_PROMPTS.DICTION_PROMPT;
+      threeStepsTranslationPrompt.value = result.three_steps_translation_prompt || DEFAULT_PROMPTS.THREE_STEPS_TRANSLATION_PROMPT;
+      textPolishPrompt.value = result.text_polish_prompt || DEFAULT_PROMPTS.TEXT_POLISH_PROMPT;
+      codeExplainPrompt.value = result.code_explain_prompt || DEFAULT_PROMPTS.CODE_EXPLAIN_PROMPT;
+      image2textPrompt.value = result.image2text_prompt || DEFAULT_PROMPTS.IMAGE2TEXT_PROMPT;
+    });
+  }
+  
+  // Reset a prompt to its default value
+  function resetPrompt(promptType) {
+    switch(promptType) {
+      case 'summary':
+        summaryPrompt.value = DEFAULT_PROMPTS.SUMMARY_PROMPT;
+        break;
+      case 'direct-translate':
+        directTranslatePrompt.value = DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
+        break;
+      case 'subtitle-translate':
+        subtitleTranslatePrompt.value = DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
+        break;
+      case 'diction':
+        dictionPrompt.value = DEFAULT_PROMPTS.DICTION_PROMPT;
+        break;
+      case 'three-steps-translation':
+        threeStepsTranslationPrompt.value = DEFAULT_PROMPTS.THREE_STEPS_TRANSLATION_PROMPT;
+        break;
+      case 'text-polish':
+        textPolishPrompt.value = DEFAULT_PROMPTS.TEXT_POLISH_PROMPT;
+        break;
+      case 'code-explain':
+        codeExplainPrompt.value = DEFAULT_PROMPTS.CODE_EXPLAIN_PROMPT;
+        break;
+      case 'image2text':
+        image2textPrompt.value = DEFAULT_PROMPTS.IMAGE2TEXT_PROMPT;
+        break;
+    }
+  }
+  
+  // Save a single prompt
+  function savePrompt(promptType) {
+    let promptValue = {};
+    
+    switch(promptType) {
+      case 'summary':
+        promptValue = { summary_prompt: summaryPrompt.value };
+        break;
+      case 'direct-translate':
+        promptValue = { direct_translate_prompt: directTranslatePrompt.value };
+        break;
+      case 'subtitle-translate':
+        promptValue = { subtitle_translate_prompt: subtitleTranslatePrompt.value };
+        break;
+      case 'diction':
+        promptValue = { diction_prompt: dictionPrompt.value };
+        break;
+      case 'three-steps-translation':
+        promptValue = { three_steps_translation_prompt: threeStepsTranslationPrompt.value };
+        break;
+      case 'text-polish':
+        promptValue = { text_polish_prompt: textPolishPrompt.value };
+        break;
+      case 'code-explain':
+        promptValue = { code_explain_prompt: codeExplainPrompt.value };
+        break;
+      case 'image2text':
+        promptValue = { image2text_prompt: image2textPrompt.value };
+        break;
+    }
+    
+    chrome.storage.sync.set(promptValue);
+  }
+  
+  // Add event listeners to reset buttons
+  resetButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const promptType = this.getAttribute('data-prompt-type');
+      resetPrompt(promptType);
+      // Auto save after resetting to default
+      savePrompt(promptType);
+      
+      // Show save success message
+      const globalSaveMessage = document.querySelector('.auto-save-message');
+      if (globalSaveMessage) {
+        // Clear existing timers
+        if (globalSaveMessage._entryTimer) clearTimeout(globalSaveMessage._entryTimer);
+        if (globalSaveMessage._exitTimer) clearTimeout(globalSaveMessage._exitTimer);
+        if (globalSaveMessage._hideTimer) clearTimeout(globalSaveMessage._hideTimer);
+        
+        // Set content and styling
+        globalSaveMessage.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>SUCCESS</span>';
+        globalSaveMessage.style.display = 'flex';
+        globalSaveMessage.style.alignItems = 'center';
+        globalSaveMessage.style.gap = '8px';
+        globalSaveMessage.style.backgroundColor = '#4CAF50';
+        globalSaveMessage.style.color = '#ffffff';
+        globalSaveMessage.style.fontWeight = '600';
+        globalSaveMessage.style.fontSize = '14px';
+        globalSaveMessage.style.padding = '10px 16px';
+        globalSaveMessage.style.borderRadius = '6px';
+        globalSaveMessage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        globalSaveMessage.style.transform = 'translateY(20px)';
+        globalSaveMessage.style.opacity = '0';
+        globalSaveMessage.style.transition = 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        
+        // Trigger entrance animation
+        globalSaveMessage._entryTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(0)';
+          globalSaveMessage.style.opacity = '1';
+        }, 10);
+        
+        // Set exit animation
+        globalSaveMessage._exitTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(-20px)';
+          globalSaveMessage.style.opacity = '0';
+          
+          // Hide element after animation completes
+          globalSaveMessage._hideTimer = setTimeout(() => {
+            globalSaveMessage.style.display = 'none';
+          }, 300);
+        }, 2000);
+      }
+    });
+  });
+  
+  // Add event listeners to save buttons
+  savePromptButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const promptType = this.getAttribute('data-prompt-type');
+      savePrompt(promptType);
+      
+      // Show save success message using the global auto-save-message
+      const globalSaveMessage = document.querySelector('.auto-save-message');
+      if (globalSaveMessage) {
+        // Clear existing timers
+        if (globalSaveMessage._entryTimer) clearTimeout(globalSaveMessage._entryTimer);
+        if (globalSaveMessage._exitTimer) clearTimeout(globalSaveMessage._exitTimer);
+        if (globalSaveMessage._hideTimer) clearTimeout(globalSaveMessage._hideTimer);
+        
+        // Set content and styling
+        globalSaveMessage.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>SUCCESS</span>';
+        globalSaveMessage.style.display = 'flex';
+        globalSaveMessage.style.alignItems = 'center';
+        globalSaveMessage.style.gap = '8px';
+        globalSaveMessage.style.backgroundColor = '#4CAF50';
+        globalSaveMessage.style.color = '#ffffff';
+        globalSaveMessage.style.fontWeight = '600';
+        globalSaveMessage.style.fontSize = '14px';
+        globalSaveMessage.style.padding = '10px 16px';
+        globalSaveMessage.style.borderRadius = '6px';
+        globalSaveMessage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        globalSaveMessage.style.transform = 'translateY(20px)';
+        globalSaveMessage.style.opacity = '0';
+        globalSaveMessage.style.transition = 'all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        
+        // Trigger entrance animation
+        globalSaveMessage._entryTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(0)';
+          globalSaveMessage.style.opacity = '1';
+        }, 10);
+        
+        // Set exit animation
+        globalSaveMessage._exitTimer = setTimeout(() => {
+          globalSaveMessage.style.transform = 'translateY(-20px)';
+          globalSaveMessage.style.opacity = '0';
+          
+          // Hide element after animation completes
+          globalSaveMessage._hideTimer = setTimeout(() => {
+            globalSaveMessage.style.display = 'none';
+          }, 300);
+        }, 2000);
+      }
+    });
+  });
+  
+  // Load prompt values when the page is loaded
+  loadPromptValues();
+}
+
+// Load settings when the page is ready
+document.addEventListener('DOMContentLoaded', loadSettings);
 

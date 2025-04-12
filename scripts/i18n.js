@@ -134,6 +134,23 @@ const i18n = {
         'model_providers_mainstream': '支持主流模型供应商',
         'model_providers_custom_api': '支持自定义 API Key 和 API 代理地址',
         'model_providers_local_storage': '所有自定义配置仅存储在本地',
+
+        // 提示词设置
+        'prompt_settings': '提示词设置',
+        'prompt_settings_description': '自定义各种场景下的提示词模板，根据需要调整AI助手的回应内容与风格',
+        'summary_prompt': '摘要提示词',
+        'save': '保存',
+        'reset_to_default': '恢复默认',
+        'direct_translate_prompt': '网页翻译提示词',
+        'subtitle_translate_prompt': '字幕翻译提示词',
+        'diction_prompt': '查词提示词',
+        'three_steps_translation_prompt': '翻译提示词',
+        'text_polish_prompt': '文本润色提示词',
+        'code_explain_prompt': '代码解释提示词',
+        'image2text_prompt': '图像转文本提示词',
+        'quick_function_prompts': '快捷功能提示词',
+        'quick_function_prompts_description': '在输入框中通过"/"呼出来的快捷功能，可以自定义提示词',
+        
         
         // 关于页面
         'about_slogan': 'FisherAI —— Your Best Summary Copilot',
@@ -270,6 +287,22 @@ const i18n = {
         'model_providers_mainstream': 'Supports mainstream model providers',
         'model_providers_custom_api': 'Supports custom API Keys and API proxy addresses',
         'model_providers_local_storage': 'All custom configurations are stored locally only',
+
+        // 提示词设置
+        'prompt_settings': 'Prompt Settings',
+        'prompt_settings_description': 'Customize prompt templates for various scenarios to adjust the AI assistant\'s response content and style as needed',
+        'summary_prompt': 'Summary Prompt',
+        'save': 'Save',
+        'reset_to_default': 'Reset to Default',
+        'direct_translate_prompt': 'Web Translation Prompt',
+        'subtitle_translate_prompt': 'Subtitle Translation Prompt',
+        'diction_prompt': 'Dictionary Prompt',
+        'three_steps_translation_prompt': 'Translation Prompt',
+        'text_polish_prompt': 'Text Polish Prompt',
+        'code_explain_prompt': 'Code Explain Prompt',
+        'image2text_prompt': 'Image to Text Prompt',
+        'quick_function_prompts': 'Quick Function Prompts',
+        'quick_function_prompts_description': 'In the input box, you can customize the prompt for the quick function by calling it with "/"',
         
         // About page
         'about_slogan': 'FisherAI —— Your Best Summary Copilot',
@@ -407,6 +440,22 @@ const i18n = {
         "model_providers_custom_api": "カスタムAPIキーとAPIプロキシアドレスをサポート",
         "model_providers_local_storage": "すべてのカスタム構成はローカルにのみ保存されます",
 
+        // 提示词设置
+        "prompt_settings": "プロンプト設定",
+        "prompt_settings_description": "様々なシナリオに応じて、AIアシスタントの応答内容とスタイルを調整できます",
+        "summary_prompt": "要約プロンプト",
+        "save": "保存",
+        "reset_to_default": "デフォルトに戻す", 
+        "direct_translate_prompt": "ウェブ翻訳プロンプト",
+        "subtitle_translate_prompt": "字幕翻訳プロンプト",
+        "diction_prompt": "辞書プロンプト",
+        "three_steps_translation_prompt": "翻訳プロンプト",
+        "text_polish_prompt": "テキスト磨きプロンプト",
+        "code_explain_prompt": "コード説明プロンプト",
+        "image2text_prompt": "画像からテキストへのプロンプト",
+        "quick_function_prompts": "クイック機能プロンプト",
+        "quick_function_prompts_description": "入力ボックスで「/」を呼び出してクイック機能のプロンプトをカスタマイズできます",
+
         // 关于页面
         "about_slogan": "FisherAI - 最高の要約コパイロット",
         "about_copyright": "© 2025 FisherAI"
@@ -542,6 +591,22 @@ const i18n = {
         "model_providers_mainstream": "주류 모델 공급자 지원",
         "model_providers_custom_api": "사용자 정의 API 키 및 API 프록시 주소 지원",
         "model_providers_local_storage": "모든 사용자 정의 구성은 로컬에만 저장됩니다.",
+
+        // 提示词设置
+        "prompt_settings": "프롬프트 설정",
+        "prompt_settings_description": "다양한 시나리오에 따라 AI 어시스턴트의 응답 내용과 스타일을 조정할 수 있습니다.",
+        "summary_prompt": "요약 프롬프트",
+        "save": "저장",
+        "reset_to_default": "기본값으로 초기화",    
+        "direct_translate_prompt": "웹 번역 프롬프트",
+        "subtitle_translate_prompt": "자막 번역 프롬프트",
+        "diction_prompt": "사전 프롬프트",
+        "three_steps_translation_prompt": "번역 프롬프트",
+        "text_polish_prompt": "텍스트 깨끗이 하기 프롬프트",
+        "code_explain_prompt": "코드 설명 프롬프트",    
+        "image2text_prompt": "이미지 텍스트 변환 프롬프트",
+        "quick_function_prompts": "퀵 기능 프롬프트",
+        "quick_function_prompts_description": "입력 상자에서 「/」를 호출하여 퀵 기능의 프롬프트를 사용자 정의할 수 있습니다.",
 
         // 关于页面
         "about_slogan": "FisherAI - 최고의 요약 코파일럿",
@@ -679,6 +744,22 @@ const i18n = {
         "model_providers_custom_api": "Prise en charge des clés API personnalisées et des adresses de proxy API",
         "model_providers_local_storage": "Toutes les configurations personnalisées sont stockées localement uniquement",
 
+        // 提示词设置
+        "prompt_settings": "Paramètres de prompt",
+        "prompt_settings_description": "Personnalisez les modèles de prompt pour ajuster le contenu et le style de la réponse de l'assistant IA",
+        "summary_prompt": "Prompt de résumé",
+        "save": "Enregistrer",
+        "reset_to_default": "Réinitialiser",    
+        "direct_translate_prompt": "Prompt de traduction web",
+        "subtitle_translate_prompt": "Prompt de traduction de sous-titres",
+        "diction_prompt": "Prompt de recherche dans le dictionnaire",
+        "three_steps_translation_prompt": "Prompt de traduction",
+        "text_polish_prompt": "Prompt de polissage de texte",
+        "code_explain_prompt": "Prompt d'explication de code",  
+        "image2text_prompt": "Prompt de conversion d'image en texte",
+        "quick_function_prompts": "Prompts de fonction rapide",
+        "quick_function_prompts_description": "Dans la zone de saisie, vous pouvez personnaliser le prompt pour la fonction rapide en l'appelant avec \"/\"",
+
         // 关于页面
         "about_slogan": "FisherAI - Votre meilleur copilote de résumé",
         "about_copyright": "© 2025 FisherAI"
@@ -815,6 +896,22 @@ const i18n = {
         "model_providers_custom_api": "Unterstützung für benutzerdefinierte API-Schlüssel und API-Proxy-Adressen",
         "model_providers_local_storage": "Alle benutzerdefinierten Konfigurationen werden nur lokal gespeichert",
 
+        // 提示词设置
+        "prompt_settings": "Prompt-Einstellungen",
+        "prompt_settings_description": "Anpassen Sie die Prompt-Modelle für verschiedene Szenarien, um den Inhalt und den Stil der Antworten des AI-Assistenten anzupassen",
+        "summary_prompt": "Zusammenfassung Prompt",
+        "save": "Speichern",
+        "reset_to_default": "Standard zurücksetzen",    
+        "direct_translate_prompt": "Web-Übersetzung Prompt",
+        "subtitle_translate_prompt": "Untertitel-Übersetzung Prompt",
+        "diction_prompt": "Wörterbuch Prompt",
+        "three_steps_translation_prompt": "Übersetzung Prompt",
+        "text_polish_prompt": "Text-Polierung Prompt",
+        "code_explain_prompt": "Code-Erklärung Prompt", 
+        "image2text_prompt": "Bild zu Text Prompt",
+        "quick_function_prompts": "Schnellfunktionen Prompt",
+        "quick_function_prompts_description": "In der Eingabezeile können Sie den Prompt für die schnelle Funktion anpassen, indem Sie ihn mit \"/\" aufrufen", 
+
         // 关于页面
         "about_slogan": "FisherAI - Ihr bester Zusammenfassungs-Copilot",
         "about_copyright": "© 2025 FisherAI"
@@ -950,6 +1047,22 @@ const i18n = {
         "model_providers_mainstream": "Поддержка основных провайдеров моделей",
         "model_providers_custom_api": "Поддержка пользовательских API Key и адресов API-прокси",
         "model_providers_local_storage": "Все пользовательские настройки хранятся локально",
+
+        // 提示词设置
+        "prompt_settings": "Настройки промптов",
+        "prompt_settings_description": "Настройте промпты для различных сценариев, чтобы настроить содержимое и стиль ответов AI-ассистента",
+        "summary_prompt": "Промпт для сводки",
+        "save": "Сохранить",
+        "reset_to_default": "Сбросить настройки",   
+        "direct_translate_prompt": "Промпт для веб-перевода",
+        "subtitle_translate_prompt": "Промпт для перевода субтитров",
+        "diction_prompt": "Промпт для поиска в словаре",
+        "three_steps_translation_prompt": "Промпт для перевода",
+        "text_polish_prompt": "Промпт для редактирования текста",
+        "code_explain_prompt": "Промпт для объяснения кода",    
+        "image2text_prompt": "Промпт для преобразования изображения в текст",
+        "quick_function_prompts": "Промпты для быстрых функций",
+        "quick_function_prompts_description": "В поле ввода вы можете настроить промпт для быстрой функции, вызывая его с \"/\"",
 
         // 关于页面
         "about_slogan": "FisherAI —— Ваш лучший помощник для создания сводок",
