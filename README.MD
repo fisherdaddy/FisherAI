@@ -74,10 +74,11 @@ OLLAMA_ORIGINS=* ollama serve
 
 ## 📝 更新日志
 
-### 2025-04-11
+### 2025-04-13
 - ✨ **支持更多模型供应商**: 支持更多模型供应商，如 OpenAI、Gemini、xAI、OpenRouter、Siliconflow、DeepSeek、Doubao 等。
-- 🚀 **体验改进**: 优化快捷翻译展示界面
+- ✨ **支持自定义 Prompt**: 支持自定义 Prompt，支持多种场景的 Prompt 设置。
 - 🚀 **支持浅色模式和黑色模式**
+- 🚀 **体验改进**: 优化快捷翻译展示界面
 
 ### 2025-02-10
 - ✨ **新增模型支持**: 集成 DeepSeek-R1、Gemini-2.0-flash 等先进模型。
