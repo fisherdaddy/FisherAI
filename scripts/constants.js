@@ -109,9 +109,10 @@ const DEFAULT_LLM_URLS = [
 ];
 
 // 支持图像的模型
-const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
+const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
   'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
+  'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
   'google/gemini-2.0-flash-thinking-exp:free',  'google/gemini-2.5-pro-exp-03-25:free', 'doubao-1-5-vision-pro-32k-250115'];
 
 const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
@@ -133,6 +134,8 @@ const MODEL_LIST = {
   custom_config_models: [
     { value: "gpt-4o-mini", display: "GPT-4o mini", provider: PROVIDER_OPENAI },
     { value: "gpt-4o", display: "GPT-4o", provider: PROVIDER_OPENAI },
+    { value: "gpt-4.1", display: "GPT-4.1", provider: PROVIDER_OPENAI },
+    { value: "gpt-4.1-mini", display: "GPT-4.1 mini", provider: PROVIDER_OPENAI },
     { value: "chatgpt-4o-latest", display: "ChatGPT-4o-latest", provider: PROVIDER_OPENAI },
     { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: PROVIDER_GOOGLE },
     { value: "gemini-2.5-pro-preview-03-25", display: "Gemini 2.5 Pro Preview 03-25", provider: PROVIDER_GOOGLE },
@@ -149,9 +152,9 @@ const MODEL_LIST = {
     { value: "open-mixtral-8x22b", display: "Mixtral-8x22b", provider: PROVIDER_MISTRAL },
     { value: "llama-3.3-70b-versatile", display: "Llama3.3 70b versatile", provider: PROVIDER_GROQ },
     { value: "openai/gpt-4o", display: "GPT-4o", provider: PROVIDER_OPENROUTER },
+    { value: "openai/gpt-4.1", display: "GPT-4.1", provider: PROVIDER_OPENROUTER },
     { value: "google/gemini-2.0-flash-001", display: "Gemini 2.0 Flash", provider: PROVIDER_OPENROUTER },
     { value: "anthropic/claude-3.7-sonnet", display: "Claude 3.7 Sonnet", provider: PROVIDER_OPENROUTER },
-    { value: "openrouter/quasar-alpha", display: "Quasar Alpha", provider: PROVIDER_OPENROUTER },
     { value: "deepseek-ai/DeepSeek-V3", display: "DeepSeek V3", provider: PROVIDER_SILICONFLOW },
     { value: "Qwen/QwQ-32B", display: "QwQ 32B", provider: PROVIDER_SILICONFLOW },
     { value: "grok-3", display: "Grok 3", provider: PROVIDER_XAI },
