@@ -654,13 +654,32 @@ async function getEnabledModels(callback) {
     }
   });
   
-  // 如果提供商有自定义模型，使用自定义模型；否则使用默认模型
+  // 将新的默认模型与用户自定义模型合并
   providers.forEach(provider => {
     if (providerStates[provider]) {
       if (providerCustomModels[provider].length > 0) {
-        // 该提供商有自定义模型，使用自定义模型
-        const providerModels = userCustomModels.filter(model => model.provider === provider);
-        customConfigModels = customConfigModels.concat(providerModels);
+        // 该提供商有自定义模型
+        const customModelsList = providerCustomModels[provider];
+        
+        // 获取该提供商的默认模型
+        const defaultModelsForProvider = MODEL_LIST.custom_config_models
+          .filter(model => model.provider === provider)
+          .map(model => model.value);
+        
+        // 找出新增的默认模型（用户自定义列表中不存在的）
+        const newDefaultModels = defaultModelsForProvider.filter(
+          modelValue => !customModelsList.includes(modelValue)
+        );
+        
+        // 将新增的默认模型添加到用户自定义模型列表中
+        const newDefaultModelObjects = MODEL_LIST.custom_config_models
+          .filter(model => model.provider === provider && newDefaultModels.includes(model.value));
+        
+        // 添加用户已有的自定义模型
+        const existingCustomModels = userCustomModels.filter(model => model.provider === provider);
+        
+        // 合并两个列表
+        customConfigModels = customConfigModels.concat(existingCustomModels, newDefaultModelObjects);
       } else {
         // 该提供商没有自定义模型，使用默认模型
         const providerModels = defaultCustomModels.filter(model => model.provider === provider);

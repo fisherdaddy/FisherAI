@@ -113,7 +113,7 @@ const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'gpt-4.1',
   'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
   'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
-  'google/gemini-2.0-flash-thinking-exp:free',  'google/gemini-2.5-pro-exp-03-25:free', 'doubao-1-5-vision-pro-32k-250115'];
+  'google/gemini-2.0-flash-thinking-exp:free', 'google/gemini-2.5-pro-exp-03-25:free', 'doubao-1-5-vision-pro-32k-250115', 'doubao-1.5-vision-pro-250328'];
 
 const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
   'google/gemini-2.0-flash-exp:free', 'google/gemini-2.0-flash-thinking-exp:free', 'google/gemini-2.5-pro-exp-03-25:free'];
@@ -160,7 +160,8 @@ const MODEL_LIST = {
     { value: "grok-3", display: "Grok 3", provider: PROVIDER_XAI },
     { value: "grok-3-mini", display: "Grok 3 mini", provider: PROVIDER_XAI },
     { value: "doubao-1-5-pro-32k-250115", display: "Doubao 1.5 pro", provider: PROVIDER_DOUBAO },
-    { value: "doubao-1-5-vision-pro-32k-250115", display: "Doubao 1.5 vision pro", provider: PROVIDER_DOUBAO }
+    { value: "doubao-1.5-vision-pro-250328", display: "Doubao 1.5 vision pro 250328", provider: PROVIDER_DOUBAO },
+    { value: "doubao-1-5-vision-pro-32k-250115", display: "Doubao 1.5 vision pro 250115", provider: PROVIDER_DOUBAO },
   ]
 };
 

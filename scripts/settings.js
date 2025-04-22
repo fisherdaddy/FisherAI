@@ -808,15 +808,28 @@ function setupModelCustomization() {
 
 // 加载保存的模型列表
 function loadModelList(tabId, modelListElement) {
+  // 获取该提供商的默认模型列表
+  const defaultModelsForProvider = MODEL_LIST.custom_config_models
+    .filter(model => model.provider === tabId)
+    .map(model => model.value);
+
   chrome.storage.sync.get(`${tabId}-models`, (result) => {
-    const models = result[`${tabId}-models`];
+    const savedModels = result[`${tabId}-models`];
     // 清空当前列表
     modelListElement.innerHTML = '';
 
     let modelsToDisplay = [];
-    if (models && Array.isArray(models) && models.length > 0) {
+    if (savedModels && Array.isArray(savedModels) && savedModels.length > 0) {
       // 如果有保存的模型，使用它们
-      modelsToDisplay = models;
+      modelsToDisplay = [...savedModels];
+      
+      // 查找新增的默认模型（用户自定义列表中不存在的）
+      const newDefaultModels = defaultModelsForProvider.filter(
+        modelValue => !savedModels.includes(modelValue)
+      );
+      
+      // 添加新增的默认模型
+      modelsToDisplay = modelsToDisplay.concat(newDefaultModels);
     } else {
       // 否则，使用默认模型
       modelsToDisplay = getDefaultModels(tabId);
@@ -860,13 +873,29 @@ function populateModelEditList(tabId, modelEditListElement) {
   // 清空编辑列表
   modelEditListElement.innerHTML = '';
   
+  // 获取该提供商的默认模型列表
+  const defaultModelsForProvider = MODEL_LIST.custom_config_models
+    .filter(model => model.provider === tabId)
+    .map(model => model.value);
+  
   // 获取当前模型
   chrome.storage.sync.get(`${tabId}-models`, (result) => {
-    const models = result[`${tabId}-models`];
+    const savedModels = result[`${tabId}-models`];
     
-    // 如果有保存的模型，使用它们
-    if (models && Array.isArray(models) && models.length > 0) {
-      models.forEach(model => {
+    // 如果有保存的模型，使用它们并添加新增的默认模型
+    if (savedModels && Array.isArray(savedModels) && savedModels.length > 0) {
+      // 添加已保存的自定义模型
+      savedModels.forEach(model => {
+        addModelToEditList(tabId, modelEditListElement, model);
+      });
+      
+      // 查找新增的默认模型（用户自定义列表中不存在的）
+      const newDefaultModels = defaultModelsForProvider.filter(
+        modelValue => !savedModels.includes(modelValue)
+      );
+      
+      // 添加新增的默认模型
+      newDefaultModels.forEach(model => {
         addModelToEditList(tabId, modelEditListElement, model);
       });
     } else {
@@ -1007,10 +1036,15 @@ function handleDragEnd() {
 // 保存模型列表
 function saveModelList(tabId, modelListElement, modelEditListElement) {
   const modelItems = modelEditListElement.querySelectorAll('.model-edit-item-name');
-  const models = Array.from(modelItems).map(item => item.textContent);
+  const customModels = Array.from(modelItems).map(item => item.textContent);
+  
+  // 获取该提供商的默认模型列表
+  const defaultModelsForProvider = MODEL_LIST.custom_config_models
+    .filter(model => model.provider === tabId)
+    .map(model => model.value);
   
   // 先获取现有的映射，然后更新它
-  chrome.storage.sync.get('model-provider-mapping', (result) => {
+  chrome.storage.sync.get(['model-provider-mapping', `${tabId}-models`], (result) => {
     // 获取现有映射或创建新的
     const existingMapping = result['model-provider-mapping'] || {};
     
@@ -1018,18 +1052,18 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
     const newMapping = {...existingMapping};
     
     // 更新当前提供商的模型映射
-    models.forEach(model => {
+    customModels.forEach(model => {
       newMapping[model] = tabId;
     });
     
     // 保存模型列表和更新后的映射
     chrome.storage.sync.set({ 
-      [`${tabId}-models`]: models,
+      [`${tabId}-models`]: customModels,
       'model-provider-mapping': newMapping
     }, async () => {
       // 更新UI显示
       modelListElement.innerHTML = '';
-      models.forEach(model => {
+      customModels.forEach(model => {
         const modelItem = document.createElement('div');
         modelItem.className = 'model-item';
         modelItem.textContent = model;
