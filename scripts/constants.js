@@ -176,6 +176,22 @@ const HUACI_TRANS_TYPE = "huaci-translate";
 // 一些常用prompt
 // Define the default prompt templates
 const DEFAULT_PROMPTS = {
+  SYSTEM_PROMPT: `
+你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题（现在时间是{current_time}）。
+
+具体要求如下：
+# 回答格式
+  - 请使用 Markdown 格式，以确保回答内容清晰易读。
+  - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
+# 语言要求
+  - 所有思考和回复必须使用 {language} 语言。
+# 回答内容
+  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
+
+{tools-list}
+
+最后，请记住，思考和回复时一定要使用 {language} 语言。`,
+
   SUMMARY_PROMPT: `
 你这次的任务是提供一个简洁而全面的摘要，这个摘要需要捕捉给定文本的主要观点和关键细节，同时准确地传达作者的意图。
 请确保摘要结构清晰、组织有序，便于阅读。使用清晰的标题和小标题来指导读者了解每一部分的内容。摘要的长度应该适中，既能覆盖文本的主要点和关键细节，又不包含不必要的信息或变得过长。
@@ -340,6 +356,7 @@ const DEFAULT_PROMPTS = {
 };
 
 // Initialize prompt constants with default values
+let SYSTEM_PROMPT = DEFAULT_PROMPTS.SYSTEM_PROMPT;
 let SUMMARY_PROMPT = DEFAULT_PROMPTS.SUMMARY_PROMPT;
 let DIRECT_TRANSLATE_PROMPT = DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
 let SUBTITLE_TRANSLATE_PROMPT = DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
@@ -353,6 +370,7 @@ let IMAGE2TEXT_PROMPT = DEFAULT_PROMPTS.IMAGE2TEXT_PROMPT;
 function loadPromptTemplates() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.sync.get([
+      'system_prompt',
       'summary_prompt',
       'direct_translate_prompt',
       'subtitle_translate_prompt',
@@ -363,6 +381,7 @@ function loadPromptTemplates() {
       'image2text_prompt'
     ], function(result) {
       // Update prompt constants with stored values or defaults
+      SYSTEM_PROMPT = result.system_prompt || DEFAULT_PROMPTS.SYSTEM_PROMPT;
       SUMMARY_PROMPT = result.summary_prompt || DEFAULT_PROMPTS.SUMMARY_PROMPT;
       DIRECT_TRANSLATE_PROMPT = result.direct_translate_prompt || DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
       SUBTITLE_TRANSLATE_PROMPT = result.subtitle_translate_prompt || DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
@@ -377,22 +396,6 @@ function loadPromptTemplates() {
 
 // Call the function to load prompt templates
 loadPromptTemplates();
-
-const SYSTEM_PROMPT = `
-你是一款 AI 智能助手，能回答用户提问的任何问题，并提供多种工具帮助解决问题（现在时间是{current_time}）。
-
-具体要求如下：
-# 回答格式
-  - 请使用 Markdown 格式，以确保回答内容清晰易读。
-  - 遇到公式时，请用 LaTeX 格式表示。例如，a/b 应表示为 $ \frac{a}{b} $。
-# 语言要求
-  - 所有思考和回复必须使用 {language} 语言。
-# 回答内容
-  - 若用户提问有关时效性的话题时，请基于当前时间 {current_time} 进行回答。如'今天是几号','最近的有关Nvidia的新闻'等
-
-{tools-list}
-
-最后，请记住，思考和回复时一定要使用 {language} 语言。`;
 
 const TOOL_PROMPT_PREFIX = `
 # 工具箱

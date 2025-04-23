@@ -1474,6 +1474,7 @@ function updateSelectedDisplay(container, value) {
 // Handle prompt settings functionality
 function setupPromptSettings() {
   // Get all prompt textareas and reset buttons
+  const systemPrompt = document.getElementById('system-prompt');
   const summaryPrompt = document.getElementById('summary-prompt');
   const directTranslatePrompt = document.getElementById('direct-translate-prompt');
   const subtitleTranslatePrompt = document.getElementById('subtitle-translate-prompt');
@@ -1489,6 +1490,7 @@ function setupPromptSettings() {
   // Load saved prompt values or defaults
   function loadPromptValues() {
     chrome.storage.sync.get([
+      'system_prompt',
       'summary_prompt',
       'direct_translate_prompt',
       'subtitle_translate_prompt',
@@ -1498,6 +1500,7 @@ function setupPromptSettings() {
       'code_explain_prompt',
       'image2text_prompt'
     ], function(result) {
+      systemPrompt.value = result.system_prompt || DEFAULT_PROMPTS.SYSTEM_PROMPT;
       summaryPrompt.value = result.summary_prompt || DEFAULT_PROMPTS.SUMMARY_PROMPT;
       directTranslatePrompt.value = result.direct_translate_prompt || DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
       subtitleTranslatePrompt.value = result.subtitle_translate_prompt || DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
@@ -1512,6 +1515,9 @@ function setupPromptSettings() {
   // Reset a prompt to its default value
   function resetPrompt(promptType) {
     switch(promptType) {
+      case 'system':
+        systemPrompt.value = DEFAULT_PROMPTS.SYSTEM_PROMPT;
+        break;
       case 'summary':
         summaryPrompt.value = DEFAULT_PROMPTS.SUMMARY_PROMPT;
         break;
@@ -1544,6 +1550,9 @@ function setupPromptSettings() {
     let promptValue = {};
     
     switch(promptType) {
+      case 'system':
+        promptValue = { system_prompt: systemPrompt.value };
+        break;
       case 'summary':
         promptValue = { summary_prompt: summaryPrompt.value };
         break;

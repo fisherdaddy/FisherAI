@@ -138,6 +138,7 @@ const i18n = {
         // 提示词设置
         'prompt_settings': '提示词设置',
         'prompt_settings_description': '自定义各种场景下的提示词模板，根据需要调整AI助手的回应内容与风格',
+        'system_prompt': '系统提示词',
         'summary_prompt': '摘要提示词',
         'save': '保存',
         'reset_to_default': '恢复默认',
@@ -291,6 +292,7 @@ const i18n = {
         // 提示词设置
         'prompt_settings': 'Prompt Settings',
         'prompt_settings_description': 'Customize prompt templates for various scenarios to adjust the AI assistant\'s response content and style as needed',
+        'system_prompt': 'System Prompt',
         'summary_prompt': 'Summary Prompt',
         'save': 'Save',
         'reset_to_default': 'Reset to Default',
@@ -443,6 +445,7 @@ const i18n = {
         // 提示词设置
         "prompt_settings": "プロンプト設定",
         "prompt_settings_description": "様々なシナリオに応じて、AIアシスタントの応答内容とスタイルを調整できます",
+        "system_prompt": "システムプロンプト",
         "summary_prompt": "要約プロンプト",
         "save": "保存",
         "reset_to_default": "デフォルトに戻す", 
@@ -595,6 +598,7 @@ const i18n = {
         // 提示词设置
         "prompt_settings": "프롬프트 설정",
         "prompt_settings_description": "다양한 시나리오에 따라 AI 어시스턴트의 응답 내용과 스타일을 조정할 수 있습니다.",
+        "system_prompt": "시스템 프롬프트",
         "summary_prompt": "요약 프롬프트",
         "save": "저장",
         "reset_to_default": "기본값으로 초기화",    
@@ -603,7 +607,7 @@ const i18n = {
         "diction_prompt": "사전 프롬프트",
         "three_steps_translation_prompt": "번역 프롬프트",
         "text_polish_prompt": "텍스트 깨끗이 하기 프롬프트",
-        "code_explain_prompt": "코드 설명 프롬프트",    
+        "code_explain_prompt": "코드 설명 프롬프트",  
         "image2text_prompt": "이미지 텍스트 변환 프롬프트",
         "quick_function_prompts": "퀵 기능 프롬프트",
         "quick_function_prompts_description": "입력 상자에서 「/」를 호출하여 퀵 기능의 프롬프트를 사용자 정의할 수 있습니다.",
@@ -747,6 +751,7 @@ const i18n = {
         // 提示词设置
         "prompt_settings": "Paramètres de prompt",
         "prompt_settings_description": "Personnalisez les modèles de prompt pour ajuster le contenu et le style de la réponse de l'assistant IA",
+        "system_prompt": "Prompt de système",
         "summary_prompt": "Prompt de résumé",
         "save": "Enregistrer",
         "reset_to_default": "Réinitialiser",    
@@ -807,7 +812,7 @@ const i18n = {
         "ollama_step2": "Geben Sie in den Plugin-Einstellungen im Ollama-Modellkonfigurationselement die Adresse Ihres Ollama-Dienstes ein. Der Standardwert ist: http://127.0.0.1:11434",
         "ollama_step3": "Klicken Sie nach bestandener Konnektivitätsprüfung auf [Speichern].",
         "ollama_step4": "Kehren Sie zur Startseite zurück und aktualisieren Sie sie. In der Modellauswahl wird die Liste der Modelle angezeigt, die vom lokalen Modell unterstützt werden (endet mit -ollama). Wählen Sie das gewünschte Modell aus, um es zu verwenden.",
-        "ollama_note": "Hinweis: Wenn Sie weiterhin Probleme haben, überprüfen Sie, ob Ollama normal gestartet wurde. Sie können über die folgende Adresse auf den lokalen Ollama zugreifen, um zu überprüfen, ob er normal gestartet wurde: http://127.0.0.1:11434/api/tags",
+        "ollama_note": "Hinweis: Wenn Sie weiterhin Probleme haben, überprüfen Sie, ob Ollama normal gestartet wurde. Dies können Sie über die folgende Adresse überprüfen: http://127.0.0.1:11434/api/tags",
 
         // 设置页面功能列表
         "feature_smart_summary": "Webseiten-Zusammenfassung",
@@ -825,7 +830,7 @@ const i18n = {
         "web_trans": "Webseiten-Übersetzung",
         "web_trans_desc": "Unterstützt verschiedene Formate, darunter Webseiten, PDF-Dateien, wobei das ursprüngliche Layout und Format beibehalten werden.",
         "video_trans": "Video-Übersetzung",
-        "video_trans_desc": "Unterstützt Bilibili- und YouTube-Videos.",
+        "video_trans_desc": "Unterstützt Video Bilibili und YouTube.",
 
         // 设置页面
         "fisherai_settings": "FisherAI-Einstellungen",
@@ -835,7 +840,7 @@ const i18n = {
         "about": "Über",
 
         // 提示文本
-        "default_tips": "<p>Bitte konfigurieren Sie zuerst <b>Modell</b> und <b>API-Schlüssel</b>.</p><p class=\"note\"><b>Hinweis:</b> Der API-Schlüssel wird nur im lokalen Chrome-Speicher zwischengespeichert und nicht auf den Server hochgeladen, um Sicherheit und Datenschutz zu gewährleisten.</p>",
+        "default_tips": "<p>Bitte konfigurieren Sie zuerst <b>Modell</b> und <b>API KEY</b>.</p><p class=\"note\"><b>Hinweis:</b> Der API-Schlüssel wird nur im lokalen Chrome-Speicher zwischengespeichert und nicht auf den Server hochgeladen, um Sicherheit und Datenschutz zu gewährleisten.</p>",
 
         // 快捷功能
         "shortcut_summary": "Zusammenfassung",
@@ -853,11 +858,11 @@ const i18n = {
         "language_ko": "Koreanisch",
         "language_fr": "Französisch",
         "language_de": "Deutsch",
-        "language_ru": "Russisch",
+        "language_ru": "Russe",
 
         // 模型下拉选择
         "free_models": "Kostenlose Modelle",
-        "custom_config_models": "Benutzerdefinierte Konfigurationsmodelle",
+        "custom_config_models": "Modell mit benutzerdefinierten Konfigurationen",
         "ollama_local_models": "Lokale Ollama-Modelle",
         "model_parameters": "Modellparameter",
 
@@ -899,6 +904,7 @@ const i18n = {
         // 提示词设置
         "prompt_settings": "Prompt-Einstellungen",
         "prompt_settings_description": "Anpassen Sie die Prompt-Modelle für verschiedene Szenarien, um den Inhalt und den Stil der Antworten des AI-Assistenten anzupassen",
+        "system_prompt": "System-Prompt",
         "summary_prompt": "Zusammenfassung Prompt",
         "save": "Speichern",
         "reset_to_default": "Standard zurücksetzen",    
@@ -1051,6 +1057,7 @@ const i18n = {
         // 提示词设置
         "prompt_settings": "Настройки промптов",
         "prompt_settings_description": "Настройте промпты для различных сценариев, чтобы настроить содержимое и стиль ответов AI-ассистента",
+        "system_prompt": "Системный промпт",
         "summary_prompt": "Промпт для сводки",
         "save": "Сохранить",
         "reset_to_default": "Сбросить настройки",   

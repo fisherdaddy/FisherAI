@@ -1629,6 +1629,14 @@
                 
                 <div class="prompt-settings-container">
                     <div class="prompt-type">
+                        <div class="prompt-title" data-i18n="system_prompt">系统提示词</div>
+                        <textarea id="system-prompt" class="prompt-textarea" rows="8" placeholder="输入系统提示词模板..."></textarea>
+                        <button class="save-prompt-btn" data-prompt-type="system" data-i18n="save">保存</button>
+                        <button class="reset-prompt-btn" data-prompt-type="system" data-i18n="reset_to_default">恢复默认</button>
+                        <div style="clear: both;"></div>
+                    </div>
+                    
+                    <div class="prompt-type">
                         <div class="prompt-title" data-i18n="summary_prompt">摘要提示词</div>
                         <textarea id="summary-prompt" class="prompt-textarea" rows="8" placeholder="输入摘要生成的提示词模板..."></textarea>
                         <button class="save-prompt-btn" data-prompt-type="summary" data-i18n="save">保存</button>
