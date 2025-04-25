@@ -256,13 +256,18 @@ function toggleImageUpload(selectedModel) {
   const imageUploadDiv = document.getElementById('image-upload-div');
   const imageUpload = document.getElementById('image-upload');
   const imageUploadLabel = document.getElementById('image-upload-label');
-  if (IMAGE_SUPPORT_MODELS.includes(selectedModel)) {
+  
+  // 使用窗口全局变量（如果存在）或者回退到常量
+  const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+  const anyFileSupportModels = window.ANY_FILE_SUPPORT_MODELS || ANY_FILE_SUPPORT_MODELS;
+  
+  if (imageSupportModels.includes(selectedModel)) {
       // 如果模型支持图像，启用上传区域
       imageUploadDiv.style.opacity = '1';
       imageUpload.disabled = false;
       imageUploadLabel.style.pointerEvents = 'auto';
       imageUpload.setAttribute('accept', 'image/*');
-      if(ANY_FILE_SUPPORT_MODELS.includes(selectedModel)) {
+      if(anyFileSupportModels.includes(selectedModel)) {
         imageUpload.removeAttribute('accept');
       }
   } else {
@@ -638,10 +643,13 @@ function initResultPage() {
 
     // 粘贴
     document.addEventListener('paste', async (event) => {
-
       const modelSelection = document.getElementById('model-selection');
       const selectedModel = modelSelection.value;
-      if (!IMAGE_SUPPORT_MODELS.includes(selectedModel)) {
+      
+      // 使用窗口全局变量（如果存在）或者回退到常量
+      const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+      
+      if (!imageSupportModels.includes(selectedModel)) {
         return;
       }
 
@@ -969,6 +977,9 @@ function initResultPage() {
                   base64Images.push(imageBase64);
                 }
             });
+
+            // 使用窗口全局变量（如果存在）或者回退到常量
+            const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
 
             // 创建用户问题div
             const userQuestionDiv = document.createElement('div');

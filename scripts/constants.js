@@ -115,8 +115,66 @@ const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'gpt-4.1',
   'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
   'google/gemini-2.0-flash-thinking-exp:free', 'google/gemini-2.5-pro-exp-03-25:free', 'doubao-1-5-vision-pro-32k-250115', 'doubao-1.5-vision-pro-250328'];
 
-const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
   'google/gemini-2.0-flash-exp:free', 'google/gemini-2.0-flash-thinking-exp:free', 'google/gemini-2.5-pro-exp-03-25:free'];
+
+// 尝试从localStorage获取已保存的模型能力配置
+function loadModelCapabilities() {
+  try {
+    // 获取用户自定义设置
+    const userImageSettingsStr = localStorage.getItem('USER_IMAGE_SETTINGS');
+    const userFileSettingsStr = localStorage.getItem('USER_FILE_SETTINGS');
+    
+    // 解析用户设置
+    const userImageSettings = userImageSettingsStr ? JSON.parse(userImageSettingsStr) : {};
+    const userFileSettings = userFileSettingsStr ? JSON.parse(userFileSettingsStr) : {};
+    
+    // 构建最终的支持列表
+    const finalImageSupportModels = [];
+    const finalFileSupportModels = [];
+    
+    // 处理默认支持的模型，但排除用户明确取消的
+    IMAGE_SUPPORT_MODELS.forEach(model => {
+      // 只有用户明确设置为false时才排除
+      if (userImageSettings[model] !== false) {
+        finalImageSupportModels.push(model);
+      }
+    });
+    
+    ANY_FILE_SUPPORT_MODELS.forEach(model => {
+      // 只有用户明确设置为false时才排除
+      if (userFileSettings[model] !== false) {
+        finalFileSupportModels.push(model);
+      }
+    });
+    
+    // 添加用户明确支持的非默认模型
+    Object.keys(userImageSettings).forEach(model => {
+      if (userImageSettings[model] === true && !finalImageSupportModels.includes(model)) {
+        finalImageSupportModels.push(model);
+      }
+    });
+    
+    Object.keys(userFileSettings).forEach(model => {
+      if (userFileSettings[model] === true && !finalFileSupportModels.includes(model)) {
+        finalFileSupportModels.push(model);
+      }
+    });
+    
+    // 将最终配置设置为全局可访问
+    window.IMAGE_SUPPORT_MODELS = finalImageSupportModels;
+    window.ANY_FILE_SUPPORT_MODELS = finalFileSupportModels;
+    
+  } catch (error) {
+    console.error('Error loading model capabilities:', error);
+    // 如果加载失败，使用默认值
+    window.IMAGE_SUPPORT_MODELS = IMAGE_SUPPORT_MODELS;
+    window.ANY_FILE_SUPPORT_MODELS = ANY_FILE_SUPPORT_MODELS;
+  }
+}
+
+// 页面加载时加载模型能力配置
+document.addEventListener('DOMContentLoaded', loadModelCapabilities);
 
 const DEFAULT_FILE_LOGO_PATH = "/images/file.png";
 

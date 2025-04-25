@@ -779,8 +779,40 @@ function setupModelCustomization() {
       addModelBtn.addEventListener('click', () => {
         const modelName = newModelInput.value.trim();
         if (modelName) {
+          // 获取图像和文件支持选项
+          const supportsImage = document.getElementById(`${tabId}-supports-image`).checked;
+          const supportsFile = document.getElementById(`${tabId}-supports-file`).checked;
+          
+          // 使用窗口全局变量（如果存在）或者回退到常量
+          const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+          const anyFileSupportModels = window.ANY_FILE_SUPPORT_MODELS || ANY_FILE_SUPPORT_MODELS;
+          
+          // 添加模型到编辑列表
           addModelToEditList(tabId, modelEditList, modelName);
+          
+          // 如果勾选了支持图像，将模型添加到图像支持列表
+          if (supportsImage && !imageSupportModels.includes(modelName)) {
+            if (window.IMAGE_SUPPORT_MODELS) {
+              window.IMAGE_SUPPORT_MODELS.push(modelName);
+            } else {
+              IMAGE_SUPPORT_MODELS.push(modelName);
+            }
+          }
+          
+          // 如果勾选了支持文件，将模型添加到文件支持列表
+          if (supportsFile && !anyFileSupportModels.includes(modelName)) {
+            if (window.ANY_FILE_SUPPORT_MODELS) {
+              window.ANY_FILE_SUPPORT_MODELS.push(modelName);
+            } else {
+              ANY_FILE_SUPPORT_MODELS.push(modelName);
+            }
+          }
+          
           newModelInput.value = '';
+          
+          // 重置复选框
+          document.getElementById(`${tabId}-supports-image`).checked = false;
+          document.getElementById(`${tabId}-supports-file`).checked = false;
         }
       });
       
@@ -789,8 +821,40 @@ function setupModelCustomization() {
         if (e.key === 'Enter') {
           const modelName = newModelInput.value.trim();
           if (modelName) {
+            // 获取图像和文件支持选项
+            const supportsImage = document.getElementById(`${tabId}-supports-image`).checked;
+            const supportsFile = document.getElementById(`${tabId}-supports-file`).checked;
+            
+            // 使用窗口全局变量（如果存在）或者回退到常量
+            const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+            const anyFileSupportModels = window.ANY_FILE_SUPPORT_MODELS || ANY_FILE_SUPPORT_MODELS;
+            
+            // 添加模型到编辑列表
             addModelToEditList(tabId, modelEditList, modelName);
+            
+            // 如果勾选了支持图像，将模型添加到图像支持列表
+            if (supportsImage && !imageSupportModels.includes(modelName)) {
+              if (window.IMAGE_SUPPORT_MODELS) {
+                window.IMAGE_SUPPORT_MODELS.push(modelName);
+              } else {
+                IMAGE_SUPPORT_MODELS.push(modelName);
+              }
+            }
+            
+            // 如果勾选了支持文件，将模型添加到文件支持列表
+            if (supportsFile && !anyFileSupportModels.includes(modelName)) {
+              if (window.ANY_FILE_SUPPORT_MODELS) {
+                window.ANY_FILE_SUPPORT_MODELS.push(modelName);
+              } else {
+                ANY_FILE_SUPPORT_MODELS.push(modelName);
+              }
+            }
+            
             newModelInput.value = '';
+            
+            // 重置复选框
+            document.getElementById(`${tabId}-supports-image`).checked = false;
+            document.getElementById(`${tabId}-supports-file`).checked = false;
           }
         }
       });
@@ -940,6 +1004,37 @@ function addModelToEditList(tabId, modelEditListElement, modelName) {
   const modelNameSpan = document.createElement('span');
   modelNameSpan.className = 'model-edit-item-name';
   modelNameSpan.textContent = modelName;
+
+  // 创建模型能力指示器
+  const capabilitiesDiv = document.createElement('div');
+  capabilitiesDiv.className = 'model-capabilities-indicator';
+  
+  // 使用窗口全局变量（如果存在）或者回退到常量
+  const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+  const anyFileSupportModels = window.ANY_FILE_SUPPORT_MODELS || ANY_FILE_SUPPORT_MODELS;
+  
+  // 检查模型是否支持图像上传
+  const supportsImage = imageSupportModels.includes(modelName);
+  const supportsFile = anyFileSupportModels.includes(modelName);
+  
+  // 创建图像支持指示器
+  const imageIndicator = document.createElement('div');
+  imageIndicator.className = 'capability-indicator';
+  imageIndicator.innerHTML = `
+    <input type="checkbox" id="${tabId}-${modelName.replace(/[^a-zA-Z0-9]/g, '_')}-image" class="capability-checkbox" ${supportsImage ? 'checked' : ''}>
+    <label for="${tabId}-${modelName.replace(/[^a-zA-Z0-9]/g, '_')}-image" data-i18n="image">图像</label>
+  `;
+  
+  // 创建文件支持指示器
+  const fileIndicator = document.createElement('div');
+  fileIndicator.className = 'capability-indicator';
+  fileIndicator.innerHTML = `
+    <input type="checkbox" id="${tabId}-${modelName.replace(/[^a-zA-Z0-9]/g, '_')}-file" class="capability-checkbox" ${supportsFile ? 'checked' : ''}>
+    <label for="${tabId}-${modelName.replace(/[^a-zA-Z0-9]/g, '_')}-file" data-i18n="file">文件</label>
+  `;
+  
+  capabilitiesDiv.appendChild(imageIndicator);
+  capabilitiesDiv.appendChild(fileIndicator);
   
   const actionContainer = document.createElement('div');
   actionContainer.className = 'model-edit-actions';
@@ -961,13 +1056,14 @@ function addModelToEditList(tabId, modelEditListElement, modelName) {
   modelEditItem.addEventListener('drop', handleDrop);
   modelEditItem.addEventListener('dragend', handleDragEnd);
   
-  // 添加按钮到动作容器
-  actionContainer.appendChild(deleteBtn);
-  
-  // 组装元素
+  // 添加元素到编辑项
   modelEditItem.appendChild(dragHandle);
   modelEditItem.appendChild(modelNameSpan);
+  modelEditItem.appendChild(capabilitiesDiv);
+  actionContainer.appendChild(deleteBtn);
   modelEditItem.appendChild(actionContainer);
+  
+  // 添加到列表
   modelEditListElement.appendChild(modelEditItem);
 }
 
@@ -1056,41 +1152,89 @@ function saveModelList(tabId, modelListElement, modelEditListElement) {
       newMapping[model] = tabId;
     });
     
-    // 保存模型列表和更新后的映射
-    chrome.storage.sync.set({ 
-      [`${tabId}-models`]: customModels,
-      'model-provider-mapping': newMapping
-    }, async () => {
-      // 更新UI显示
-      modelListElement.innerHTML = '';
-      customModels.forEach(model => {
-        const modelItem = document.createElement('div');
-        modelItem.className = 'model-item';
-        modelItem.textContent = model;
-        modelListElement.appendChild(modelItem);
-      });
+    // 保存映射和模型列表
+    chrome.storage.sync.set({
+      'model-provider-mapping': newMapping,
+      [`${tabId}-models`]: customModels
+    });
+    
+    // 更新UI
+    updateModelList(tabId, modelListElement, customModels);
+    
+    // 获取默认支持的模型列表
+    const defaultImageSupportModels = IMAGE_SUPPORT_MODELS || [];
+    const defaultFileSupportModels = ANY_FILE_SUPPORT_MODELS || [];
+    
+    // 收集所有用户自定义的模型能力配置
+    const userImageSettings = {};  // 存储用户对每个模型的图像支持设置
+    const userFileSettings = {};   // 存储用户对每个模型的文件支持设置
+    
+    // 遍历所有模型项，收集用户设置
+    modelEditListElement.querySelectorAll('.model-edit-item').forEach(item => {
+      const modelName = item.querySelector('.model-edit-item-name').textContent;
+      // 使用安全的ID选择器
+      const safeModelId = modelName.replace(/[^a-zA-Z0-9]/g, '_');
+      const supportsImage = item.querySelector(`input[id$="-${safeModelId}-image"]`).checked;
+      const supportsFile = item.querySelector(`input[id$="-${safeModelId}-file"]`).checked;
       
-      // 重新加载模型选择下拉框
-      console.log("模型列表已保存，正在刷新下拉列表...");
-      await populateModelSelections();
+      // 检查图像支持设置是否与默认不同
+      const isDefaultImageSupport = defaultImageSupportModels.includes(modelName);
+      if (supportsImage !== isDefaultImageSupport) {
+        // 记录用户自定义的图像支持设置
+        userImageSettings[modelName] = supportsImage;
+      }
       
-      // 显示保存成功提示
-      const tabContent = document.getElementById(tabId);
-      const saveMessage = tabContent.querySelector('.save-message');
-      if (saveMessage) {
-        // 使用CSS动画显示保存成功消息
-        // 先重置动画
-        saveMessage.style.animation = 'none';
-        saveMessage.offsetHeight; // 触发重排
-        saveMessage.style.display = 'block';
-        saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
-        
-        // 动画结束后隐藏元素
-        setTimeout(() => {
-          saveMessage.style.display = 'none';
-        }, 2000);
+      // 检查文件支持设置是否与默认不同
+      const isDefaultFileSupport = defaultFileSupportModels.includes(modelName);
+      if (supportsFile !== isDefaultFileSupport) {
+        // 记录用户自定义的文件支持设置
+        userFileSettings[modelName] = supportsFile;
       }
     });
+    
+    // 保存用户自定义设置到localStorage
+    localStorage.setItem('USER_IMAGE_SETTINGS', JSON.stringify(userImageSettings));
+    localStorage.setItem('USER_FILE_SETTINGS', JSON.stringify(userFileSettings));
+    
+    // 构建最终的支持列表
+    const finalImageSupportModels = [];
+    const finalFileSupportModels = [];
+    
+    // 添加默认支持的模型，但排除用户明确取消的
+    defaultImageSupportModels.forEach(model => {
+      // 只有用户明确设置为false时才排除
+      if (userImageSettings[model] !== false) {
+        finalImageSupportModels.push(model);
+      }
+    });
+    
+    defaultFileSupportModels.forEach(model => {
+      // 只有用户明确设置为false时才排除
+      if (userFileSettings[model] !== false) {
+        finalFileSupportModels.push(model);
+      }
+    });
+    
+    // 添加用户明确支持的非默认模型
+    Object.keys(userImageSettings).forEach(model => {
+      if (userImageSettings[model] === true && !finalImageSupportModels.includes(model)) {
+        finalImageSupportModels.push(model);
+      }
+    });
+    
+    Object.keys(userFileSettings).forEach(model => {
+      if (userFileSettings[model] === true && !finalFileSupportModels.includes(model)) {
+        finalFileSupportModels.push(model);
+      }
+    });
+    
+    // 保存到localStorage以确保其他脚本可以访问
+    localStorage.setItem('IMAGE_SUPPORT_MODELS', JSON.stringify(finalImageSupportModels));
+    localStorage.setItem('ANY_FILE_SUPPORT_MODELS', JSON.stringify(finalFileSupportModels));
+    
+    // 更新当前会话中的模型支持列表
+    window.IMAGE_SUPPORT_MODELS = finalImageSupportModels;
+    window.ANY_FILE_SUPPORT_MODELS = finalFileSupportModels;
   });
 }
 
@@ -1101,6 +1245,8 @@ function createModelEditorForProviders() {
   
   modelTabs.forEach(tabId => {
     const tabContent = document.getElementById(tabId);
+    
+    // 如果分页内容不存在，跳过
     if (!tabContent) return;
     
     // 检查是否已存在编辑功能
@@ -1177,6 +1323,17 @@ function createModelEditorForProviders() {
             <div class="form-group">
               <label for="${tabId}-new-model-name" data-i18n="model_name">模型名称:</label>
               <input type="text" id="${tabId}-new-model-name" placeholder="例如: ${getModelExample(tabId)}">
+            </div>
+            <div class="form-group model-capabilities">
+              <div class="capabilities-title">模型功能:</div>
+              <div class="checkbox-container">
+                <input type="checkbox" id="${tabId}-supports-image" class="supports-image-checkbox">
+                <label for="${tabId}-supports-image" data-i18n="supports_image_upload">支持图像上传</label>
+              </div>
+              <div class="checkbox-container">
+                <input type="checkbox" id="${tabId}-supports-file" class="supports-file-checkbox">
+                <label for="${tabId}-supports-file" data-i18n="supports_file_upload">支持文件上传</label>
+              </div>
             </div>
             <button class="add-model-btn" id="${tabId}-add-model" data-i18n="add">添加</button>
           </div>
@@ -1690,4 +1847,37 @@ function setupPromptSettings() {
 
 // Load settings when the page is ready
 document.addEventListener('DOMContentLoaded', loadSettings);
+
+// 更新模型列表UI
+function updateModelList(tabId, modelListElement, customModels) {
+  // 更新UI显示
+  modelListElement.innerHTML = '';
+  customModels.forEach(model => {
+    const modelItem = document.createElement('div');
+    modelItem.className = 'model-item';
+    modelItem.textContent = model;
+    modelListElement.appendChild(modelItem);
+  });
+  
+  // 重新加载模型选择下拉框
+  console.log("模型列表已保存，正在刷新下拉列表...");
+  populateModelSelections();
+  
+  // 显示保存成功提示
+  const tabContent = document.getElementById(tabId);
+  const saveMessage = tabContent.querySelector('.save-message');
+  if (saveMessage) {
+    // 使用CSS动画显示保存成功消息
+    // 先重置动画
+    saveMessage.style.animation = 'none';
+    saveMessage.offsetHeight; // 触发重排
+    saveMessage.style.display = 'block';
+    saveMessage.style.animation = 'fadeInOut 2s ease-in-out';
+    
+    // 动画结束后隐藏元素
+    setTimeout(() => {
+      saveMessage.style.display = 'none';
+    }, 2000);
+  }
+}
 
