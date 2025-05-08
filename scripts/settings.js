@@ -780,8 +780,11 @@ function setupModelCustomization() {
         const modelName = newModelInput.value.trim();
         if (modelName) {
           // 获取图像和文件支持选项
-          const supportsImage = document.getElementById(`${tabId}-supports-image`).checked;
-          const supportsFile = document.getElementById(`${tabId}-supports-file`).checked;
+          const supportsImageElement = document.getElementById(`${tabId}-supports-image`);
+          const supportsFileElement = document.getElementById(`${tabId}-supports-file`);
+          
+          const supportsImage = supportsImageElement ? supportsImageElement.checked : false;
+          const supportsFile = supportsFileElement ? supportsFileElement.checked : false;
           
           // 使用窗口全局变量（如果存在）或者回退到常量
           const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
@@ -811,8 +814,12 @@ function setupModelCustomization() {
           newModelInput.value = '';
           
           // 重置复选框
-          document.getElementById(`${tabId}-supports-image`).checked = false;
-          document.getElementById(`${tabId}-supports-file`).checked = false;
+          if (document.getElementById(`${tabId}-supports-image`)) {
+            document.getElementById(`${tabId}-supports-image`).checked = false;
+          }
+          if (document.getElementById(`${tabId}-supports-file`)) {
+            document.getElementById(`${tabId}-supports-file`).checked = false;
+          }
         }
       });
       
@@ -822,8 +829,11 @@ function setupModelCustomization() {
           const modelName = newModelInput.value.trim();
           if (modelName) {
             // 获取图像和文件支持选项
-            const supportsImage = document.getElementById(`${tabId}-supports-image`).checked;
-            const supportsFile = document.getElementById(`${tabId}-supports-file`).checked;
+            const supportsImageElement = document.getElementById(`${tabId}-supports-image`);
+            const supportsFileElement = document.getElementById(`${tabId}-supports-file`);
+            
+            const supportsImage = supportsImageElement ? supportsImageElement.checked : false;
+            const supportsFile = supportsFileElement ? supportsFileElement.checked : false;
             
             // 使用窗口全局变量（如果存在）或者回退到常量
             const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
@@ -853,8 +863,12 @@ function setupModelCustomization() {
             newModelInput.value = '';
             
             // 重置复选框
-            document.getElementById(`${tabId}-supports-image`).checked = false;
-            document.getElementById(`${tabId}-supports-file`).checked = false;
+            if (document.getElementById(`${tabId}-supports-image`)) {
+              document.getElementById(`${tabId}-supports-image`).checked = false;
+            }
+            if (document.getElementById(`${tabId}-supports-file`)) {
+              document.getElementById(`${tabId}-supports-file`).checked = false;
+            }
           }
         }
       });
