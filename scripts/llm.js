@@ -166,8 +166,8 @@ function createRequestParams(additionalHeaders, body) {
   currentController = controller;
   headers = {...headers, ...additionalHeaders};
 
-  // 设置30秒超时
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  // 设置80秒超时
+  const timeoutId = setTimeout(() => controller.abort(), 80000);
 
   return {
     method: 'POST',
