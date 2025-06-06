@@ -167,7 +167,7 @@ function createRequestParams(additionalHeaders, body) {
   headers = {...headers, ...additionalHeaders};
 
   // 设置80秒超时
-  const timeoutId = setTimeout(() => controller.abort(), 80000);
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
 
   return {
     method: 'POST',
@@ -509,7 +509,7 @@ async function fetchAndHandleResponse(baseUrl, params, type, provider) {
     // 清除超时定时器
     clearTimeout(params.timeoutId);
 
-    // console.log(response);
+    console.log(response);
     if (!response.ok) {
       // 错误响应
       const errorJson = await response.json();
