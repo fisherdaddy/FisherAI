@@ -1,3 +1,23 @@
+// 存储视频ID对应的pot参数
+const potCache = new Map();
+
+// 监听网络请求以获取pot参数
+chrome.webRequest.onBeforeRequest.addListener(
+  function(details) {
+    const url = new URL(details.url);
+    const pot = url.searchParams.get('pot');
+    const v = url.searchParams.get('v');
+    
+    if (pot && v) {
+      potCache.set(v, pot);
+      console.log(`Background: Captured pot parameter for video ${v}: ${pot}`);
+    }
+  },
+  {
+    urls: ["*://www.youtube.com/api/timedtext*"]
+  }
+);
+
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.action === "openSettings") {
     chrome.tabs.create({'url': 'settings.html'});
@@ -13,6 +33,11 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       }
     });
     return true; // Keep the message channel open to send the response asynchronously
+  } else if (message.action === "getPotParameter") {
+    // 响应content script请求pot参数
+    const pot = potCache.get(message.videoId);
+    sendResponse({pot: pot});
+    return true;
   }
 });
 

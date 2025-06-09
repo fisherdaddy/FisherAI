@@ -5,6 +5,22 @@ const USER_AGENT =
 const RE_XML_TRANSCRIPT =
   /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
 
+// 从background script获取pot参数的辅助函数
+async function getPotParameter(videoId) {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.sendMessage(
+        { action: "getPotParameter", videoId: videoId }, 
+        (response) => {
+          resolve(response?.pot);
+        }
+      );
+    } else {
+      resolve(null);
+    }
+  });
+}
+
 class YoutubeTranscriptError extends Error {
   constructor(message) {
     super(`[YoutubeTranscript] 🚨 ${message}`);
@@ -112,13 +128,26 @@ class YoutubeTranscript {
       );
     }
 
-    const transcriptURL = (
+    let transcriptURL = (
       config?.lang
         ? captions.captionTracks.find(
             (track) => track.languageCode === config?.lang
           )
         : captions.captionTracks[0]
     ).baseUrl;
+
+    // 添加pot参数到transcriptURL
+    const cachedPot = await getPotParameter(identifier);
+    if (cachedPot) {
+      const url = new URL(transcriptURL);
+      url.searchParams.set('pot', cachedPot);
+      url.searchParams.set('fmt', "json3");
+      url.searchParams.set('c', "WEB");
+      transcriptURL = url.toString();
+      console.log(`Using pot parameter: ${cachedPot} for video: ${identifier}`);
+    } else {
+      console.warn(`No pot parameter found for video: ${identifier}, using original URL`);
+    }
 
     const transcriptResponse = await fetch(transcriptURL, {
       headers: {
@@ -130,6 +159,44 @@ class YoutubeTranscript {
       throw new YoutubeTranscriptNotAvailableError(videoId);
     }
     const transcriptBody = await transcriptResponse.text();
+
+    console.log('transcriptURL', transcriptURL);
+    console.log('transcriptBody', transcriptBody);
+    
+    try {
+      // 尝试解析 JSON 格式 (新格式)
+      const jsonData = JSON.parse(transcriptBody);
+      if (jsonData.events) {
+        const results = [];
+        
+        jsonData.events.forEach(event => {
+          if (event.segs) {
+            // 合并所有文本片段
+            let fullText = '';
+            event.segs.forEach(seg => {
+              if (seg.utf8) {
+                fullText += seg.utf8;
+              }
+            });
+            
+            if (fullText.trim() && fullText.trim() !== '\n') {
+              results.push({
+                text: fullText.trim(),
+                duration: event.dDurationMs / 1000, // 转换为秒
+                offset: event.tStartMs / 1000, // 转换为秒
+                lang: config?.lang ?? captions.captionTracks[0].languageCode,
+              });
+            }
+          }
+        });
+        
+        return results;
+      }
+    } catch (e) {
+      console.log('JSON parsing failed, trying XML parsing:', e);
+    }
+    
+    // 如果 JSON 解析失败，回退到 XML 格式解析
     const results = [...transcriptBody.matchAll(RE_XML_TRANSCRIPT)];
     return results.map((result) => ({
       text: result[3],

@@ -31,7 +31,8 @@
         "tabs",
         "activeTab",
         "contextMenus",
-        "clipboardWrite"
+        "clipboardWrite",
+        "webRequest"
     ],
     "minimum_chrome_version":"114",
     "content_scripts": [
