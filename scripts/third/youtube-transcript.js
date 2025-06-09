@@ -5,7 +5,65 @@ const USER_AGENT =
 const RE_XML_TRANSCRIPT =
   /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
 
-// 从background script获取pot参数的辅助函数
+// 存储截取到的字幕数据
+const transcriptCache = new Map();
+
+// 拦截fetch请求来直接获取字幕响应
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+  const [resource] = args;
+  const url = typeof resource === 'string' ? resource : resource.url;
+  
+  if (url.includes('youtube.com/api/timedtext')) {
+    return originalFetch.apply(this, args).then(response => {
+      // 克隆响应以便我们可以读取它而不影响原始请求
+      const clonedResponse = response.clone();
+      
+      // 从URL中提取视频ID
+      try {
+        const urlObj = new URL(url);
+        const videoId = urlObj.searchParams.get('v');
+        
+        if (videoId) {
+          // 异步存储响应内容
+          clonedResponse.text().then(text => {
+            transcriptCache.set(videoId, {
+              text: text,
+              url: url,
+              timestamp: Date.now()
+            });
+            console.log(`Intercepted transcript for video: ${videoId}`);
+          }).catch(err => {
+            console.error('Error reading transcript response:', err);
+          });
+        }
+      } catch (err) {
+        console.error('Error parsing timedtext URL:', err);
+      }
+      
+      return response;
+    });
+  }
+  
+  return originalFetch.apply(this, args);
+};
+
+// 从缓存获取字幕数据的辅助函数
+function getCachedTranscript(videoId) {
+  const cached = transcriptCache.get(videoId);
+  if (cached) {
+    // 检查缓存是否过期（5分钟）
+    const isExpired = Date.now() - cached.timestamp > 5 * 60 * 1000;
+    if (!isExpired) {
+      return cached.text;
+    } else {
+      transcriptCache.delete(videoId);
+    }
+  }
+  return null;
+}
+
+// 从background script获取pot参数的辅助函数（作为备用方案）
 async function getPotParameter(videoId) {
   return new Promise((resolve) => {
     if (typeof chrome !== 'undefined' && chrome.runtime) {
@@ -74,6 +132,14 @@ class YoutubeTranscript {
    */
   static async fetchTranscript(videoId, config) {
     const identifier = this.retrieveVideoId(videoId);
+    
+    // 首先尝试从缓存获取字幕数据
+    const cachedTranscript = getCachedTranscript(identifier);
+    if (cachedTranscript) {
+      console.log(`Using cached transcript for video: ${identifier}`);
+      return this.parseTranscriptResponse(cachedTranscript, config, identifier);
+    }
+    
     const videoPageResponse = await fetch(
       `https://www.youtube.com/watch?v=${identifier}`,
       {
@@ -163,6 +229,17 @@ class YoutubeTranscript {
     console.log('transcriptURL', transcriptURL);
     console.log('transcriptBody', transcriptBody);
     
+    return this.parseTranscriptResponse(transcriptBody, config, identifier, captions);
+  }
+
+  /**
+   * Parse transcript response (JSON or XML format)
+   * @param transcriptBody Response body text
+   * @param config Configuration object
+   * @param identifier Video identifier
+   * @param captions Caption tracks info (optional)
+   */
+  static parseTranscriptResponse(transcriptBody, config, identifier, captions = null) {
     try {
       // 尝试解析 JSON 格式 (新格式)
       const jsonData = JSON.parse(transcriptBody);
@@ -184,7 +261,7 @@ class YoutubeTranscript {
                 text: fullText.trim(),
                 duration: event.dDurationMs / 1000, // 转换为秒
                 offset: event.tStartMs / 1000, // 转换为秒
-                lang: config?.lang ?? captions.captionTracks[0].languageCode,
+                lang: config?.lang ?? (captions ? captions.captionTracks[0].languageCode : 'unknown'),
               });
             }
           }
@@ -202,7 +279,7 @@ class YoutubeTranscript {
       text: result[3],
       duration: parseFloat(result[2]),
       offset: parseFloat(result[1]),
-      lang: config?.lang ?? captions.captionTracks[0].languageCode,
+      lang: config?.lang ?? (captions ? captions.captionTracks[0].languageCode : 'unknown'),
     }));
   }
 
