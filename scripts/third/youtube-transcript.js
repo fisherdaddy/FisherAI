@@ -63,14 +63,31 @@ function getCachedTranscript(videoId) {
   return null;
 }
 
-// 从background script获取pot参数的辅助函数（作为备用方案）
+// 从多个来源获取pot参数的辅助函数
 async function getPotParameter(videoId) {
   return new Promise((resolve) => {
+    // 首先尝试从content script的页面拦截器获取
+    if (typeof window !== 'undefined' && typeof window.getPotParameterFromPage === 'function') {
+      const pagePot = window.getPotParameterFromPage(videoId);
+      if (pagePot) {
+        console.log(`[FisherAI] 从页面拦截器获取到pot参数: ${pagePot}`);
+        resolve(pagePot);
+        return;
+      }
+    }
+    
+    // 备用方案：从background script获取
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       chrome.runtime.sendMessage(
         { action: "getPotParameter", videoId: videoId }, 
         (response) => {
-          resolve(response?.pot);
+          const bgPot = response?.pot;
+          if (bgPot) {
+            console.log(`[FisherAI] 从background获取到pot参数: ${bgPot}`);
+          } else {
+            console.log(`[FisherAI] 未找到视频 ${videoId} 的pot参数`);
+          }
+          resolve(bgPot);
         }
       );
     } else {

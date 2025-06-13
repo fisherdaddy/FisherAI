@@ -38,6 +38,13 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     const pot = potCache.get(message.videoId);
     sendResponse({pot: pot});
     return true;
+  } else if (message.action === "storePotParameter") {
+    // 存储从页面拦截器获取的pot参数
+    if (message.videoId && message.pot) {
+      potCache.set(message.videoId, message.pot);
+      console.log(`Background: Stored pot parameter from page interceptor for video ${message.videoId}: ${message.pot}`);
+    }
+    return true;
   }
 });
 

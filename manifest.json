@@ -49,14 +49,16 @@
           "scripts/constants.js", 
           "scripts/utils.js", 
           "scripts/llm.js",
-          "scripts/content.js" ]
+          "scripts/content.js" ],
+        "run_at": "document_start"
       }
     ],
     "web_accessible_resources": [
       {
         "resources": [
         "images/logo_48.png",
-        "scripts/third/pdf.worker.min.js"
+        "scripts/third/pdf.worker.min.js",
+        "scripts/page-interceptor.js"
       ],
         "matches": ["<all_urls>"]
       }

@@ -1,5 +1,119 @@
+// 存储从页面拦截器获取的pot参数
+const pageInterceptedPots = new Map();
+
+// 注入页面脚本到页面上下文中
+function injectPageScript() {
+    // 检查是否已经注入过
+    if (window.document.documentElement.getAttribute('data-fisherai-injected') === 'true') {
+        return;
+    }
+    
+    // 标记已注入
+    window.document.documentElement.setAttribute('data-fisherai-injected', 'true');
+    
+    const script = document.createElement('script');
+    try {
+        script.src = chrome.runtime.getURL('scripts/page-interceptor.js');
+    } catch (error) {
+        console.warn('[FisherAI] Failed to get page interceptor script URL:', error);
+        return;
+    }
+    script.onload = function() {
+        this.remove();
+        console.log('[FisherAI] 页面拦截脚本注入成功');
+        
+        // 验证注入是否成功
+        setTimeout(() => {
+            if (typeof window.FisherAI_getPotParameter !== 'function') {
+                console.warn('[FisherAI] 页面拦截脚本可能注入失败，尝试备用方案');
+                // 可以在这里添加备用注入方案
+            }
+        }, 100);
+    };
+    script.onerror = function() {
+        console.error('[FisherAI] 页面拦截脚本加载失败');
+        this.remove();
+        // 移除标记以便重试
+        window.document.documentElement.removeAttribute('data-fisherai-injected');
+    };
+    
+    try {
+        (document.head || document.documentElement).appendChild(script);
+    } catch (err) {
+        console.error('[FisherAI] 页面脚本注入失败:', err);
+        // 移除标记以便重试
+        window.document.documentElement.removeAttribute('data-fisherai-injected');
+    }
+}
+
+// 监听来自页面脚本的消息
+window.addEventListener('message', function(event) {
+    if (event.source !== window) return;
+    
+    if (event.data.type === 'FISHERAI_POT_INTERCEPTED' && event.data.source === 'page-interceptor') {
+        const { videoId, pot, url } = event.data.data;
+        if (videoId && pot) {
+            pageInterceptedPots.set(videoId, pot);
+            console.log(`[FisherAI] 内容脚本接收到pot参数: ${pot}, videoId: ${videoId}`);
+            
+            // 同时发送给background script保持兼容性
+            chrome.runtime.sendMessage({
+                action: 'storePotParameter',
+                videoId: videoId,
+                pot: pot
+            }).catch(err => console.log('[FisherAI] 发送pot到background失败:', err));
+        }
+    }
+});
+
+// 提供获取pot参数的函数
+function getPotParameterFromPage(videoId) {
+    // 首先尝试从页面拦截获取
+    const interceptedPot = pageInterceptedPots.get(videoId);
+    if (interceptedPot) {
+        return interceptedPot;
+    }
+    
+    // 尝试调用页面上的全局函数
+    if (typeof window.FisherAI_getPotParameter === 'function') {
+        return window.FisherAI_getPotParameter(videoId);
+    }
+    
+    return null;
+}
+
+// 将函数暴露给window对象，供其他脚本调用
+window.getPotParameterFromPage = getPotParameterFromPage;
+
+// 在YouTube页面上注入拦截脚本
+if (window.location.hostname.includes('youtube.com')) {
+    // 立即注入，确保尽早执行
+    injectPageScript();
+    
+    // 监听页面导航变化（YouTube是SPA）
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+        const url = location.href;
+        if (url !== lastUrl) {
+            lastUrl = url;
+            console.log('[FisherAI] 检测到YouTube页面导航变化:', url);
+            
+            // 页面导航后确保拦截脚本仍然有效
+            setTimeout(() => {
+                if (typeof window.FisherAI_getPotParameter !== 'function') {
+                    console.log('[FisherAI] 页面导航后重新注入拦截脚本');
+                    // 重置注入标记
+                    window.document.documentElement.removeAttribute('data-fisherai-injected');
+                    injectPageScript();
+                }
+            }, 1000);
+        }
+    }).observe(document, { subtree: true, childList: true });
+}
+
 // 监听获取正文请求
-chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
+try {
+  chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
   if (request.action === ACTION_FETCH_PAGE_CONTENT) {
     // 获取网页html
     sendResponse({content: extractContent() || "No content"});
@@ -44,7 +158,15 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
     // 获取当前网页地址
     sendResponse({url: window.location.href});
   }
-});
+  });
+} catch (error) {
+  // 处理扩展上下文失效错误
+  if (error.message && error.message.includes('Extension context invalidated')) {
+    console.warn('[FisherAI] Extension context invalidated during message listener setup');
+  } else {
+    console.error('[FisherAI] Chrome API error during message listener setup:', error);
+  }
+}
 
 // 备用复制方法，使用document.execCommand
 function copyTextWithExecCommand(text) {
@@ -65,10 +187,16 @@ let translationPopup = null;
 let contentContainer = null;
 let quickTransButton = null; // Variable for the button as well
 
-// 是否开启快捷翻译
-chrome.storage.sync.get(QUICK_TRANS, function(config) {
-const enabled = config[QUICK_TRANS].enabled;
-if(enabled == false) {
+// 确保DOM准备就绪后再初始化快捷翻译
+function initQuickTranslate() {
+  
+  // 是否开启快捷翻译
+  try {
+    chrome.storage.sync.get(QUICK_TRANS, function(config) {
+const quickTransConfig = config[QUICK_TRANS] || {};
+const enabled = quickTransConfig.enabled !== false; // 默认启用，除非明确设置为false
+
+if(enabled === false) {
   console.log("[FisherAI Content Script] Quick Translate is disabled.");
   // Clean up any existing elements if the setting was changed to disabled
   const existingButton = document.getElementById('fisherai-button-id');
@@ -101,6 +229,118 @@ if (!document.getElementById('fisherai-transpop-id')) {
     translationPopup.style.transform = 'translateY(8px)';
     translationPopup.style.opacity = '0';
     document.body.appendChild(translationPopup);
+
+    // Create drag handle
+    const dragHandle = document.createElement('div');
+    dragHandle.style.position = 'absolute';
+    dragHandle.style.top = '8px';
+    dragHandle.style.left = '8px';
+    dragHandle.style.width = '24px';
+    dragHandle.style.height = '24px';
+    dragHandle.style.cursor = 'move';
+    dragHandle.style.borderRadius = '4px';
+    dragHandle.style.display = 'flex';
+    dragHandle.style.alignItems = 'center';
+    dragHandle.style.justifyContent = 'center';
+    dragHandle.style.fontSize = '14px';
+    dragHandle.style.opacity = '0.5';
+    dragHandle.style.transition = 'all 0.2s';
+    dragHandle.style.userSelect = 'none';
+    dragHandle.style.fontWeight = 'bold';
+    dragHandle.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="5" r="2"/>
+        <circle cx="12" cy="5" r="2"/>
+        <circle cx="19" cy="5" r="2"/>
+        <circle cx="5" cy="12" r="2"/>
+        <circle cx="12" cy="12" r="2"/>
+        <circle cx="19" cy="12" r="2"/>
+        <circle cx="5" cy="19" r="2"/>
+        <circle cx="12" cy="19" r="2"/>
+        <circle cx="19" cy="19" r="2"/>
+      </svg>
+    `; // 9点网格拖拽图标
+    dragHandle.title = '拖拽移动窗口'; // 添加提示
+    
+    // 添加拖拽悬停效果
+    dragHandle.addEventListener('mouseover', function() {
+      dragHandle.style.opacity = '1';
+      dragHandle.style.backgroundColor = 'rgba(100, 116, 139, 0.15)';
+      dragHandle.style.transform = 'scale(1.1)';
+    });
+    
+    dragHandle.addEventListener('mouseout', function() {
+      dragHandle.style.opacity = '0.5';
+      dragHandle.style.backgroundColor = 'transparent';
+      dragHandle.style.transform = 'scale(1)';
+    });
+    
+    // 拖拽变量
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let popupStartX = 0;
+    let popupStartY = 0;
+    
+    // 开始拖拽
+    dragHandle.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return; // 只响应左键
+      
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      
+      // 获取弹窗当前位置
+      const rect = translationPopup.getBoundingClientRect();
+      popupStartX = rect.left + window.scrollX;
+      popupStartY = rect.top + window.scrollY;
+      
+      // 禁用文本选择和过渡效果
+      document.body.style.userSelect = 'none';
+      translationPopup.style.transition = 'none';
+      
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    
+    // 拖拽过程
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      
+      const deltaX = e.clientX - dragStartX;
+      const deltaY = e.clientY - dragStartY;
+      
+      let newX = popupStartX + deltaX;
+      let newY = popupStartY + deltaY;
+      
+      // 限制弹窗不要超出视口边界
+      const rect = translationPopup.getBoundingClientRect();
+      const maxX = window.innerWidth - rect.width;
+      const maxY = window.innerHeight - rect.height;
+      
+      newX = Math.max(0, Math.min(newX, maxX + window.scrollX));
+      newY = Math.max(0, Math.min(newY, maxY + window.scrollY));
+      
+      translationPopup.style.left = `${newX}px`;
+      translationPopup.style.top = `${newY}px`;
+      
+      e.preventDefault();
+    });
+    
+    // 结束拖拽
+    document.addEventListener('mouseup', function(e) {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      
+      // 恢复文本选择和过渡效果
+      document.body.style.userSelect = '';
+      translationPopup.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      
+      e.preventDefault();
+    });
+    
+    translationPopup.appendChild(dragHandle);
 
     // Create close button
     const closeButton = document.createElement('div');
@@ -148,7 +388,8 @@ if (!document.getElementById('fisherai-transpop-id')) {
     // Create content container
     contentContainer = document.createElement('div');
     contentContainer.id = 'fisherai-transpop-content'; // Keep ID for potential external use/styling
-    contentContainer.style.marginTop = '5px'; // Adjust as needed relative to close button etc.
+    contentContainer.style.marginTop = '32px'; // 为拖拽手柄留出空间
+    contentContainer.style.paddingTop = '8px';
 
     // Apply theme based on stored appearance setting
     applyThemeToTranslationPopup();
@@ -164,7 +405,8 @@ if (!document.getElementById('fisherai-transpop-id')) {
         // Optionally recreate it if missing
         contentContainer = document.createElement('div');
         contentContainer.id = 'fisherai-transpop-content';
-        contentContainer.style.marginTop = '5px';
+        contentContainer.style.marginTop = '32px'; // 为拖拽手柄留出空间
+        contentContainer.style.paddingTop = '8px';
         
         // Apply theme based on stored appearance setting
         applyThemeToTranslationPopup();
@@ -187,19 +429,19 @@ if (!document.getElementById('fisherai-transpop-id')) {
 if (!document.getElementById('fisherai-button-id')) {
     quickTransButton = document.createElement('button');
     quickTransButton.id = 'fisherai-button-id';
-    quickTransButton.style.display = 'none';
     quickTransButton.style.position = 'absolute';
     quickTransButton.style.zIndex = '999999';
     quickTransButton.style.border = 'none';
     quickTransButton.style.borderRadius = '50%';
     quickTransButton.style.width = '32px';
     quickTransButton.style.height = '32px';
-    quickTransButton.style.display = 'flex';
+    quickTransButton.style.display = 'none'; // Initially hidden
     quickTransButton.style.alignItems = 'center';
     quickTransButton.style.justifyContent = 'center';
     quickTransButton.style.cursor = 'pointer';
     quickTransButton.style.transition = 'transform 0.2s ease';
-    quickTransButton.style.display = 'none'; // Initially hidden
+    quickTransButton.style.backgroundColor = '#4A90E2';
+    quickTransButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
 
     // Add hover effects
     quickTransButton.addEventListener('mouseover', function() {
@@ -211,7 +453,13 @@ if (!document.getElementById('fisherai-button-id')) {
 
     // Create and add image to button
     const image = document.createElement('img');
-    image.src = chrome.runtime.getURL('images/logo_48.png');
+    try {
+        image.src = chrome.runtime.getURL('images/logo_48.png');
+    } catch (error) {
+        console.warn('[FisherAI] Failed to get button image URL:', error);
+        // 使用默认图片或文本
+        image.style.display = 'none';
+    }
     image.style.width = '20px';
     image.style.height = '20px';
     image.style.filter = 'drop-shadow(0 0 1px rgba(0, 0, 0, 0.5))';
@@ -222,7 +470,8 @@ if (!document.getElementById('fisherai-button-id')) {
 
     // --- Add button click listener ---
     quickTransButton.addEventListener('click', function () {
-      chrome.storage.sync.get([QUICK_TRANS], async function(config) {
+      try {
+        chrome.storage.sync.get([QUICK_TRANS], async function(config) {
         // Use the persistent variables
         if (!translationPopup || !contentContainer) {
           console.error("[FisherAI] Translation popup or content container not ready.");
@@ -293,8 +542,9 @@ if (!document.getElementById('fisherai-button-id')) {
 
         // --- Call LLM ---
         try {
-          let model = config[QUICK_TRANS].selectedModel;
-          let provider = config[QUICK_TRANS].provider;
+          const quickTransConfig = config[QUICK_TRANS] || {};
+          let model = quickTransConfig.selectedModel;
+          let provider = quickTransConfig.provider;
           if (!model || !provider) {
                contentContainer.innerHTML = "Model or provider not configured.";
                return;
@@ -316,7 +566,21 @@ if (!document.getElementById('fisherai-button-id')) {
           console.error('Error retrieving model/API info or translating:', error);
           contentContainer.innerHTML = DEFAULT_TIPS; // Update persistent container
         }
-      });
+        });
+      } catch (error) {
+        // 处理扩展上下文失效错误
+        if (error.message && error.message.includes('Extension context invalidated')) {
+          console.warn('[FisherAI] Extension context invalidated, please refresh the page');
+          if (contentContainer) {
+            contentContainer.innerHTML = '<div style="color: #f59e0b; padding: 10px; text-align: center;">扩展已更新，请刷新页面后重试</div>';
+          }
+        } else {
+          console.error('[FisherAI] Chrome API error:', error);
+          if (contentContainer) {
+            contentContainer.innerHTML = '<div style="color: #ef4444; padding: 10px; text-align: center;">翻译功能暂时不可用</div>';
+          }
+        }
+      }
     }); // End of button click listener
 
 } else {
@@ -377,7 +641,9 @@ document.addEventListener('mouseup', function (event) {
     }
   } else {
     // No text selected or button doesn't exist, hide button
-    if (quickTransButton) quickTransButton.style.display = 'none';
+    if (quickTransButton) {
+      quickTransButton.style.display = 'none';
+    }
     // Do NOT hide the popup here, only hide button. Popup hides on close click or mousedown outside.
   }
 });
@@ -386,6 +652,11 @@ document.addEventListener('mouseup', function (event) {
 document.addEventListener('mousedown', function (event) {
   const clickedButton = quickTransButton && quickTransButton.contains(event.target);
   const clickedPopup = translationPopup && translationPopup.contains(event.target);
+  
+  // 检查是否点击在拖拽手柄上
+  const clickedDragHandle = translationPopup && 
+    translationPopup.querySelector('div[style*="cursor: move"]') && 
+    translationPopup.querySelector('div[style*="cursor: move"]').contains(event.target);
 
   if (!clickedButton && !clickedPopup) {
       // Clicked outside, hide button and popup, clear selection
@@ -420,7 +691,44 @@ document.addEventListener('mousedown', function (event) {
   // If click was IN the popup, do nothing (allow interaction).
 });
 
-}); // End of chrome.storage.sync.get
+    }); // End of chrome.storage.sync.get
+  } catch (error) {
+    // 处理扩展上下文失效错误
+    if (error.message && error.message.includes('Extension context invalidated')) {
+      console.warn('[FisherAI] Extension context invalidated during quick translate initialization');
+    } else {
+      console.error('[FisherAI] Chrome API error during initialization:', error);
+    }
+  }
+} // End of initQuickTranslate function
+
+// 调试函数：检查快捷翻译状态
+function debugQuickTranslateStatus() {
+    console.log('[FisherAI] === 快捷翻译状态检查 ===');
+    console.log('[FisherAI] translationPopup:', !!translationPopup);
+    console.log('[FisherAI] contentContainer:', !!contentContainer);
+    console.log('[FisherAI] quickTransButton:', !!quickTransButton);
+    
+    if (quickTransButton) {
+        console.log('[FisherAI] 按钮DOM存在:', !!document.getElementById('fisherai-button-id'));
+        console.log('[FisherAI] 按钮样式display:', quickTransButton.style.display);
+    }
+    
+    // 检查事件监听器
+    const testButton = document.getElementById('fisherai-button-id');
+    console.log('[FisherAI] DOM中的按钮:', !!testButton);
+}
+
+// 初始化快捷翻译功能
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initQuickTranslate);
+} else {
+    // DOM已经加载完成，直接初始化
+    initQuickTranslate();
+}
+
+// 延迟执行调试检查
+setTimeout(debugQuickTranslateStatus, 2000);
 
 // IMPORTANT: Ensure the code that receives the translation result (likely via chrome.runtime.onMessage)
 // uses the 'contentContainer' variable or reliably finds '#fisherai-transpop-content'
@@ -438,7 +746,8 @@ document.addEventListener('mousedown', function (event) {
 
 // Function to apply theme to the translation popup based on user settings
 function applyThemeToTranslationPopup() {
-    chrome.storage.sync.get('appearance', function(result) {
+    try {
+        chrome.storage.sync.get('appearance', function(result) {
         const appearance = result.appearance || 'dark'; // Default to dark mode
         
         if (contentContainer) {
@@ -454,27 +763,60 @@ function applyThemeToTranslationPopup() {
         }
         
         if (translationPopup) {
+            const dragHandle = translationPopup.querySelector('div[style*="cursor: move"]');
+            
             if (appearance === 'light') {
                 translationPopup.classList.add('light-mode');
                 translationPopup.style.backgroundColor = '#FFFFFF';
                 translationPopup.style.color = '#1A202C';
                 translationPopup.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
                 translationPopup.style.border = '1px solid #E2E8F0';
+                
+                // 更新拖拽手柄颜色
+                if (dragHandle) {
+                    dragHandle.style.color = '#64748B';
+                }
             } else {
                 translationPopup.classList.remove('light-mode');
                 translationPopup.style.backgroundColor = '#1E293B';
                 translationPopup.style.color = '#E2E8F0';
                 translationPopup.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
                 translationPopup.style.border = '1px solid #4A5568';
+                
+                // 更新拖拽手柄颜色
+                if (dragHandle) {
+                    dragHandle.style.color = '#94A3B8';
+                }
             }
         }
-    });
+        });
+    } catch (error) {
+        // 处理扩展上下文失效错误
+        if (error.message && error.message.includes('Extension context invalidated')) {
+            console.warn('[FisherAI] Extension context invalidated during theme application');
+        } else {
+            console.error('[FisherAI] Chrome API error during theme application:', error);
+        }
+        // 使用默认暗色主题
+        if (translationPopup) {
+            translationPopup.style.backgroundColor = '#1E293B';
+            translationPopup.style.color = '#E2E8F0';
+        }
+        if (contentContainer) {
+            contentContainer.style.backgroundColor = '#1E293B';
+            contentContainer.style.color = '#E2E8F0';
+        }
+    }
 }
 
 // Listen for changes to appearance setting
-chrome.storage.onChanged.addListener(function(changes, namespace) {
-    if (namespace === 'sync' && changes.appearance) {
-        applyThemeToTranslationPopup();
-    }
-});
+try {
+    chrome.storage.onChanged.addListener(function(changes, namespace) {
+        if (namespace === 'sync' && changes.appearance) {
+            applyThemeToTranslationPopup();
+        }
+    });
+} catch (error) {
+    console.warn('[FisherAI] Failed to add storage change listener:', error);
+}
 
