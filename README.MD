@@ -105,8 +105,6 @@ OLLAMA_ORIGINS=* ollama serve
 - ✨ **多轮对话**: 添加多轮对话功能。
 - ✨ **分享功能**: 新增将摘要结果分享为图片的功能。
 
-## 🏢 赞助
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
 
 ## 📜 开源协议
 
