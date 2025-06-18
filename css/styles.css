@@ -141,15 +141,15 @@
 }
 
 .my-extension-dialogue textarea {
-  flex-grow: 1;
+  width: 100%;
   padding: 15px;
-  margin-right: 5px;
   border: 1px solid #3C3C3C;
   background-color: #111827;
   color: white;
   font-size: 15px;
   border-radius: 5px;
   resize: none; /* 禁止用户手动调整大小 */
+  box-sizing: border-box;
 }
 
 .my-extension-dialogue-submit, .my-extension-dialogue-generate {
@@ -1362,4 +1362,160 @@
 #fisherai-transpop-content .thinking-block {
   background-color: rgba(66, 153, 225, 0.15);
   border: 1px solid rgba(66, 153, 225, 0.3);
+}
+
+#fisherai-transpop-id .thinking-block,
+#fisherai-transpop-id .thinking-header,
+#fisherai-transpop-id .thinking-content {
+  margin: 0;
+  border: none;
+}
+
+/* 输入容器样式 */
+.input-container {
+  position: relative;
+  flex-grow: 1;
+  margin-right: 5px;
+}
+
+/* 选中内容标签样式 */
+.selected-content-tag {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  background: #374151;
+  border: 1px solid #4B5563;
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 40px);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.selected-content-icon {
+  display: flex;
+  align-items: center;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.selected-content-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.selected-content-preview {
+  font-size: 12px;
+  font-weight: 500;
+  color: #E5E7EB;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.selected-content-label {
+  font-size: 10px;
+  color: #9CA3AF;
+  margin-top: 1px;
+}
+
+.clear-selected-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.clear-selected-btn:hover {
+  background-color: #4B5563;
+  color: #F9FAFB;
+}
+
+/* 当有选中内容时，调整textarea和navigation-bar的位置 */
+.input-container.has-selected-content textarea {
+  padding-top: 58px !important;
+}
+
+/* 当有选中内容时，调整导航栏位置 */
+.has-selected-content-active .navigation-bar {
+  bottom: 70px !important;
+}
+
+/* 浅色模式样式 */
+.light-mode .selected-content-tag {
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .selected-content-icon {
+  color: #6B7280;
+}
+
+.light-mode .selected-content-preview {
+  color: #374151;
+}
+
+.light-mode .selected-content-label {
+  color: #6B7280;
+}
+
+.light-mode .clear-selected-btn {
+  color: #6B7280;
+}
+
+.light-mode .clear-selected-btn:hover {
+  background-color: #E5E7EB;
+  color: #111827;
+}
+
+/* 选中内容消息样式 */
+.selected-text-message {
+  background-color: #1E293B !important;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.selected-text-message .message-label {
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 500;
+  margin-bottom: 6px;
+  padding: 8px 12px 0;
+}
+
+.selected-text-message .message-content {
+  padding: 0 12px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #E2E8F0;
+  max-height: 150px;
+  overflow-y: auto;
+  word-wrap: break-word;
+}
+
+/* 浅色模式 */
+.light-mode .selected-text-message {
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0;
+}
+
+.light-mode .selected-text-message .message-label {
+  color: #64748B;
+}
+
+.light-mode .selected-text-message .message-content {
+  color: #475569;
 }

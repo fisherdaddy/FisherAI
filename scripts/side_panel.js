@@ -966,7 +966,14 @@ function initResultPage() {
             // 隐藏初始推荐内容
             hideRecommandContent();
 
-            const inputText = userInput.value;
+            let inputText = userInput.value;
+            
+            // 获取当前上下文内容
+            const contextContent = getCurrentContextContent();
+            if (contextContent) {
+              // 如果有上下文内容，则添加到输入前面
+              inputText = `基于以下内容：\n\n${contextContent}\n\n---\n\n${inputText}`;
+            }
 
             // 获取图像url
             var images = document.querySelectorAll('.uploaded-image-preview');
@@ -981,6 +988,29 @@ function initResultPage() {
             // 使用窗口全局变量（如果存在）或者回退到常量
             const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
 
+            // 如果有选中内容，先显示选中内容
+            if (contextContent) {
+              const contentDiv = document.querySelector('.chat-content');
+              const selectedTextDiv = document.createElement('div');
+              selectedTextDiv.className = 'user-message selected-text-message';
+              
+              // 获取国际化标签
+              let labelText = '选中的内容:';
+              try {
+                const currentLang = await window.i18n.getCurrentLanguage();
+                const messages = await window.i18n.getMessages(['selected_content_label'], currentLang);
+                labelText = messages.selected_content_label || '选中的内容:';
+              } catch (error) {
+                // 使用默认文本
+              }
+              
+              selectedTextDiv.innerHTML = `
+                <div class="message-label">${labelText}</div>
+                <div class="message-content">${contextContent}</div>
+              `;
+              contentDiv.appendChild(selectedTextDiv);
+            }
+
             // 创建用户问题div
             const userQuestionDiv = document.createElement('div');
             userQuestionDiv.className = 'user-message';
@@ -993,7 +1023,8 @@ function initResultPage() {
                 userMessage += "<img src='"+ url +"' />"
               });
             }
-            userMessage += inputText;
+            // 只显示用户的原始输入，不包含上下文内容
+            userMessage += userInput.value;
             userQuestionDiv.innerHTML = userMessage;
 
             // Add edit button
@@ -1005,7 +1036,8 @@ function initResultPage() {
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
             `;
-            editButton.onclick = () => editUserMessage(userQuestionDiv, inputText);
+            // 传递原始输入用于编辑
+            editButton.onclick = () => editUserMessage(userQuestionDiv, userInput.value);
             userQuestionDiv.appendChild(editButton);
 
             const contentDiv = document.querySelector('.chat-content');
@@ -1040,6 +1072,9 @@ function initResultPage() {
             // 清空上传图片预览界面
             const previewArea = document.querySelector('.image-preview-area');
             previewArea.innerHTML = '';
+
+            // 清除选中内容标签
+            hideSelectedContent();
 
             // AI 回答
             chatLLMAndUIUpdate(model, provider, newInputText, base64Images);
@@ -1199,11 +1234,208 @@ function displayErrorMessage(message) {
 }
  
 
+// 存储页面内容和选中内容
+let pageContent = null;
+let selectedContent = null;
+
+/**
+ * 显示选中内容区域
+ */
+async function showSelectedContent(text, isPageContent = false, contentType = null) {
+  const tag = document.getElementById('selected-content-tag');
+  const preview = document.getElementById('selected-content-preview');
+  const label = tag?.querySelector('.selected-content-label');
+  const inputContainer = document.querySelector('.input-container');
+  
+  if (tag && preview) {
+    if (!isPageContent) {
+      // 真实的选中内容，清除页面内容，优先使用选中内容
+      pageContent = null;
+      
+      // 生成预览文本（显示前后几个字符，中间用省略号）
+      let previewText;
+      if (text.length > 12) {
+        const startText = text.substring(0, 4);
+        const endText = text.substring(text.length - 4);
+        previewText = `${startText}...${endText}`;
+      } else {
+        previewText = text;
+      }
+      preview.textContent = previewText;
+      
+      // 获取国际化文本
+      try {
+        const currentLang = await window.i18n.getCurrentLanguage();
+        const messages = await window.i18n.getMessages(['selected_text'], currentLang);
+        if (label) label.textContent = messages.selected_text || 'Selected Text';
+      } catch (error) {
+        // 回退到默认文本
+        if (label) label.textContent = 'Selected Text';
+      }
+      
+      tag.style.display = 'flex';
+      if (inputContainer) inputContainer.classList.add('has-selected-content');
+      
+      // 给主容器添加类，用于调整导航栏位置
+      const mainContent = document.querySelector('.my-extension-content');
+      if (mainContent) mainContent.classList.add('has-selected-content-active');
+      
+      selectedContent = text;
+    } else {
+      // 页面内容：如果没有选中内容，将页面内容作为"选中内容"显示
+      if (!selectedContent) {
+        pageContent = text;
+        
+        // 生成页面内容的预览文本
+        let previewText;
+        // 提取页面文本的前几个有效字符（跳过HTML标签和空白）
+        const cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        if (cleanText.length > 12) {
+          const startText = cleanText.substring(0, 4);
+          const endText = cleanText.substring(cleanText.length - 4);
+          previewText = `${startText}...${endText}`;
+        } else {
+          previewText = cleanText;
+        }
+        preview.textContent = previewText;
+        
+        // 根据内容类型显示不同的标签
+        try {
+          const currentLang = await window.i18n.getCurrentLanguage();
+          let labelKey = 'page_content_text';
+          
+          // 根据contentType确定标签
+          if (contentType === 'video') {
+            labelKey = 'video_subtitles';
+          } else if (contentType === 'pdf') {
+            labelKey = 'pdf_content';
+          }
+          
+          const messages = await window.i18n.getMessages([labelKey], currentLang);
+          let labelText = messages[labelKey];
+          
+          // 回退文本
+          if (!labelText) {
+            switch (contentType) {
+              case 'video':
+                labelText = currentLang === 'zh-CN' ? '视频字幕' : 'Video Subtitles';
+                break;
+              case 'pdf':
+                labelText = currentLang === 'zh-CN' ? 'PDF内容' : 'PDF Content';
+                break;
+              default:
+                labelText = currentLang === 'zh-CN' ? '页面内容' : 'Page Content';
+            }
+          }
+          
+          if (label) label.textContent = labelText;
+        } catch (error) {
+          // 回退到默认文本
+          if (label) {
+            switch (contentType) {
+              case 'video':
+                label.textContent = 'Video Subtitles';
+                break;
+              case 'pdf':
+                label.textContent = 'PDF Content';
+                break;
+              default:
+                label.textContent = 'Page Content';
+            }
+          }
+        }
+        
+        tag.style.display = 'flex';
+        if (inputContainer) inputContainer.classList.add('has-selected-content');
+        
+        // 给主容器添加类，用于调整导航栏位置
+        const mainContent = document.querySelector('.my-extension-content');
+        if (mainContent) mainContent.classList.add('has-selected-content-active');
+      }
+    }
+  }
+}
+
+/**
+ * 隐藏选中内容区域
+ */
+function hideSelectedContent() {
+  const tag = document.getElementById('selected-content-tag');
+  const inputContainer = document.querySelector('.input-container');
+  
+  if (tag) {
+    tag.style.display = 'none';
+    if (inputContainer) inputContainer.classList.remove('has-selected-content');
+    
+    // 移除主容器的类
+    const mainContent = document.querySelector('.my-extension-content');
+    if (mainContent) mainContent.classList.remove('has-selected-content-active');
+    
+    selectedContent = null;
+  }
+}
+
+/**
+ * 获取当前上下文内容（用于与AI对话）
+ */
+function getCurrentContextContent() {
+  // 优先使用选中内容，其次使用页面内容
+  return selectedContent || pageContent || '';
+}
+
+/**
+ * 主动请求当前页面的选中内容状态
+ */
+async function requestCurrentPageState() {
+  try {
+    // 向当前活动tab发送消息，请求页面状态
+    const tabs = await chrome.tabs.query({active: true, currentWindow: true});
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'getCurrentPageState'
+      }).catch(err => {
+        console.log('[FisherAI] 请求页面状态失败:', err);
+      });
+    }
+  } catch (error) {
+    console.log('[FisherAI] 请求页面状态异常:', error);
+  }
+}
+
 /**
  * 主程序
  */ 
 document.addEventListener('DOMContentLoaded', function() {
   initResultPage();
+  
+  // 添加清除按钮事件监听
+  const clearBtn = document.getElementById('clear-selected-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', hideSelectedContent);
+  }
+  
+  // 请求当前页面状态（选中内容或页面内容）
+  setTimeout(() => {
+    requestCurrentPageState();
+  }, 500); // 稍微延迟以确保初始化完成
+});
+
+// 监听来自content script的消息
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.action === 'sendSelectedTextToSidePanel') {
+    console.log('[FisherAI] 接收到选中文本:', message.selectedText);
+    showSelectedContent(message.selectedText, false);
+    sendResponse({received: true});
+  } else if (message.action === 'sendPageContentToSidePanel') {
+    console.log('[FisherAI] 接收到页面内容:', message.pageTitle, '内容类型:', message.contentType);
+    showSelectedContent(message.pageContent, true, message.contentType);
+    sendResponse({received: true});
+  } else if (message.action === 'clearSelectedTextFromSidePanel') {
+    console.log('[FisherAI] 接收到清除选中内容请求');
+    hideSelectedContent();
+    sendResponse({received: true});
+  }
+  return true;
 });
 
 // 监听存储变化，当模型列表或提供商启用状态更新时刷新模型选择

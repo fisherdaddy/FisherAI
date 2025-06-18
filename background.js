@@ -45,6 +45,17 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       console.log(`Background: Stored pot parameter from page interceptor for video ${message.videoId}: ${message.pot}`);
     }
     return true;
+  } else if (message.action === "sendSelectedTextToSidePanel" || message.action === "sendPageContentToSidePanel" || message.action === "clearSelectedTextFromSidePanel") {
+    // 转发选中文本、页面内容或清除选中内容到侧边栏
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      if (tabs[0]) {
+        // 向侧边栏发送消息
+        chrome.runtime.sendMessage(message).catch(err => {
+          console.log('Failed to send message to side panel:', err);
+        });
+      }
+    });
+    return true;
   }
 });
 

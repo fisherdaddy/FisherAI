@@ -3,5 +3,13 @@
   "model_select": "选择模型:",
   "save": "保存",
   "success": "保存成功！",
-  "auto_save_success": "设置已自动保存！"
+  "auto_save_success": "设置已自动保存！",
+  "selected_content": "选中的内容",
+  "page_content": "页面内容",
+  "clear_content": "清除内容",
+  "selected_text": "选中的文本",
+  "selected_content_label": "选中的内容:",
+  "page_content_text": "页面内容",
+  "video_subtitles": "视频字幕",
+  "pdf_content": "PDF内容"
 } 

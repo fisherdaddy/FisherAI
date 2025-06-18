@@ -3,5 +3,13 @@
   "model_select": "Select Model:",
   "save": "Save",
   "success": "Saved successfully!",
-  "auto_save_success": "Settings auto-saved!"
+  "auto_save_success": "Settings auto-saved!",
+  "selected_content": "Selected Content",
+  "page_content": "Page Content",
+  "clear_content": "Clear Content",
+  "selected_text": "Selected Text",
+  "selected_content_label": "Selected Content:",
+  "page_content_text": "Page Content",
+  "video_subtitles": "Video Subtitles",
+  "pdf_content": "PDF Content"
 } 

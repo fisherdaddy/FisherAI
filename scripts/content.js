@@ -157,6 +157,64 @@ try {
   } else if(request.action === ACTION_GET_PAGE_URL) {
     // 获取当前网页地址
     sendResponse({url: window.location.href});
+  } else if(request.action === 'getCurrentPageState') {
+    // 响应侧边栏请求当前页面状态
+    try {
+      const selection = window.getSelection();
+      const selectedText = selection.toString().trim();
+      
+      if (selectedText) {
+        // 有选中内容，发送选中内容
+        chrome.runtime.sendMessage({
+          action: 'sendSelectedTextToSidePanel',
+          selectedText: selectedText,
+          url: window.location.href
+        }).catch(err => {
+          console.log('[FisherAI] 发送选中内容到侧边栏失败:', err);
+        });
+      } else {
+        // 没有选中内容，根据页面类型获取相应内容
+        let pageContent = "No content";
+        let contentType = "webpage"; // 默认为普通网页
+        const pageTitle = document.title || "Untitled";
+        const pageUrl = window.location.href;
+        
+        try {
+          if (isVideoUrl(pageUrl)) {
+            // 视频页面：获取字幕内容
+            pageContent = await extractSubtitles(pageUrl, FORMAT_TEXT);
+            contentType = "video";
+          } else if (isPDFUrl(pageUrl)) {
+            // PDF页面：获取PDF内容
+            pageContent = await extractPDFText(pageUrl);
+            contentType = "pdf";
+          } else {
+            // 普通网页：获取HTML内容
+            pageContent = extractContent() || "No content";
+            contentType = "webpage";
+          }
+        } catch (error) {
+          console.log('[FisherAI] 提取页面内容失败，使用默认HTML内容:', error);
+          pageContent = extractContent() || "No content";
+          contentType = "webpage";
+        }
+        
+        chrome.runtime.sendMessage({
+          action: 'sendPageContentToSidePanel',
+          pageContent: pageContent,
+          pageTitle: pageTitle,
+          url: pageUrl,
+          contentType: contentType
+        }).catch(err => {
+          console.log('[FisherAI] 发送页面内容到侧边栏失败:', err);
+        });
+      }
+      sendResponse({success: true});
+    } catch (error) {
+      console.log('[FisherAI] 获取页面状态异常:', error);
+      sendResponse({success: false, error: error.message});
+    }
+    return true;
   }
   });
 } catch (error) {
@@ -166,6 +224,28 @@ try {
   } else {
     console.error('[FisherAI] Chrome API error during message listener setup:', error);
   }
+}
+
+// 判断是否是视频页面
+function isVideoUrl(url) {
+  const patterns = [
+    /^https?:\/\/(?:www\.)?youtube\.com\/watch/, // 匹配 YouTube 观看页面
+    /^https?:\/\/(?:www\.)?bilibili\.com\/video\//, // 匹配 Bilibili 视频页面
+    /^https?:\/\/(?:www\.)?bilibili\.com\/list\/watchlater/ // 匹配 Bilibili 稍后再看页
+  ];
+  
+  return patterns.some(pattern => pattern.test(url));
+}
+
+// 判断是否是PDF页面
+function isPDFUrl(url) {
+  url = url.toLowerCase();
+  if(url.endsWith('.pdf')) {
+      return true;
+  }
+  // arxiv 的特殊处理一下，它不是以.pdf后缀结束的
+  const pattern = /^https?:\/\/arxiv\.org\/pdf\/\d+\.\d+(v\d+)?$/;
+  return pattern.test(url);
 }
 
 // 备用复制方法，使用document.execCommand
@@ -638,6 +718,19 @@ document.addEventListener('mouseup', function (event) {
       setTimeout(() => {
         quickTransButton.style.transform = 'scale(1)';
       }, 50);
+
+      // 发送选中内容到侧边栏
+      try {
+        chrome.runtime.sendMessage({
+          action: 'sendSelectedTextToSidePanel',
+          selectedText: selectedText,
+          url: window.location.href
+        }).catch(err => {
+          console.log('[FisherAI] 发送选中内容到侧边栏失败:', err);
+        });
+      } catch (error) {
+        console.log('[FisherAI] 发送选中内容异常:', error);
+      }
     }
   } else {
     // No text selected or button doesn't exist, hide button
@@ -646,6 +739,33 @@ document.addEventListener('mouseup', function (event) {
     }
     // Do NOT hide the popup here, only hide button. Popup hides on close click or mousedown outside.
   }
+});
+
+// 监听选中状态变化
+function checkSelectionChange() {
+  const selection = window.getSelection();
+  const selectedText = selection.toString().trim();
+  
+  if (!selectedText) {
+    // 选中内容被清除，通知侧边栏
+    try {
+      chrome.runtime.sendMessage({
+        action: 'clearSelectedTextFromSidePanel',
+        url: window.location.href
+      }).catch(err => {
+        console.log('[FisherAI] 发送清除选中内容消息失败:', err);
+      });
+    } catch (error) {
+      console.log('[FisherAI] 发送清除选中内容异常:', error);
+    }
+  }
+}
+
+// 监听选中状态变化事件
+document.addEventListener('selectionchange', function() {
+  // 使用节流，避免频繁触发
+  clearTimeout(window.selectionChangeTimeout);
+  window.selectionChangeTimeout = setTimeout(checkSelectionChange, 300);
 });
 
 // Listen for clicks outside the selection/button/popup
@@ -729,6 +849,85 @@ if (document.readyState === 'loading') {
 
 // 延迟执行调试检查
 setTimeout(debugQuickTranslateStatus, 2000);
+
+// 页面加载完成后发送页面内容到侧边栏
+function sendPageContentToSidePanel() {
+  // 等待页面完全加载
+  setTimeout(async () => {
+    try {
+      // 首先检查是否有选中的内容
+      const selection = window.getSelection();
+      const selectedText = selection.toString().trim();
+      
+      if (selectedText) {
+        // 如果有选中内容，发送选中内容
+        chrome.runtime.sendMessage({
+          action: 'sendSelectedTextToSidePanel',
+          selectedText: selectedText,
+          url: window.location.href
+        }).catch(err => {
+          console.log('[FisherAI] 发送选中内容到侧边栏失败:', err);
+        });
+      } else {
+        // 如果没有选中内容，根据页面类型获取相应内容
+        let pageContent = "No content";
+        let contentType = "webpage"; // 默认为普通网页
+        const pageTitle = document.title || "Untitled";
+        const pageUrl = window.location.href;
+        
+        try {
+          if (isVideoUrl(pageUrl)) {
+            // 视频页面：获取字幕内容
+            pageContent = await extractSubtitles(pageUrl, FORMAT_TEXT);
+            contentType = "video";
+          } else if (isPDFUrl(pageUrl)) {
+            // PDF页面：获取PDF内容
+            pageContent = await extractPDFText(pageUrl);
+            contentType = "pdf";
+          } else {
+            // 普通网页：获取HTML内容
+            pageContent = extractContent() || "No content";
+            contentType = "webpage";
+          }
+        } catch (error) {
+          console.log('[FisherAI] 提取页面内容失败，使用默认HTML内容:', error);
+          pageContent = extractContent() || "No content";
+          contentType = "webpage";
+        }
+        
+        chrome.runtime.sendMessage({
+          action: 'sendPageContentToSidePanel',
+          pageContent: pageContent,
+          pageTitle: pageTitle,
+          url: pageUrl,
+          contentType: contentType
+        }).catch(err => {
+          console.log('[FisherAI] 发送页面内容到侧边栏失败:', err);
+        });
+      }
+    } catch (error) {
+      console.log('[FisherAI] 发送页面内容异常:', error);
+    }
+  }, 3000); // 增加延迟到3秒，确保视频页面和PDF页面有足够时间加载
+}
+
+// 在页面加载时发送内容
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', sendPageContentToSidePanel);
+} else {
+  sendPageContentToSidePanel();
+}
+
+// 监听页面导航变化
+let lastPageUrl = location.href;
+new MutationObserver(() => {
+  const currentUrl = location.href;
+  if (currentUrl !== lastPageUrl) {
+    lastPageUrl = currentUrl;
+    console.log('[FisherAI] 检测到页面导航变化:', currentUrl);
+    sendPageContentToSidePanel(); // 重新发送页面内容
+  }
+}).observe(document, { subtree: true, childList: true });
 
 // IMPORTANT: Ensure the code that receives the translation result (likely via chrome.runtime.onMessage)
 // uses the 'contentContainer' variable or reliably finds '#fisherai-transpop-content'
