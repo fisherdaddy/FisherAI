@@ -110,7 +110,7 @@ const DEFAULT_LLM_URLS = [
 
 // 支持图像的模型
 const IMAGE_SUPPORT_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'chatgpt-4o-latest', 
-  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 
+  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 'gemini-1.5-flash-8b',
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
   'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
   'doubao-seed-1.6-250615', 'doubao-seed-1.6-flash-250615', 'doubao-seed-1.6-thinking-250615','doubao-1.5-thinking-vision-pro-250428', 'doubao-1.5-vision-pro-250328'];
@@ -198,6 +198,7 @@ const MODEL_LIST = {
     { value: "gemini-2.5-flash-lite-preview-06-17", display: "Gemini 2.5 Flash Lite Preview 06-17", provider: PROVIDER_GOOGLE },
     { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: PROVIDER_GOOGLE },
     { value: "gemini-2.0-flash-lite", display: "Gemini 2.0 Flash Lite", provider: PROVIDER_GOOGLE },
+    { value: "gemini-1.5-flash-8b", display: "Gemini 1.5 Flash 8B", provider: PROVIDER_GOOGLE },
     { value: "deepseek-chat", display: "Deepseek V3", provider: PROVIDER_DEEPSEEK },
     { value: "deepseek-reasoner", display: "Deepseek R1", provider: PROVIDER_DEEPSEEK },
     { value: "yi-lightning", display: "Yi Lightning", provider: PROVIDER_YI },

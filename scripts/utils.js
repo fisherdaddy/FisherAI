@@ -391,9 +391,17 @@ function generateUniqueId() {
 
 
 function editUserMessage(messageDiv, originalText) {
+    // Create edit container
+    const editContainer = document.createElement('div');
+    editContainer.className = 'edit-message-container';
+    
     const textArea = document.createElement('textarea');
     textArea.value = originalText;
     textArea.className = 'edit-message-textarea';
+    
+    // Create button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'edit-message-buttons';
     
     const saveButton = document.createElement('button');
     saveButton.className = 'save-message-btn';
@@ -403,6 +411,7 @@ function editUserMessage(messageDiv, originalText) {
         <polyline points="17 21 17 13 7 13 7 21"></polyline>
         <polyline points="7 3 7 8 15 8"></polyline>
       </svg>
+      <span>保存</span>
     `;
     
     const cancelButton = document.createElement('button');
@@ -412,12 +421,42 @@ function editUserMessage(messageDiv, originalText) {
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
+      <span>取消</span>
     `;
     
+    buttonContainer.appendChild(cancelButton);
+    buttonContainer.appendChild(saveButton);
+    
+    editContainer.appendChild(textArea);
+    editContainer.appendChild(buttonContainer);
+    
     messageDiv.innerHTML = '';
-    messageDiv.appendChild(textArea);
-    messageDiv.appendChild(saveButton);
-    messageDiv.appendChild(cancelButton);
+    messageDiv.appendChild(editContainer);
+    
+    // Auto resize textarea
+    textArea.style.height = 'auto';
+    textArea.style.height = Math.max(textArea.scrollHeight, 80) + 'px';
+    
+    // Focus and select all text
+    textArea.focus();
+    textArea.select();
+    
+    // Auto resize on input
+    textArea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.max(this.scrollHeight, 80) + 'px';
+    });
+    
+    // Handle keyboard shortcuts
+    textArea.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            saveEditedMessage(messageDiv, textArea.value);
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit(messageDiv, originalText);
+        }
+    });
     
     saveButton.onclick = () => saveEditedMessage(messageDiv, textArea.value);
     cancelButton.onclick = () => cancelEdit(messageDiv, originalText);
@@ -448,7 +487,10 @@ function editUserMessage(messageDiv, originalText) {
     
     // Trigger new AI response
     const modelSelection = document.getElementById('model-selection');
-    chatLLMAndUIUpdate(modelSelection.value, newText, []);
+    const model = modelSelection.value;
+    const selectedOption = modelSelection.options[modelSelection.selectedIndex];
+    const provider = selectedOption.dataset.provider;
+    chatLLMAndUIUpdate(model, provider, newText, []);
   }
   
   function cancelEdit(messageDiv, originalText) {

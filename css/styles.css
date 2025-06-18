@@ -559,25 +559,87 @@
   color: #ffffff;
 }
 
-.save-message-btn, .cancel-message-btn {
-  margin-left: 10px;
-  padding: 5px 10px;
-  background-color: #3C3C3C;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+.edit-message-container {
+  background-color: #1A202C;
+  border: 1px solid #4A5568;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin: 0;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .edit-message-textarea {
   width: 100%;
-  min-height: 100px;
-  margin-bottom: 10px;
-  padding: 5px;
-  background-color: #111827;
+  min-height: 80px;
+  max-height: 300px;
+  padding: 10px;
+  background-color: #2D3748;
   color: white;
-  border: 1px solid #3C3C3C;
-  border-radius: 5px;
+  border: 1px solid #4A5568;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.edit-message-textarea:focus {
+  border-color: #4299E1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.edit-message-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.save-message-btn, .cancel-message-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.save-message-btn {
+  background: linear-gradient(135deg, #4299E1, #3182CE);
+  color: white;
+}
+
+.save-message-btn:hover {
+  background: linear-gradient(135deg, #3182CE, #2B6CB0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(66, 153, 225, 0.3);
+}
+
+.cancel-message-btn {
+  background-color: #4A5568;
+  color: #E2E8F0;
+}
+
+.cancel-message-btn:hover {
+  background-color: #718096;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(74, 85, 104, 0.3);
+}
+
+.save-message-btn svg, .cancel-message-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* KaTeX 公式样式控制 */
@@ -1044,16 +1106,43 @@
   color: #4A5568;
 }
 
-.light-mode .save-message-btn, 
-.light-mode .cancel-message-btn {
-  background-color: #E2E8F0;
-  color: #1A202C;
+.light-mode .edit-message-container {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .light-mode .edit-message-textarea {
   background-color: #F7FAFC;
-  color: #1A202C;
+  color: #2D3748;
   border: 1px solid #E2E8F0;
+}
+
+.light-mode .edit-message-textarea:focus {
+  border-color: #4299E1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.light-mode .save-message-btn {
+  background: linear-gradient(135deg, #4299E1, #3182CE);
+  color: white;
+}
+
+.light-mode .save-message-btn:hover {
+  background: linear-gradient(135deg, #3182CE, #2B6CB0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(66, 153, 225, 0.3);
+}
+
+.light-mode .cancel-message-btn {
+  background-color: #E2E8F0;
+  color: #4A5568;
+}
+
+.light-mode .cancel-message-btn:hover {
+  background-color: #CBD5E0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(203, 213, 224, 0.3);
 }
 
 .light-mode .thinking-block {
