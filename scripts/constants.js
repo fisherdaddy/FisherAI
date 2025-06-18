@@ -109,13 +109,13 @@ const DEFAULT_LLM_URLS = [
 ];
 
 // 支持图像的模型
-const IMAGE_SUPPORT_MODELS = ['gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'chatgpt-4o-latest', 'azure-gpt-4-turbo', 'azure-gpt-4o', 
-  'gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+const IMAGE_SUPPORT_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'chatgpt-4o-latest', 
+  'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
   'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
-  'doubao-1-5-vision-pro-32k-250115', 'doubao-1.5-vision-pro-250328'];
+  'doubao-seed-1.6-250615', 'doubao-seed-1.6-flash-250615', 'doubao-seed-1.6-thinking-250615','doubao-1.5-thinking-vision-pro-250428', 'doubao-1.5-vision-pro-250328'];
 
-const ANY_FILE_SUPPORT_MODELS = ['gemini-2.0-flash', 'gemini-2.5-pro-preview-03-25', 'gemini-2.0-flash-lite', 'gemini-2.0-flash-thinking-exp-01-21', 
+const ANY_FILE_SUPPORT_MODELS = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 
   'google/gemini-2.0-flash-exp:free'];
 
 // 尝试从localStorage获取已保存的模型能力配置
@@ -193,10 +193,11 @@ const MODEL_LIST = {
     { value: "gpt-4.1", display: "GPT-4.1", provider: PROVIDER_OPENAI },
     { value: "gpt-4.1-mini", display: "GPT-4.1 mini", provider: PROVIDER_OPENAI },
     { value: "chatgpt-4o-latest", display: "ChatGPT-4o-latest", provider: PROVIDER_OPENAI },
+    { value: "gemini-2.5-pro", display: "Gemini 2.5 Pro", provider: PROVIDER_GOOGLE },
+    { value: "gemini-2.5-flash", display: "Gemini 2.5 Flash", provider: PROVIDER_GOOGLE },
+    { value: "gemini-2.5-flash-lite-preview-06-17", display: "Gemini 2.5 Flash Lite Preview 06-17", provider: PROVIDER_GOOGLE },
     { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: PROVIDER_GOOGLE },
-    { value: "gemini-2.5-pro-preview-03-25", display: "Gemini 2.5 Pro Preview 03-25", provider: PROVIDER_GOOGLE },
     { value: "gemini-2.0-flash-lite", display: "Gemini 2.0 Flash Lite", provider: PROVIDER_GOOGLE },
-    { value: "gemini-2.0-flash-thinking-exp-01-21", display: "Gemini 2.0 Flash Thinking Exp 01-21", provider: PROVIDER_GOOGLE },
     { value: "deepseek-chat", display: "Deepseek V3", provider: PROVIDER_DEEPSEEK },
     { value: "deepseek-reasoner", display: "Deepseek R1", provider: PROVIDER_DEEPSEEK },
     { value: "yi-lightning", display: "Yi Lightning", provider: PROVIDER_YI },
@@ -215,9 +216,11 @@ const MODEL_LIST = {
     { value: "Qwen/QwQ-32B", display: "QwQ 32B", provider: PROVIDER_SILICONFLOW },
     { value: "grok-3", display: "Grok 3", provider: PROVIDER_XAI },
     { value: "grok-3-mini", display: "Grok 3 mini", provider: PROVIDER_XAI },
-    { value: "doubao-1-5-pro-32k-250115", display: "Doubao 1.5 pro", provider: PROVIDER_DOUBAO },
-    { value: "doubao-1.5-vision-pro-250328", display: "Doubao 1.5 vision pro 250328", provider: PROVIDER_DOUBAO },
-    { value: "doubao-1-5-vision-pro-32k-250115", display: "Doubao 1.5 vision pro 250115", provider: PROVIDER_DOUBAO },
+    { value: "doubao-seed-1.6-250615", display: "Doubao Seed 1.6", provider: PROVIDER_DOUBAO },
+    { value: "doubao-seed-1.6-flash-250615", display: "Doubao Seed 1.6 Flash", provider: PROVIDER_DOUBAO },
+    { value: "doubao-seed-1.6-thinking-250615", display: "Doubao Seed 1.6 Thinking", provider: PROVIDER_DOUBAO },
+    { value: "doubao-1.5-vision-pro-250328", display: "Doubao 1.5 vision pro", provider: PROVIDER_DOUBAO },
+    { value: "doubao-1.5-thinking-vision-pro-250428", display: "Doubao 1.5 thinking vision pro", provider: PROVIDER_DOUBAO }
   ]
 };
 
