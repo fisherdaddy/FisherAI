@@ -112,7 +112,8 @@ const DEFAULT_LLM_URLS = [
 const IMAGE_SUPPORT_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini', 'chatgpt-4o-latest', 
   'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 'gemini-1.5-flash-8b',
   'glm-4v', 'yi-vision-v2', 'moonshot-v1-32k-vision-preview', 'google/gemini-2.0-flash-exp:free', 
-  'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet',
+  'openai/gpt-4o', 'openai/gpt-4.1', 'google/gemini-2.0-flash-001', 'anthropic/claude-3.7-sonnet', 
+  'grok-4-0709',
   'doubao-seed-1.6-250615', 'doubao-seed-1.6-flash-250615', 'doubao-seed-1.6-thinking-250615','doubao-1.5-thinking-vision-pro-250428', 'doubao-1.5-vision-pro-250328'];
 
 const ANY_FILE_SUPPORT_MODELS = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash-lite-preview-06-17', 
@@ -215,6 +216,7 @@ const MODEL_LIST = {
     { value: "anthropic/claude-3.7-sonnet", display: "Claude 3.7 Sonnet", provider: PROVIDER_OPENROUTER },
     { value: "deepseek-ai/DeepSeek-V3", display: "DeepSeek V3", provider: PROVIDER_SILICONFLOW },
     { value: "Qwen/QwQ-32B", display: "QwQ 32B", provider: PROVIDER_SILICONFLOW },
+    { value: "grok-4-0709", display: "Grok 4 0709", provider: PROVIDER_XAI },
     { value: "grok-3", display: "Grok 3", provider: PROVIDER_XAI },
     { value: "grok-3-mini", display: "Grok 3 mini", provider: PROVIDER_XAI },
     { value: "doubao-seed-1.6-250615", display: "Doubao Seed 1.6", provider: PROVIDER_DOUBAO },
