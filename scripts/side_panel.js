@@ -1371,7 +1371,10 @@ function hideSelectedContent() {
     const mainContent = document.querySelector('.my-extension-content');
     if (mainContent) mainContent.classList.remove('has-selected-content-active');
     
+
+    // 清除所有内容：包括选中内容和页面内容
     selectedContent = null;
+    pageContent = null;
   }
 }
 

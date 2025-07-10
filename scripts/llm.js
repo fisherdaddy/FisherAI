@@ -385,7 +385,7 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider) 
   }
    
   // mistral 和 deepseek-reasoner 的模型传以下两个参数会报错，这里过滤掉
-  if(!provider.includes(PROVIDER_MISTRAL) && !provider.includes(PROVIDER_DEEPSEEK)) {
+  if(!provider.includes(PROVIDER_MISTRAL) && !provider.includes(PROVIDER_DEEPSEEK) && !provider.includes(PROVIDER_XAI)) {
     body.frequency_penalty = frequencyPenalty;
     body.presence_penalty = presencePenalty;
   }

@@ -607,11 +607,10 @@ input:checked + .slider:before {
 }
 
 .feature-text {
-  font-size: 14px;
-  line-height: 1.4;
-  color: #E2E8F0;
-  text-align: center;
-  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  flex: 1;
 }
 
 /* Fix conflicting styles for feature items in the About section */
@@ -1567,8 +1566,9 @@ body.light-mode {
 }
 
 .light-mode .feature-item:hover {
-  /* transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  background-color: rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .light-mode .feature-icon {
@@ -2200,4 +2200,51 @@ div[style*="flex: 1"] {
 .light-mode .reset-prompt-btn:hover {
   background-color: #f44336;
   color: white;
+}
+
+/* Clickable feature items in toolbox */
+.clickable-feature {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.clickable-feature:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feature-arrow {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.clickable-feature:hover .feature-arrow {
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateX(5px);
+}
+
+/* Light mode styles for clickable features */
+.light-mode .clickable-feature {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .clickable-feature:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.light-mode .feature-arrow {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.light-mode .clickable-feature:hover .feature-arrow {
+  color: rgba(0, 0, 0, 0.9);
 }

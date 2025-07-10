@@ -555,6 +555,17 @@ function setupTabNavigation() {
       openTab(event, tabName);
     });
   });
+  
+  // Add support for clickable feature items in toolbox
+  var clickableFeatures = document.querySelectorAll('.clickable-feature');
+  clickableFeatures.forEach(function(feature) {
+    feature.addEventListener('click', function(event) {
+      var tabName = this.getAttribute('data-tab');
+      if (tabName) {
+        openTab(event, tabName);
+      }
+    });
+  });
 }
 
 // 设置密码显示/隐藏切换

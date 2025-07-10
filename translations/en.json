@@ -11,5 +11,8 @@
   "selected_content_label": "Selected Content:",
   "page_content_text": "Page Content",
   "video_subtitles": "Video Subtitles",
-  "pdf_content": "PDF Content"
+  "pdf_content": "PDF Content",
+  "toolbox": "Toolbox",
+  "network_tools": "Network Tools",
+  "image_tools": "Image Tools"
 } 

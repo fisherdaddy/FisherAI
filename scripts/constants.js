@@ -70,8 +70,8 @@ const DOUBAO_CHAT_API_PATH = "/chat/completions";
 
 // 这些值将从环境变量中获取
 const FISHERAI_BASE_URL = "https://www.heytransl.com";
-const FISHERAI_API_KEY = "28c81f920240b0fdbca940e07b86b8db";
-const FISHERAI_API_SECRET = "d6e57784b134d09a8bed9ca004c98b4f";
+const FISHERAI_API_KEY = "28c81f9202401b0fdbca2940e07b386b8db1";
+const FISHERAI_API_SECRET = "d6e547784b134d509a8bed9c6a004c98b4f1";
 const FISHERAI_CHAT_API_PATH = "/api/chat";
 
 // 模型名称包含的关键字
