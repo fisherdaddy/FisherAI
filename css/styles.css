@@ -279,6 +279,81 @@
   margin-top: 5px;
 }
 
+.smart-suggestion-section {
+  margin: 24px 10px 0 10px;
+  padding: 14px 16px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.smart-suggestion-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: #8caaff;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.smart-suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.smart-suggestion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  color: #e0e7ff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.smart-suggestion-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.smart-suggestion-btn.active {
+  transform: scale(0.99);
+  border-color: rgba(96, 165, 250, 0.55);
+  background: rgba(30, 41, 59, 0.85);
+}
+
+.smart-suggestion-label {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.smart-suggestion-label::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #60a5fa;
+}
+
+.smart-suggestion-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 .navigation-bar {
   position:fixed;
   bottom: 70px;
@@ -525,6 +600,106 @@
   border: 1px solid #ff4d4d;
   border-radius: 5px;
   margin: 20px 0;
+}
+
+.error-state {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.45), rgba(69, 10, 10, 0.3));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  margin: 20px 0;
+  color: #fecaca;
+}
+
+.error-state-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.18);
+  color: #f87171;
+}
+
+.error-state-body {
+  flex: 1;
+}
+
+.error-state-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  color: #fee2e2;
+}
+
+.error-state-desc {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #fecaca;
+}
+
+.error-state-tips {
+  margin: 12px 0 0 0;
+  padding-left: 18px;
+  color: #fca5a5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.error-state-tips li {
+  margin-bottom: 4px;
+}
+
+.error-state-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.error-state-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.error-state-btn.primary {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: #0f172a;
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
+}
+
+.error-state-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(248, 113, 113, 0.45);
+}
+
+.error-state-btn.ghost {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+}
+
+.error-state-btn.ghost:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.error-state-btn:disabled,
+.error-state-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .user-message {
@@ -1121,6 +1296,74 @@
 .light-mode .edit-message-textarea:focus {
   border-color: #4299E1;
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.light-mode .smart-suggestion-section {
+  background: #f1f5ff;
+  border-color: #c7d2fe;
+}
+
+.light-mode .smart-suggestion-title {
+  color: #1d4ed8;
+}
+
+.light-mode .smart-suggestion-btn {
+  background: #ffffff;
+  border-color: #dbeafe;
+  color: #1e293b;
+}
+
+.light-mode .smart-suggestion-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.light-mode .smart-suggestion-btn.active {
+  background: #e0f2ff;
+  border-color: #60a5fa;
+}
+
+.light-mode .smart-suggestion-label::before {
+  background: #2563eb;
+}
+
+.light-mode .smart-suggestion-desc {
+  color: #475569;
+}
+
+.light-mode .error-state {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #7f1d1d;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.light-mode .error-state-icon {
+  background: rgba(254, 226, 226, 0.9);
+  color: #dc2626;
+}
+
+.light-mode .error-state-title {
+  color: #991b1b;
+}
+
+.light-mode .error-state-desc,
+.light-mode .error-state-tips {
+  color: #b91c1c;
+}
+
+.light-mode .error-state-btn.primary {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: white;
+}
+
+.light-mode .error-state-btn.ghost {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.light-mode .error-state-btn.ghost:hover {
+  background: rgba(254, 226, 226, 0.9);
 }
 
 .light-mode .save-message-btn {

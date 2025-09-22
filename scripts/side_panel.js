@@ -142,6 +142,444 @@ function showRecommandContent() {
   featureDiv.style.display = '';
 }
 
+const SMART_PROMPT_REGISTRY = new Map();
+let currentContextType = null;
+let currentPageMeta = { title: '', url: '', contentType: 'webpage' };
+let lastRequestPayload = null;
+
+const PROMPT_LANGUAGE_LABELS = {
+  zh: { zh: '中文', en: 'Chinese' },
+  en: { zh: '英语', en: 'English' },
+  es: { zh: '西班牙语', en: 'Spanish' },
+  fr: { zh: '法语', en: 'French' },
+  de: { zh: '德语', en: 'German' },
+  ja: { zh: '日语', en: 'Japanese' },
+  ko: { zh: '韩语', en: 'Korean' },
+  ru: { zh: '俄语', en: 'Russian' },
+  pt: { zh: '葡萄牙语', en: 'Portuguese' },
+  hi: { zh: '印地语', en: 'Hindi' }
+};
+
+const SMART_PROMPTS = {
+  selection: [
+    {
+      id: 'selection_explain',
+      labelKey: 'smart_prompt_selection_explain',
+      descriptionKey: 'smart_prompt_selection_explain_desc',
+      fallback: {
+        zh: { label: '快速解释', description: '用通俗语言说明选中的内容。' },
+        en: { label: 'Explain selection', description: 'Break the highlighted text into simple language.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请用简洁的表达解释选中的内容，列出3个关键要点，并给出一个应用建议。回复请使用${targetLanguage.label}。`;
+        }
+        return `Explain the highlighted text in clear language, provide three key takeaways, and finish with one practical recommendation. Respond in ${targetLanguage.label}.`;
+      }
+    },
+    {
+      id: 'selection_translate',
+      labelKey: 'smart_prompt_selection_translate',
+      descriptionKey: 'smart_prompt_selection_translate_desc',
+      fallback: {
+        zh: { label: '翻译选段', description: '将选中的文字翻译成目标语言。' },
+        en: { label: 'Translate selection', description: 'Translate the highlighted text into your target language.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请将选中的内容精准翻译成${targetLanguage.label}，保留术语并在必要时补充括号内的说明。`;
+        }
+        return `Translate the highlighted text into ${targetLanguage.label}, preserve technical terms, and add brief clarifications in parentheses when they aid understanding.`;
+      }
+    },
+    {
+      id: 'selection_polish',
+      labelKey: 'smart_prompt_selection_polish',
+      descriptionKey: 'smart_prompt_selection_polish_desc',
+      fallback: {
+        zh: { label: '润色表达', description: '优化选中段落的逻辑与语气。' },
+        en: { label: 'Improve writing', description: 'Rewrite the highlight with better clarity and tone.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请在不改变原意的前提下，用${targetLanguage.label}润色选中的内容，让语气更自然、逻辑更清晰，并指出可以强化的句子。`;
+        }
+        return `Rewrite the highlighted text in ${targetLanguage.label}, keep the intent, improve clarity and flow, and point out any phrasing that could be strengthened.`;
+      }
+    }
+  ],
+  webpage: [
+    {
+      id: 'page_summary',
+      labelKey: 'smart_prompt_page_summary',
+      descriptionKey: 'smart_prompt_page_summary_desc',
+      fallback: {
+        zh: { label: '页面要点', description: '用要点归纳页面的核心信息。' },
+        en: { label: 'Key takeaways', description: 'Summarize the page into concise bullet points.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        const formattedTitle = formatTitleForPrompt(meta, promptLanguage);
+        if (promptLanguage === 'zh') {
+          return `请阅读${formattedTitle}的内容，提炼3-5条关键要点，并补充一句背景说明。输出请使用${targetLanguage.label}，并以有序列表呈现。`;
+        }
+        return `Review the content from ${formattedTitle} and provide 3-5 concise bullet takeaways plus a one-sentence context note. Respond in ${targetLanguage.label} using an ordered list.`;
+      }
+    },
+    {
+      id: 'page_outline',
+      labelKey: 'smart_prompt_page_outline',
+      descriptionKey: 'smart_prompt_page_outline_desc',
+      fallback: {
+        zh: { label: '结构化梳理', description: '按主题整理页面的段落结构。' },
+        en: { label: 'Structured outline', description: 'Organize the page into sections with headings.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        const formattedTitle = formatTitleForPrompt(meta, promptLanguage);
+        if (promptLanguage === 'zh') {
+          return `请将${formattedTitle}的内容拆解为结构化提纲。每个小节包含一个标题和两条要点，输出请使用${targetLanguage.label}。`;
+        }
+        return `Break down ${formattedTitle} into a structured outline. For each section provide a heading and two supporting bullet points, responding in ${targetLanguage.label}.`;
+      }
+    },
+    {
+      id: 'page_questions',
+      labelKey: 'smart_prompt_page_questions',
+      descriptionKey: 'smart_prompt_page_questions_desc',
+      fallback: {
+        zh: { label: '复盘提问', description: '生成帮助你复盘的思考问题。' },
+        en: { label: 'Review questions', description: 'Create questions that help you reflect on the page.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        const formattedTitle = formatTitleForPrompt(meta, promptLanguage);
+        if (promptLanguage === 'zh') {
+          return `请基于${formattedTitle}设计3个深入思考的问题，并为每个问题提供一句提示，输出请使用${targetLanguage.label}。`;
+        }
+        return `Create three thoughtful questions based on ${formattedTitle}. Add a one-sentence hint for each question and respond in ${targetLanguage.label}.`;
+      }
+    }
+  ],
+  video: [
+    {
+      id: 'video_timeline',
+      labelKey: 'smart_prompt_video_timeline',
+      descriptionKey: 'smart_prompt_video_timeline_desc',
+      fallback: {
+        zh: { label: '时间轴摘要', description: '生成带时间戳的章节概览。' },
+        en: { label: 'Timeline summary', description: 'Produce chapter-style timeline with timestamps.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        const formattedTitle = formatTitleForPrompt(meta, promptLanguage);
+        if (promptLanguage === 'zh') {
+          return `请根据视频字幕整理${formattedTitle}的时间轴摘要，使用mm:ss格式列出关键时间节点与小节说明，并用${targetLanguage.label}输出。`;
+        }
+        return `Using the subtitles, create a timeline for ${formattedTitle}. List key moments with mm:ss timestamps and short section summaries, responding in ${targetLanguage.label}.`;
+      }
+    },
+    {
+      id: 'video_takeaways',
+      labelKey: 'smart_prompt_video_takeaways',
+      descriptionKey: 'smart_prompt_video_takeaways_desc',
+      fallback: {
+        zh: { label: '行动要点', description: '列出视频中的可执行重点。' },
+        en: { label: 'Actionable insights', description: 'List the most practical learnings from the video.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请总结该视频的3-5条可执行行动要点，每条包含一句说明和一个建议的下一步动作。输出请使用${targetLanguage.label}。`;
+        }
+        return `Summarize 3-5 actionable insights from the video. For each insight include one sentence of context and a suggested next step. Respond in ${targetLanguage.label}.`;
+      }
+    },
+    {
+      id: 'video_discussion',
+      labelKey: 'smart_prompt_video_discussion',
+      descriptionKey: 'smart_prompt_video_discussion_desc',
+      fallback: {
+        zh: { label: '讨论话题', description: '给出围绕视频的讨论引导问题。' },
+        en: { label: 'Discussion prompts', description: 'Create discussion questions about the video.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请围绕该视频给出3个讨论问题，并为每个问题补充一句引导提示。回复请使用${targetLanguage.label}。`;
+        }
+        return `Provide three discussion prompts about the video and add a guiding hint for each one. Respond in ${targetLanguage.label}.`;
+      }
+    }
+  ],
+  pdf: [
+    {
+      id: 'pdf_outline',
+      labelKey: 'smart_prompt_pdf_outline',
+      descriptionKey: 'smart_prompt_pdf_outline_desc',
+      fallback: {
+        zh: { label: '章节速览', description: '用2-3句话概括每个章节。' },
+        en: { label: 'Section brief', description: 'Summarize each PDF section in two to three sentences.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请梳理这份PDF的主要章节，每个章节用${targetLanguage.label}写2-3句话概括核心观点与数据。`;
+        }
+        return `Outline the major sections of this PDF. For each section write two to three sentences in ${targetLanguage.label} capturing the core idea and evidence.`;
+      }
+    },
+    {
+      id: 'pdf_glossary',
+      labelKey: 'smart_prompt_pdf_glossary',
+      descriptionKey: 'smart_prompt_pdf_glossary_desc',
+      fallback: {
+        zh: { label: '术语表', description: '提取关键术语并给出简要释义。' },
+        en: { label: 'Glossary builder', description: 'Extract key terms and provide brief definitions.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请从这份PDF中提取重要术语或公式，制作一个术语列表（术语 + 简要解释），使用${targetLanguage.label}输出。`;
+        }
+        return `Extract important terms or formulas from the PDF and produce a glossary (term + concise definition) written in ${targetLanguage.label}.`;
+      }
+    },
+    {
+      id: 'pdf_research',
+      labelKey: 'smart_prompt_pdf_research',
+      descriptionKey: 'smart_prompt_pdf_research_desc',
+      fallback: {
+        zh: { label: '研究亮点', description: '提炼研究的目的、方法与结论。' },
+        en: { label: 'Research highlights', description: 'Capture objectives, methods, and conclusions from the PDF.' }
+      },
+      buildPrompt: (promptLanguage, meta, targetLanguage) => {
+        if (promptLanguage === 'zh') {
+          return `请总结这份PDF的研究重点，包括研究目的、方法、主要结论以及建议的后续工作。请用${targetLanguage.label}输出。`;
+        }
+        return `Summarize the research focus of this PDF, covering objectives, methodology, key findings, and suggested next steps. Respond in ${targetLanguage.label}.`;
+      }
+    }
+  ]
+};
+
+function normalizePromptLanguage(lang) {
+  if (!lang) {
+    return 'zh';
+  }
+  const lower = lang.toLowerCase();
+  if (lower.startsWith('zh')) {
+    return 'zh';
+  }
+  return 'en';
+}
+
+function normalizeTargetLanguage(code) {
+  if (!code) {
+    return 'zh';
+  }
+  const lower = code.toLowerCase();
+  if (lower.startsWith('zh')) return 'zh';
+  if (lower.startsWith('en')) return 'en';
+  if (lower.startsWith('es')) return 'es';
+  if (lower.startsWith('fr')) return 'fr';
+  if (lower.startsWith('de')) return 'de';
+  if (lower.startsWith('ja')) return 'ja';
+  if (lower.startsWith('ko')) return 'ko';
+  if (lower.startsWith('ru')) return 'ru';
+  if (lower.startsWith('pt')) return 'pt';
+  if (lower.startsWith('hi')) return 'hi';
+  return 'en';
+}
+
+function getTargetLanguageMeta(targetLanguageCode, promptLanguage) {
+  const normalizedTarget = normalizeTargetLanguage(targetLanguageCode);
+  const labels = PROMPT_LANGUAGE_LABELS[normalizedTarget] || PROMPT_LANGUAGE_LABELS.en;
+  const label = labels[promptLanguage] || labels.en || labels.zh || (promptLanguage === 'zh' ? '目标语言' : 'the configured language');
+  const englishLabel = labels.en || 'the configured language';
+  return { code: normalizedTarget, label, englishLabel };
+}
+
+function normalizeContextType(type) {
+  switch ((type || '').toLowerCase()) {
+    case 'video':
+      return 'video';
+    case 'pdf':
+      return 'pdf';
+    default:
+      return 'webpage';
+  }
+}
+
+function formatTitleForPrompt(meta, promptLanguage) {
+  if (!meta || !meta.title) {
+    return promptLanguage === 'zh' ? '当前内容' : 'this content';
+  }
+  const trimmed = meta.title.trim();
+  if (!trimmed) {
+    return promptLanguage === 'zh' ? '当前内容' : 'this content';
+  }
+  const truncated = trimmed.length > 120 ? `${trimmed.slice(0, 117)}...` : trimmed;
+  return promptLanguage === 'zh' ? `《${truncated}》` : `"${truncated}"`;
+}
+
+async function getUILanguage() {
+  try {
+    if (window.i18n && typeof window.i18n.getCurrentLanguage === 'function') {
+      return await window.i18n.getCurrentLanguage();
+    }
+  } catch (error) {
+    console.warn('[FisherAI] Failed to get UI language:', error);
+  }
+  return 'zh-CN';
+}
+
+async function updateSmartSuggestions() {
+  const section = document.getElementById('smart-suggestion-section');
+  const list = document.getElementById('smart-suggestion-list');
+  if (!section || !list) {
+    return;
+  }
+
+  const hasSelection = !!(selectedContent && selectedContent.trim && selectedContent.trim().length > 0);
+  const hasPageContent = !!pageContent;
+  const effectiveContext = hasSelection ? 'selection' : (hasPageContent ? (currentContextType || 'webpage') : null);
+
+  if (!effectiveContext || !SMART_PROMPTS[effectiveContext] || SMART_PROMPTS[effectiveContext].length === 0) {
+    section.style.display = 'none';
+    list.innerHTML = '';
+    SMART_PROMPT_REGISTRY.clear();
+    return;
+  }
+
+  const uiLanguage = await getUILanguage();
+  const promptLanguage = normalizePromptLanguage(uiLanguage);
+
+  const keys = ['smart_suggestions_title'];
+  SMART_PROMPTS[effectiveContext].forEach(cfg => {
+    if (cfg.labelKey) {
+      keys.push(cfg.labelKey);
+    }
+    if (cfg.descriptionKey) {
+      keys.push(cfg.descriptionKey);
+    }
+  });
+
+  let messages = {};
+  try {
+    if (window.i18n && typeof window.i18n.getMessages === 'function') {
+      messages = await window.i18n.getMessages(keys, uiLanguage);
+    }
+  } catch (error) {
+    console.warn('[FisherAI] Failed to resolve suggestion labels:', error);
+  }
+
+  const fallbackTitle = promptLanguage === 'zh' ? '智能推荐' : 'Smart suggestions';
+  const titleElement = section.querySelector('.smart-suggestion-title');
+  if (titleElement) {
+    titleElement.textContent = messages.smart_suggestions_title || fallbackTitle;
+  }
+
+  SMART_PROMPT_REGISTRY.clear();
+  list.innerHTML = '';
+
+  SMART_PROMPTS[effectiveContext].forEach(cfg => {
+    const fallback = cfg.fallback || {};
+    const fallbackLabel = (fallback[promptLanguage] && fallback[promptLanguage].label) ||
+      (fallback.en && fallback.en.label) ||
+      (fallback.zh && fallback.zh.label) ||
+      cfg.labelKey ||
+      '';
+    const fallbackDesc = (fallback[promptLanguage] && fallback[promptLanguage].description) ||
+      (fallback.en && fallback.en.description) ||
+      (fallback.zh && fallback.zh.description) ||
+      '';
+    const label = (cfg.labelKey && messages[cfg.labelKey]) ? messages[cfg.labelKey] : fallbackLabel;
+    const desc = (cfg.descriptionKey && messages[cfg.descriptionKey]) ? messages[cfg.descriptionKey] : fallbackDesc;
+
+    if (!label) {
+      return;
+    }
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'smart-suggestion-btn';
+    button.dataset.promptId = cfg.id;
+    button.innerHTML = `
+      <span class="smart-suggestion-label">${label}</span>
+      ${desc ? `<span class="smart-suggestion-desc">${desc}</span>` : ''}
+    `;
+    list.appendChild(button);
+    SMART_PROMPT_REGISTRY.set(cfg.id, cfg);
+  });
+
+  section.style.display = SMART_PROMPT_REGISTRY.size > 0 ? 'block' : 'none';
+}
+
+function initSmartSuggestionHandlers() {
+  const list = document.getElementById('smart-suggestion-list');
+  if (!list) {
+    return;
+  }
+
+  list.addEventListener('click', async (event) => {
+    const button = event.target.closest('.smart-suggestion-btn');
+    if (!button) {
+      return;
+    }
+    const promptId = button.dataset.promptId;
+    if (!promptId) {
+      return;
+    }
+
+    try {
+      await handleSmartPromptSelection(promptId, button);
+    } catch (error) {
+      console.error('[FisherAI] Failed to execute smart suggestion:', error);
+    }
+  });
+}
+
+async function handleSmartPromptSelection(promptId, triggerElement) {
+  const config = SMART_PROMPT_REGISTRY.get(promptId);
+  if (!config) {
+    return;
+  }
+
+  const userInput = document.getElementById('my-extension-user-input');
+  const submitButton = document.getElementById('my-extension-submit-btn');
+  if (!userInput || !submitButton) {
+    return;
+  }
+
+  const [targetLanguageCode, uiLanguage] = await Promise.all([
+    getTargetLanguage().catch(() => 'zh-CN'),
+    getUILanguage()
+  ]);
+  const promptLanguage = normalizePromptLanguage(uiLanguage);
+  const targetLanguageMeta = getTargetLanguageMeta(targetLanguageCode, promptLanguage);
+  const promptMeta = {
+    ...currentPageMeta,
+    selectedContent,
+    pageContent
+  };
+
+  let promptText = '';
+  try {
+    promptText = config.buildPrompt(promptLanguage, promptMeta, targetLanguageMeta) || '';
+  } catch (error) {
+    console.error('[FisherAI] Error building smart suggestion prompt:', error);
+  }
+
+  if (!promptText) {
+    return;
+  }
+
+  userInput.value = promptText;
+  updateSubmitButton();
+
+  if (triggerElement) {
+    triggerElement.classList.add('active');
+    setTimeout(() => triggerElement.classList.remove('active'), 220);
+  }
+
+  if (!submitButton.disabled) {
+    submitButton.click();
+  }
+}
+
 /**
  * 定义清空并加载内容的函数
  */
@@ -170,7 +608,7 @@ async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
 
   // submit & generating button
   hideSubmitBtnAndShowGenBtn();
-  
+
   // 创建或获取AI回答div
   const contentDiv = document.querySelector('.chat-content');
   let aiMessageDiv = contentDiv.lastElementChild;
@@ -181,13 +619,21 @@ async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
   } else {
     aiMessageDiv.innerHTML = ''; // Clear existing content if regenerating
   }
-    
+
+  lastRequestPayload = {
+    model,
+    provider,
+    inputText,
+    base64Images: Array.isArray(base64Images) ? [...base64Images] : []
+  };
+
   try {
     const completeText = await chatWithLLM(model, provider, inputText, base64Images, CHAT_TYPE);
     createCopyButton(completeText);
+    lastRequestPayload = null;
   } catch (error) {
     hiddenLoadding();
-    displayErrorMessage(`${error.message}`);
+    await displayErrorMessage(error);
     console.error('请求异常:', error);
   } finally {
     // submit & generating button
@@ -557,6 +1003,10 @@ function initResultPage() {
     // 初始化按钮状态
     updateSubmitButton();
 
+    // 初始化智能推荐
+    initSmartSuggestionHandlers();
+    updateSmartSuggestions().catch(error => console.warn('[FisherAI] Failed to prepare smart suggestions:', error));
+
     // 检测输入框内容变化以更新提交按钮状态
     var userInput = document.getElementById('my-extension-user-input');
     userInput.addEventListener('input', updateSubmitButton);
@@ -712,7 +1162,7 @@ function initResultPage() {
       } catch(error) {
         hiddenLoadding();
         console.error('智能摘要失败', error);
-        displayErrorMessage(`智能摘要失败: ${error.message}`);
+        await displayErrorMessage(error, { contextKey: 'error_context_summary', replaceContent: true });
         return;
       }
 
@@ -750,7 +1200,7 @@ function initResultPage() {
       } catch(error) {
         hiddenLoadding();
         console.error('网页翻译失败', error);
-        displayErrorMessage(`网页翻译失败: ${error.message}`);
+        await displayErrorMessage(error, { contextKey: 'error_context_translate', replaceContent: true });
         return;
       }
 
@@ -783,7 +1233,7 @@ function initResultPage() {
       } catch(error) {
         hiddenLoadding();
         console.error('视频翻译失败', error);
-        displayErrorMessage(`视频翻译失败: ${error.message}`);
+        await displayErrorMessage(error, { contextKey: 'error_context_video_translate', replaceContent: true });
         return;
       }
 
@@ -1227,10 +1677,279 @@ function isVideoUrl(url) {
  * 显示错误信息
  * @param {string} message 
  */
-function displayErrorMessage(message) {
-  hideRecommandContent();
+const ERROR_TEMPLATES = {
+  zh: {
+    network: {
+      title: '网络连接异常',
+      description: '助手无法连接到模型服务，请检查网络或代理设置。',
+      tips: [
+        '确认当前网络可以访问模型或代理地址。',
+        '如使用企业或系统代理，请允许 Chrome 访问对应域名。',
+        '稍后再次尝试请求。'
+      ]
+    },
+    timeout: {
+      title: '请求超时',
+      description: '模型在预期时间内没有返回结果。',
+      tips: [
+        '尝试缩短输入或减少附件体积。',
+        '确认网络状态良好后再次发送。',
+        '必要时更换其他模型或服务。'
+      ]
+    },
+    auth: {
+      title: '鉴权失败',
+      description: '模型返回了无效凭证或权限不足的提示。',
+      tips: [
+        '检查 API Key 是否填写正确。',
+        '在设置页重新保存密钥或刷新凭证。',
+        '确认当前账号仍有调用额度。'
+      ]
+    },
+    quota: {
+      title: '触发频率限制',
+      description: '当前模型已达到调用频率或配额限制。',
+      tips: [
+        '等待片刻后再尝试发送请求。',
+        '降低请求频率或更换其他模型。',
+        '在服务商控制台检查剩余额度。'
+      ]
+    },
+    default: {
+      title: '请求未完成',
+      description: '助手暂时无法完成该请求。',
+      tips: [
+        '稍后再次尝试或重新整理问题描述。',
+        '尝试切换不同的模型或供应商。',
+        '检查设置中的网络与代理配置。'
+      ]
+    }
+  },
+  en: {
+    network: {
+      title: 'Connection issue',
+      description: 'The assistant could not reach the model endpoint. Please verify your network or proxy settings.',
+      tips: [
+        'Make sure your network can reach the model or proxy host.',
+        'If a corporate or system proxy is required, allow Chrome to access the domain.',
+        'Try sending the request again in a moment.'
+      ]
+    },
+    timeout: {
+      title: 'Request timed out',
+      description: 'The model did not return a result before the timeout limit.',
+      tips: [
+        'Try shortening the input or reducing attached content.',
+        'Verify your connection speed and resend the request.',
+        'Consider switching to another model or provider.'
+      ]
+    },
+    auth: {
+      title: 'Authentication failed',
+      description: 'The model reported invalid credentials or insufficient permissions.',
+      tips: [
+        'Double-check that your API key is correct.',
+        'Save the key again in the settings page.',
+        'Confirm that your account still has available quota.'
+      ]
+    },
+    quota: {
+      title: 'Rate limit reached',
+      description: 'The request hit a rate or quota limit imposed by the model provider.',
+      tips: [
+        'Wait a moment before sending another request.',
+        'Reduce the request frequency or choose a different model.',
+        'Check your provider dashboard for remaining quota.'
+      ]
+    },
+    default: {
+      title: 'Request could not be completed',
+      description: 'The assistant was unable to finish this request.',
+      tips: [
+        'Try again with a revised prompt later.',
+        'Switch to another model or provider.',
+        'Verify your network or proxy configuration.'
+      ]
+    }
+  }
+};
+
+function categorizeError(message) {
+  if (!message) {
+    return 'default';
+  }
+  const normalized = message.toLowerCase();
+  if (normalized.includes('timeout') || normalized.includes('timed out') || normalized.includes('abort') || normalized.includes('aborted') || normalized.includes('exceeded')) {
+    return 'timeout';
+  }
+  if (normalized.includes('failed to fetch') || normalized.includes('network') || normalized.includes('net::') || normalized.includes('dns') || normalized.includes('connection')) {
+    return 'network';
+  }
+  if (normalized.includes('401') || normalized.includes('403') || normalized.includes('unauthorized') || normalized.includes('forbidden') || normalized.includes('invalid api key') || normalized.includes('incorrect api key') || normalized.includes('signature')) {
+    return 'auth';
+  }
+  if (normalized.includes('429') || normalized.includes('too many requests') || normalized.includes('rate limit') || normalized.includes('quota')) {
+    return 'quota';
+  }
+  return 'default';
+}
+
+function extractErrorDetails(error, fallback = 'Unknown error') {
+  if (!error) {
+    return fallback;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error instanceof Error) {
+    return error.stack || error.message || fallback;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch (serializationError) {
+    console.warn('[FisherAI] Unable to serialize error object:', serializationError);
+    return fallback;
+  }
+}
+
+async function retryLastRequest() {
+  if (!lastRequestPayload) {
+    return;
+  }
+
+  const { model, provider, inputText, base64Images } = lastRequestPayload;
   const contentDiv = document.querySelector('.chat-content');
-  contentDiv.innerHTML = `<div class="error-message">${message}</div>`;
+  if (contentDiv) {
+    const lastChild = contentDiv.lastElementChild;
+    if (lastChild && lastChild.classList.contains('ai-message')) {
+      lastChild.innerHTML = '';
+    }
+  }
+
+  await chatLLMAndUIUpdate(model, provider, inputText, base64Images);
+}
+
+async function displayErrorMessage(error, options = {}) {
+  hideRecommandContent();
+
+  const contentDiv = document.querySelector('.chat-content');
+  if (!contentDiv) {
+    return;
+  }
+
+  const rawDetails = extractErrorDetails(error, '');
+  const uiLanguage = await getUILanguage();
+  const promptLanguage = normalizePromptLanguage(uiLanguage);
+  const templates = ERROR_TEMPLATES[promptLanguage] || ERROR_TEMPLATES.zh;
+  const scenario = categorizeError(rawDetails);
+  const template = templates[scenario] || templates.default;
+
+  let contextLabel = '';
+  if (options.contextKey && window.i18n && typeof window.i18n.getMessages === 'function') {
+    try {
+      const contextMessages = await window.i18n.getMessages([options.contextKey], uiLanguage);
+      contextLabel = contextMessages[options.contextKey] || '';
+    } catch (contextError) {
+      console.warn('[FisherAI] Failed to resolve error context message:', contextError);
+    }
+  }
+
+  let extraMessages = {};
+  try {
+    if (window.i18n && typeof window.i18n.getMessages === 'function') {
+      extraMessages = await window.i18n.getMessages(['error_retry', 'error_copy_details', 'error_copied'], uiLanguage);
+    }
+  } catch (labelError) {
+    console.warn('[FisherAI] Failed to resolve error action labels:', labelError);
+  }
+
+  const retryLabel = extraMessages.error_retry || (promptLanguage === 'zh' ? '重试' : 'Retry');
+  const copyLabel = extraMessages.error_copy_details || (promptLanguage === 'zh' ? '复制错误详情' : 'Copy details');
+  const copiedLabel = extraMessages.error_copied || (promptLanguage === 'zh' ? '已复制！' : 'Copied!');
+
+  const title = options.title || contextLabel || template.title;
+  let description;
+  if (options.description) {
+    description = options.description;
+  } else if (contextLabel) {
+    const joiner = promptLanguage === 'zh' ? '：' : ': ';
+    description = `${template.title}${joiner}${template.description}`;
+  } else {
+    description = template.description;
+  }
+
+  const tips = Array.isArray(options.tips) ? options.tips : (template.tips || []);
+  const allowRetry = options.allowRetry !== undefined ? options.allowRetry : !!lastRequestPayload;
+
+  let targetContainer = null;
+  if (!options.replaceContent) {
+    const lastChild = contentDiv.lastElementChild;
+    if (lastChild && lastChild.classList.contains('ai-message')) {
+      targetContainer = lastChild;
+      targetContainer.innerHTML = '';
+    }
+  }
+
+  if (!targetContainer) {
+    if (options.replaceContent || contentDiv.children.length === 0) {
+      contentDiv.innerHTML = '';
+    }
+    targetContainer = document.createElement('div');
+    targetContainer.className = 'ai-message';
+    contentDiv.appendChild(targetContainer);
+  }
+
+  const errorIcon = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 9v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="12" cy="16" r="1" fill="currentColor"></circle>
+      <path d="M12 3L2 21h20L12 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </svg>
+  `;
+
+  targetContainer.innerHTML = `
+    <div class="error-state">
+      <div class="error-state-icon">${errorIcon}</div>
+      <div class="error-state-body">
+        <h3 class="error-state-title">${title}</h3>
+        <p class="error-state-desc">${description}</p>
+        ${tips && tips.length > 0 ? `<ul class="error-state-tips">${tips.map(tip => `<li>${tip}</li>`).join('')}</ul>` : ''}
+        <div class="error-state-actions">
+          ${allowRetry ? `<button class="error-state-btn primary" data-error-action="retry">${retryLabel}</button>` : ''}
+          <button class="error-state-btn ghost" data-error-action="copy">${copyLabel}</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const copyBtn = targetContainer.querySelector('[data-error-action="copy"]');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(rawDetails || extractErrorDetails(error, rawDetails) || '');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = copiedLabel;
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1500);
+      } catch (copyError) {
+        console.error('[FisherAI] Failed to copy error details:', copyError);
+      }
+    });
+  }
+
+  const retryBtn = targetContainer.querySelector('[data-error-action="retry"]');
+  if (retryBtn) {
+    retryBtn.addEventListener('click', async () => {
+      retryBtn.disabled = true;
+      try {
+        await retryLastRequest();
+      } catch (retryError) {
+        console.error('[FisherAI] Retry failed:', retryError);
+        retryBtn.disabled = false;
+      }
+    });
+  }
 }
  
 
@@ -1241,28 +1960,30 @@ let selectedContent = null;
 /**
  * 显示选中内容区域
  */
-async function showSelectedContent(text, isPageContent = false, contentType = null) {
+async function showSelectedContent(text, isPageContent = false, contentType = null, meta = {}) {
+  const safeText = typeof text === 'string' ? text : (text == null ? '' : String(text));
   const tag = document.getElementById('selected-content-tag');
   const preview = document.getElementById('selected-content-preview');
   const label = tag?.querySelector('.selected-content-label');
   const inputContainer = document.querySelector('.input-container');
-  
+
   if (tag && preview) {
     if (!isPageContent) {
-      // 真实的选中内容，清除页面内容，优先使用选中内容
-      pageContent = null;
-      
+      // 真实的选中内容，优先使用选中内容
+      selectedContent = safeText;
+      currentContextType = 'selection';
+
       // 生成预览文本（显示前后几个字符，中间用省略号）
       let previewText;
-      if (text.length > 12) {
-        const startText = text.substring(0, 4);
-        const endText = text.substring(text.length - 4);
+      if (safeText.length > 12) {
+        const startText = safeText.substring(0, 4);
+        const endText = safeText.substring(safeText.length - 4);
         previewText = `${startText}...${endText}`;
       } else {
-        previewText = text;
+        previewText = safeText;
       }
       preview.textContent = previewText;
-      
+
       // 获取国际化文本
       try {
         const currentLang = await window.i18n.getCurrentLanguage();
@@ -1280,16 +2001,21 @@ async function showSelectedContent(text, isPageContent = false, contentType = nu
       const mainContent = document.querySelector('.my-extension-content');
       if (mainContent) mainContent.classList.add('has-selected-content-active');
       
-      selectedContent = text;
     } else {
-      // 页面内容：如果没有选中内容，将页面内容作为"选中内容"显示
+      pageContent = safeText;
+      const normalizedType = normalizeContextType(contentType);
+      currentPageMeta = {
+        title: meta.pageTitle || currentPageMeta.title || '',
+        url: meta.url || currentPageMeta.url || '',
+        contentType: normalizedType
+      };
       if (!selectedContent) {
-        pageContent = text;
-        
+        currentContextType = normalizedType;
+
         // 生成页面内容的预览文本
         let previewText;
         // 提取页面文本的前几个有效字符（跳过HTML标签和空白）
-        const cleanText = text.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        const cleanText = safeText.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         if (cleanText.length > 12) {
           const startText = cleanText.substring(0, 4);
           const endText = cleanText.substring(cleanText.length - 4);
@@ -1354,6 +2080,12 @@ async function showSelectedContent(text, isPageContent = false, contentType = nu
       }
     }
   }
+
+  try {
+    await updateSmartSuggestions();
+  } catch (error) {
+    console.warn('[FisherAI] Failed to update smart suggestions:', error);
+  }
 }
 
 /**
@@ -1375,6 +2107,8 @@ function hideSelectedContent() {
     // 清除所有内容：包括选中内容和页面内容
     selectedContent = null;
     pageContent = null;
+    currentContextType = currentPageMeta.contentType || null;
+    updateSmartSuggestions().catch(error => console.warn('[FisherAI] Failed to reset smart suggestions:', error));
   }
 }
 
@@ -1427,11 +2161,11 @@ document.addEventListener('DOMContentLoaded', function() {
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.action === 'sendSelectedTextToSidePanel') {
     console.log('[FisherAI] 接收到选中文本:', message.selectedText);
-    showSelectedContent(message.selectedText, false);
+    showSelectedContent(message.selectedText, false).catch(err => console.error('[FisherAI] Failed to show selected text:', err));
     sendResponse({received: true});
   } else if (message.action === 'sendPageContentToSidePanel') {
     console.log('[FisherAI] 接收到页面内容:', message.pageTitle, '内容类型:', message.contentType);
-    showSelectedContent(message.pageContent, true, message.contentType);
+    showSelectedContent(message.pageContent, true, message.contentType, { pageTitle: message.pageTitle, url: message.url }).catch(err => console.error('[FisherAI] Failed to show page content:', err));
     sendResponse({received: true});
   } else if (message.action === 'clearSelectedTextFromSidePanel') {
     console.log('[FisherAI] 接收到清除选中内容请求');
