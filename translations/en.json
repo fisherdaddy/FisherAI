@@ -52,5 +52,7 @@
   "edit_message_hint": "Tweak your question before sending it again.",
   "edit_message_placeholder": "Update your message here...",
   "edit_message_shortcuts": "Ctrl+Enter to send / Esc to cancel",
-  "edit_message_char_count": "Characters: {count}"
+  "edit_message_char_count": "Characters: {count}",
+  "export_md": "Export Markdown",
+  "export_empty": "Nothing to export yet"
 } 

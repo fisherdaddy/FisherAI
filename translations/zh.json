@@ -52,5 +52,7 @@
   "edit_message_hint": "在重新发送前微调你的提问。",
   "edit_message_placeholder": "在这里修改你的消息...",
   "edit_message_shortcuts": "按 Ctrl+Enter 发送 / 按 Esc 取消",
-  "edit_message_char_count": "当前字数 {count}"
+  "edit_message_char_count": "当前字数 {count}",
+  "export_md": "导出 Markdown",
+  "export_empty": "暂无内容可导出"
 } 

@@ -86,6 +86,55 @@ function initChatHistory() {
   geminiDialogueHistory = []
 }
 
+// 将对话历史投影为可持久化的纯文本结构（剥离 base64 图片等大对象）
+function sanitizeOpenAIEntryForSave(entry) {
+  let content = entry.content;
+  if (Array.isArray(content)) {
+    content = content
+      .filter(part => part && part.type === 'text' && typeof part.text === 'string')
+      .map(part => part.text)
+      .join('\n');
+  }
+  return {
+    role: entry.role,
+    content: typeof content === 'string' ? content : ''
+  };
+}
+
+function sanitizeGeminiEntryForSave(entry) {
+  const parts = [];
+  (entry.parts || []).forEach(part => {
+    if (part && typeof part.text === 'string') {
+      parts.push({ text: part.text });
+    }
+  });
+  return { role: entry.role, parts };
+}
+
+// 收集可持久化的对话历史（保留 system 首条，其余只留最近若干条，防止超配额）
+function collectHistoriesForSave() {
+  const maxEntries = 40;
+  const openai = dialogueHistory.map(sanitizeOpenAIEntryForSave);
+  const gemini = geminiDialogueHistory.map(sanitizeGeminiEntryForSave);
+  const trim = (arr) => {
+    if (arr.length <= maxEntries) {
+      return arr;
+    }
+    return [arr[0], ...arr.slice(-(maxEntries - 1))];
+  };
+  return { openai: trim(openai), gemini: trim(gemini) };
+}
+
+// 从快照恢复对话历史
+function restoreHistoriesFromSnapshot(openaiHistory, geminiHistory) {
+  if (Array.isArray(openaiHistory) && openaiHistory.length > 0) {
+    dialogueHistory = openaiHistory;
+  }
+  if (Array.isArray(geminiHistory) && geminiHistory.length > 0) {
+    geminiDialogueHistory = geminiHistory;
+  }
+}
+
 
 /**
  * 根据不同的模型，选择对应的接口地址
@@ -1329,6 +1378,11 @@ function updateChatContent(completeText, type) {
 
     if (completeText && completeText.trim().length > 0) {
       autoCollapseSerpApiCards(lastDiv);
+    }
+
+    // 流式输出期间通知侧窗面板防抖落盘当前对话
+    if (typeof window.scheduleChatSnapshotSave === 'function') {
+      window.scheduleChatSnapshotSave();
     }
 
     if (isAtBottom) {
