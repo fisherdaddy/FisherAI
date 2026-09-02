@@ -23,10 +23,23 @@
     z-index: 9999999;
 }
 
-.my-extension-settings-btn, .my-extension-share-btn {
+.my-extension-settings-btn, .my-extension-share-btn, .my-extension-download-btn {
     display: inline-block;
     cursor: pointer;
     margin-right: 15px;
+}
+
+.my-extension-newchat-btn {
+    cursor: pointer;
+    margin-right: 8px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    background: transparent;
+    color: inherit;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    white-space: nowrap;
 }
 
 .my-extension-settings-btn {
@@ -1694,7 +1707,8 @@
 }
 
 .light-mode .my-extension-settings-btn svg,
-.light-mode .my-extension-share-btn svg {
+.light-mode .my-extension-share-btn svg,
+.light-mode .my-extension-download-btn svg {
   stroke: #4A5568;
 }
 

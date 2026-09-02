@@ -23,12 +23,16 @@
 <body>
     <div id="resultpage" class="my-extension-resultPage">
         <div class="my-extension-header">
-            <span class="my-extension-settings-btn">
+            <span class="my-extension-settings-btn" title="设置">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </span>
-            <span class="my-extension-share-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+            <span class="my-extension-share-btn" title="分享">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-share"><rect x="3" y="10" width="18" height="11" rx="2"></rect><path d="m8 7 4-4 4 4"></path><line x1="12" y1="3" x2="12" y2="9"></line></svg>
             </span>
+            <span class="my-extension-download-btn" title="导出 Markdown">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </span>
+            <button id="my-extension-newchat-btn" class="my-extension-newchat-btn" title="清空当前对话并开始新对话">新聊天</button>
         </div>
         <div class="my-extension-content">
             <div class="my-extension-slogan">
@@ -70,6 +74,17 @@
                         <div class="feature-text">
                             <div class="feature-name" data-i18n="video_trans">视频翻译</div>
                             <div class="feature-desc" data-i18n="video_trans_desc">支持 Bilibili 和 YouTube 视频。</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="feature-item">
+                    <a id="my-extension-visual-summary-btn">
+                        <div class="feature-visual">
+                            <img src="/images/videotrans.png" alt="Visual Summary" class="feature-icon">
+                        </div>
+                        <div class="feature-text">
+                            <div class="feature-name" data-i18n="visual_summary">画面总结</div>
+                            <div class="feature-desc" data-i18n="visual_summary_desc">抽取视频画面，用视觉模型理解贴字内容，无需字幕。</div>
                         </div>
                     </a>
                 </div>

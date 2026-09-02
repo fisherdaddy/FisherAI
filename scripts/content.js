@@ -104,6 +104,266 @@ if (window.location.hostname.includes('youtube.com')) {
     }).observe(document, { subtree: true, childList: true });
 }
 
+/**
+ * 从页面视频元素按时间均匀抓帧
+ * - 选择与期望时长最接近的 video（避免抓到推荐位的小预览视频）
+ * - 抓帧期间静音并保证视频处于播放状态，让渲染管线持续出帧
+ * - 优先直接 drawImage（MSE blob 源不跨域污染），被污染时回退 VideoFrame
+ * - seek 后做帧变化校验，防止渲染滞后抓到上一帧
+ * 采样间隔按时长分级：<=2分钟 2s，<=10分钟 5s，更长 10s；上限 80 帧
+ * @param {number} expectedDuration 期望的视频时长（秒），用于挑选正确的 video 元素
+ */
+async function captureVideoFrames(expectedDuration) {
+  const videos = Array.from(document.querySelectorAll('video'));
+  if (!videos.length) {
+    throw new Error('页面中未找到视频元素');
+  }
+
+  // 等待视频加载出有效时长（元数据），时长未就绪的视频直接过滤会导致误判
+  const waitForDuration = (v, timeoutMs) => new Promise((resolve) => {
+    if (v.duration && isFinite(v.duration) && v.duration > 0) {
+      resolve(true);
+      return;
+    }
+    let done = false;
+    const finish = (ok) => {
+      if (done) {
+        return;
+      }
+      done = true;
+      v.removeEventListener('loadedmetadata', onMeta);
+      v.removeEventListener('durationchange', onMeta);
+      resolve(ok);
+    };
+    const onMeta = () => {
+      if (v.duration && isFinite(v.duration) && v.duration > 0) {
+        finish(true);
+      }
+    };
+    v.addEventListener('loadedmetadata', onMeta);
+    v.addEventListener('durationchange', onMeta);
+    setTimeout(() => finish(v.duration && isFinite(v.duration) && v.duration > 0), timeoutMs);
+  });
+
+  const readyVideos = [];
+  for (const v of videos) {
+    if (await waitForDuration(v, 4000)) {
+      readyVideos.push(v);
+    }
+  }
+  if (!readyVideos.length) {
+    throw new Error('视频时长尚未加载，请刷新页面稍后重试');
+  }
+
+  // 选择：优先与期望时长最接近；没有匹配则选播放器区域最大的（主播放器一般最大）
+  let video = readyVideos[0];
+  if (expectedDuration && expectedDuration > 0) {
+    let best = null;
+    let bestDiff = Infinity;
+    for (const v of readyVideos) {
+      const diff = Math.abs(v.duration - expectedDuration);
+      if (diff < bestDiff) {
+        bestDiff = diff;
+        best = v;
+      }
+    }
+    if (best && bestDiff < Math.max(5, expectedDuration * 0.15)) {
+      video = best;
+    } else {
+      video = readyVideos.reduce((a, b) => {
+        const areaA = (a.videoWidth || 0) * (a.videoHeight || 0);
+        const areaB = (b.videoWidth || 0) * (b.videoHeight || 0);
+        return areaB > areaA ? b : a;
+      });
+    }
+  }
+  const duration = video.duration;
+  let intervalSec = 10;
+  if (duration <= 120) {
+    intervalSec = 2;
+  } else if (duration <= 600) {
+    intervalSec = 5;
+  }
+  const maxFrames = 80;
+  const frameCount = Math.min(maxFrames, Math.max(1, Math.floor(duration / intervalSec)));
+
+  let stream = null;
+  let track = null;
+  try {
+    stream = video.captureStream();
+    track = stream.getVideoTracks()[0];
+  } catch (error) {
+    console.warn('[FisherAI] captureStream 不可用:', error);
+  }
+
+  const originalTime = video.currentTime;
+  const wasPaused = video.paused;
+  const wasMuted = video.muted;
+  // 抓帧期间静音，避免 seek 快进时声音乱窜
+  try { video.muted = true; } catch (e) { /* 忽略 */ }
+  const frames = [];
+
+  const seekTo = (targetTime) => new Promise((resolve) => {
+    let settled = false;
+    const timer = setTimeout(finish, 3000);
+    const onSeeked = finish;
+    function finish() {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      video.removeEventListener('seeked', onSeeked);
+      resolve();
+    }
+    video.addEventListener('seeked', onSeeked);
+    try {
+      video.currentTime = targetTime;
+    } catch (error) {
+      finish();
+    }
+  });
+
+  const waitPaint = () => new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    } else {
+      setTimeout(resolve, 32);
+    }
+  });
+
+  const hashDataURL = (dataURL) => new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = 8;
+          c.height = 8;
+          const cx = c.getContext('2d');
+          cx.drawImage(img, 0, 0, 8, 8);
+          const d = cx.getImageData(0, 0, 8, 8).data;
+          const gray = new Array(64);
+          let sum = 0;
+          for (let i = 0; i < 64; i++) {
+            gray[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2];
+            sum += gray[i];
+          }
+          const avg = sum / 64;
+          resolve(gray.map(v => (v >= avg ? 1 : 0)));
+        } catch (e) { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataURL;
+    } catch (e) { resolve(null); }
+  });
+
+  const hammingBits = (a, b) => {
+    if (!a || !b || a.length !== b.length) {
+      return 64;
+    }
+    let d = 0;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) {
+        d++;
+      }
+    }
+    return d;
+  };
+
+  const drawFrame = () => {
+    const canvas = document.createElement('canvas');
+    const vw = video.videoWidth || 1280;
+    const vh = video.videoHeight || 720;
+    const scale = Math.min(1, 800 / Math.max(vw, vh));
+    canvas.width = Math.round(vw * scale);
+    canvas.height = Math.round(vh * scale);
+    const ctx = canvas.getContext('2d');
+    // 优先 captureStream 的 VideoFrame：跨域视频也不污染画布；不可用再直接绘制
+    if (track && typeof VideoFrame !== 'undefined') {
+      const vf = new VideoFrame(track);
+      ctx.drawImage(vf, 0, 0, canvas.width, canvas.height);
+      vf.close();
+      return canvas.toDataURL('image/jpeg', 0.72);
+    }
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.72);
+    } catch (error) {
+      throw new Error('视频截图失败（画布安全限制）：' + (error && error.message || error));
+    }
+  };
+
+  try {
+    // 暂停中的视频临时播放（已静音），保证渲染管线持续出帧；结束恢复
+    if (video.paused) {
+      try {
+        await video.play();
+      } catch (e) {
+        console.warn('[FisherAI] 自动播放被拒绝，将直接抓取当前渲染帧');
+      }
+    }
+    let prevHash = null;
+    for (let i = 0; i < frameCount; i++) {
+      const t = Math.min(duration - 0.1, ((i + 0.5) / frameCount) * duration);
+      let dataURL = null;
+      for (let attempt = 0; attempt < 4 && !dataURL; attempt++) {
+        await seekTo(t);
+        await new Promise(r => setTimeout(r, 120 + attempt * 120));
+        await waitPaint();
+        dataURL = drawFrame();
+      }
+      // 帧未变化则等待重试，防止 seek 后渲染滞后抓到上一帧
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (!prevHash) {
+          break;
+        }
+        const curHash = await hashDataURL(dataURL);
+        if (curHash && hammingBits(curHash, prevHash) === 0) {
+          await new Promise(r => setTimeout(r, 250));
+          await waitPaint();
+          dataURL = drawFrame();
+        } else {
+          break;
+        }
+      }
+      const curHash = await hashDataURL(dataURL);
+      prevHash = curHash;
+      frames.push({ dataURL: dataURL, t: Math.round(video.currentTime) });
+    }
+  } finally {
+    if (wasPaused) {
+      try { video.pause(); } catch (e) { /* 忽略 */ }
+    }
+    if (track) {
+      try { track.stop(); } catch (e) { /* 忽略 */ }
+    }
+    try { video.currentTime = originalTime; } catch (e) { /* 忽略 */ }
+    try { video.muted = wasMuted; } catch (e) { /* 忽略 */ }
+  }
+
+  // 压缩回传体积：在页面内先做变化去重 + 限制帧数，避免图片过大超出消息通道上限
+  let resultFrames = [];
+  let lastKeptHash = null;
+  for (const f of frames) {
+    const h = await hashDataURL(f.dataURL);
+    if (!lastKeptHash || (h && hammingBits(h, lastKeptHash) >= 8)) {
+      resultFrames.push(f);
+      lastKeptHash = h;
+    }
+  }
+  const MAX_RETURN = 24;
+  if (resultFrames.length > MAX_RETURN) {
+    const sampled = [];
+    for (let i = 0; i < MAX_RETURN; i++) {
+      const idx = Math.round((i * (resultFrames.length - 1)) / (MAX_RETURN - 1));
+      sampled.push(resultFrames[idx]);
+    }
+    resultFrames = sampled;
+  }
+  return resultFrames;
+}
+
 // 监听获取正文请求
 try {
   chrome.runtime.onMessage.addListener(async function(request, sender, sendResponse) {
@@ -150,6 +410,14 @@ try {
   } else if(request.action === ACTION_GET_PAGE_URL) {
     // 获取当前网页地址
     sendResponse({url: window.location.href});
+  } else if(request.action === ACTION_CAPTURE_VIDEO_FRAMES) {
+    // 抓取当前页面视频的定时画面（画面总结的兜底路径）
+    captureVideoFrames(request.expectedDuration || 0).then(frames => {
+      sendResponse({frames: frames});
+    }).catch(error => {
+      sendResponse({success: false, error: error.message});
+    });
+    return true;
   } else if(request.action === 'getCurrentPageState') {
     // 响应侧边栏请求当前页面状态
     try {

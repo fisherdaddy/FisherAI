@@ -66,6 +66,8 @@ const i18n = {
         'web_trans_desc': '支持多种格式，包括网页、PDF 文件，保持原有布局和格式。',
         'video_trans': '视频翻译',
         'video_trans_desc': '支持 Bilibili 和 YouTube 视频。',
+        'visual_summary': '画面总结',
+        'visual_summary_desc': '抽取视频画面，用视觉模型理解贴字内容，无需字幕。',
         
         // 设置页面
         'fisherai_settings': 'FisherAI 设置',
@@ -258,6 +260,8 @@ const i18n = {
         'web_trans_desc': 'Supports multiple formats, including web pages and PDF files, maintaining the original layout and format.',
         'video_trans': 'Video Translation',
         'video_trans_desc': 'Supports Bilibili and YouTube videos.',
+        'visual_summary': 'Visual Summary',
+        'visual_summary_desc': 'Extract video frames and understand on-screen text with a vision model, no subtitles needed.',
         
         // Settings page
         'fisherai_settings': 'FisherAI Settings',
@@ -449,6 +453,8 @@ const i18n = {
         "web_trans_desc": "ウェブページ、PDFファイルなど、様々なフォーマットに対応し、元のレイアウトとフォーマットを維持します。",
         "video_trans": "動画翻訳",
         "video_trans_desc": "BilibiliとYouTube動画に対応しています。",
+        "visual_summary": "映像要約",
+        "visual_summary_desc": "映像からフレームを抽出し、視覚モデルでオンスクリーン文字を理解します。字幕なし。",
 
         // 设置页面
         "fisherai_settings": "FisherAI 設定",
@@ -604,6 +610,8 @@ const i18n = {
         "web_trans_desc": "웹 페이지, PDF 파일 등 다양한 형식을 지원하며, 원본 레이아웃과 형식을 유지합니다.",
         "video_trans": "비디오 번역",
         "video_trans_desc": "Bilibili 및 YouTube 비디오를 지원합니다.",
+        "visual_summary": "화면 요약",
+        "visual_summary_desc": "동영상 프레임을 추출해 비전 모델로 화면의 텍스트를 이해합니다. 자막 불필요.",
 
         // 设置页面
         "fisherai_settings": "FisherAI 설정",
@@ -759,6 +767,8 @@ const i18n = {
         "web_trans_desc": "Prend en charge différents formats, notamment les pages web, les fichiers PDF, en conservant la mise en page et le format d'origine.",
         "video_trans": "Traduction vidéo",
         "video_trans_desc": "Prend en charge les vidéos Bilibili et YouTube.",
+        "visual_summary": "Résumé visuel",
+        "visual_summary_desc": "Extrait des images vidéo et comprend le texte à l'écran grâce à un modèle de vision, sans sous-titres.",
 
         // 设置页面
         "fisherai_settings": "Paramètres FisherAI",
@@ -914,6 +924,8 @@ const i18n = {
         "web_trans_desc": "Unterstützt verschiedene Formate, darunter Webseiten, PDF-Dateien, wobei das ursprüngliche Layout und Format beibehalten werden.",
         "video_trans": "Video-Übersetzung",
         "video_trans_desc": "Unterstützt Video Bilibili und YouTube.",
+        "visual_summary": "Visuelle Zusammenfassung",
+        "visual_summary_desc": "Extrahiert Videoframes und versteht Text im Bild mit einem Vision-Modell, ganz ohne Untertitel.",
 
         // 设置页面
         "fisherai_settings": "FisherAI-Einstellungen",
@@ -1069,6 +1081,8 @@ const i18n = {
         "web_trans_desc": "Поддерживает различные форматы, включая веб-страницы, PDF-файлы, сохраняя исходную структуру и форматирование.",
         "video_trans": "Перевод видео",
         "video_trans_desc": "Поддерживает видео Bilibili и YouTube.",
+        "visual_summary": "Визуальная сводка",
+        "visual_summary_desc": "Извлекает кадры видео и понимает текст на экране с помощью модели зрения, без субтитров.",
 
         // 设置页面
         "fisherai_settings": "Настройки FisherAI",
