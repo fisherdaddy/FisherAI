@@ -250,12 +250,20 @@ async function fetchBilibiliStoryboardFrames(url) {
  */
 async function extractYoutubeSubtitles(url, format) {
     try {
-        const subtitles = await YoutubeTranscript.fetchTranscript(url, {lang: 'en'});
+        // 不指定语言，优先取视频自带的第一条字幕轨（很多中文视频只有 zh 自动字幕，
+        // 硬指定 'en' 会因 languageCode 不匹配而失败）
+        let subtitles;
+        try {
+            subtitles = await YoutubeTranscript.fetchTranscript(url);
+        } catch (firstError) {
+            // 兜底：再尝试英文轨道
+            subtitles = await YoutubeTranscript.fetchTranscript(url, {lang: 'en'});
+        }
         const formattedSubtitles = youtubeSubtitlesJSONToFormat(subtitles, format);
         return formattedSubtitles;
     } catch (error) {
         console.error('Error fetching subtitles:', error);
-        throw new Error('视频字幕获取失败，原因：字幕获取接口暂不可用！');
+        throw new Error('视频字幕获取失败：该视频可能没有字幕（含自动字幕），或 YouTube 字幕接口暂时不可用（需代理/登录）。');
     }
 }
 

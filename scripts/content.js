@@ -536,6 +536,12 @@ function hideQuickTransButton() {
 
 // 确保DOM准备就绪后再初始化快捷翻译
 function initQuickTranslate() {
+  // 划词翻译功能已移除（用户不需要）：清理可能残留的按钮/弹窗并整体禁用
+  const staleButton = document.getElementById('fisherai-button-id');
+  if (staleButton) staleButton.remove();
+  const stalePopup = document.getElementById('fisherai-transpop-id');
+  if (stalePopup) stalePopup.remove();
+  return;
   
   // 是否开启快捷翻译
   try {
