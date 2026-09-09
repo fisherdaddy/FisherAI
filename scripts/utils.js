@@ -38,17 +38,232 @@ async function extractSubtitles(url, format=FORMAT_SRT) {
 }
 
 /**
+ * 获取 B站 视频的 bvid/cid/时长
+ * @param {string} url 
+ * @returns {Promise<{bvid: string, cid: number, duration: number}>}
+ */
+async function getBilibiliVideoInfo(url) {
+    const urlObj = new URL(url);
+    const pathSearchs = {};
+    urlObj.search.slice(1).replace(/([^=&]*)=([^=&]*)/g, (matchs, a, b) => { pathSearchs[a] = b; });
+
+    let bvid = pathSearchs.bvid;
+    if (!bvid) {
+        let path = urlObj.pathname;
+        if (path.endsWith('/')) {
+            path = path.slice(0, -1);
+        }
+        const parts = path.split('/');
+        bvid = parts[parts.length - 1];
+    }
+    if (!bvid || !bvid.toLowerCase().startsWith('bv')) {
+        throw new Error('无法从 URL 中提取 BVID');
+    }
+
+    const viewResponse = await fetch(
+        `https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`,
+        { credentials: 'include' }
+    );
+    const viewData = await viewResponse.json();
+    if (viewData.code !== 0 || !viewData.data || !viewData.data.pages || viewData.data.pages.length === 0) {
+        throw new Error(`获取视频信息失败: ${viewData.message || '未知错误'}`);
+    }
+    return {
+        bvid: bvid,
+        cid: viewData.data.pages[0].cid,
+        duration: viewData.data.duration || 0
+    };
+}
+
+/**
+ * 加载 storyboard 宫格图为 ImageBitmap
+ */
+async function loadStoryboardBitmap(imgUrl) {
+    const full = imgUrl.startsWith('http') ? imgUrl : 'https:' + imgUrl;
+    const blob = await fetch(full).then(res => res.blob());
+    return await createImageBitmap(blob);
+}
+
+/**
+ * 计算宫格图单个格位的 8x8 灰度均值哈希
+ */
+function hashStoryboardCell(bitmap, cell, xLen, frameWidth, frameHeight) {
+    return new Promise((resolve) => {
+        try {
+            const col = cell % xLen;
+            const row = Math.floor(cell / xLen);
+            const canvas = document.createElement('canvas');
+            canvas.width = 8;
+            canvas.height = 8;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(bitmap, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, 8, 8);
+            const data = ctx.getImageData(0, 0, 8, 8).data;
+            const gray = new Array(64);
+            let sum = 0;
+            for (let i = 0; i < 64; i++) {
+                gray[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+                sum += gray[i];
+            }
+            const avg = sum / 64;
+            resolve(gray.map(v => (v >= avg ? 1 : 0)));
+        } catch (error) {
+            resolve(null);
+        }
+    });
+}
+
+function hashHammingDistance(a, b) {
+    if (!a || !b || a.length !== b.length) {
+        return 64;
+    }
+    let distance = 0;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            distance++;
+        }
+    }
+    return distance;
+}
+
+/**
+ * 通过 B站 videoshot 接口获取整片的预览宫格图并切分为单帧
+ * 实测发现 B站 用最后一帧填充宫格尾部（57s 视频仅 12 帧真实画面、213s 视频仅 43 帧），
+ * 因此先检测尾部重复格，按真实帧数重算时间间隔；候选帧池上限 120
+ * @param {string} url 
+ */
+async function fetchBilibiliStoryboardFrames(url) {
+    const info = await getBilibiliVideoInfo(url);
+    const shotResponse = await fetch(
+        `https://api.bilibili.com/x/player/videoshot?bvid=${info.bvid}&cid=${info.cid}`,
+        { credentials: 'include' }
+    );
+    const shotData = await shotResponse.json();
+    if (shotData.code !== 0 || !shotData.data || !Array.isArray(shotData.data.image) || shotData.data.image.length === 0) {
+        throw new Error('B站视频预览图获取失败');
+    }
+    const d = shotData.data;
+    const xLen = d.img_x_len || 10;
+    const yLen = d.img_y_len || 10;
+    const frameWidth = d.img_x_size || 480;
+    const frameHeight = d.img_y_size || 270;
+    const cellsPerImage = xLen * yLen;
+
+    // 优先用 B站 播放器的权威时间轴（pvdata.bin）：大端 u16，每帧一个时间（秒）
+    let frameTimes = null;
+    try {
+        if (d.pvdata) {
+            const pvUrl = d.pvdata.startsWith('http') ? d.pvdata : 'https:' + d.pvdata;
+            const bin = new Uint8Array(await fetch(pvUrl).then(r => r.arrayBuffer()));
+            const raw = [];
+            for (let i = 0; i + 1 < bin.length; i += 2) {
+                raw.push((bin[i] << 8) | bin[i + 1]);
+            }
+            if (raw.length > 0) {
+                frameTimes = raw;
+            }
+        }
+    } catch (error) {
+        console.warn('pvdata 时间轴解析失败，回退哈希去重估算:', error);
+    }
+
+    let realFrames;
+    if (frameTimes) {
+        realFrames = frameTimes.length;
+    } else {
+        // 回退：检测最后一张宫格图的尾部填充（用末帧重复填充的格位）
+        realFrames = d.image.length * cellsPerImage;
+        const lastImgIdx = d.image.length - 1;
+        const lastBitmap = await loadStoryboardBitmap(d.image[lastImgIdx]);
+        try {
+            const lastHashes = [];
+            for (let cell = 0; cell < cellsPerImage; cell++) {
+                lastHashes.push(await hashStoryboardCell(lastBitmap, cell, xLen, frameWidth, frameHeight));
+            }
+            let suffixRun = 0;
+            for (let cell = cellsPerImage - 1; cell >= 1; cell--) {
+                if (hashHammingDistance(lastHashes[cell], lastHashes[cell - 1]) <= 2) {
+                    suffixRun++;
+                } else {
+                    break;
+                }
+            }
+            if (suffixRun >= 3) {
+                realFrames = (d.image.length - 1) * cellsPerImage + (cellsPerImage - suffixRun);
+            }
+        } catch (error) {
+            console.warn('预览图填充检测失败，按全量格位处理:', error);
+        } finally {
+            lastBitmap.close();
+        }
+    }
+    const interval = realFrames > 0 && info.duration > 0 ? info.duration / realFrames : 1;
+
+    // 候选帧池上限 120：只在真实帧上均匀抽样，避免裁剪填充格
+    const maxPool = 120;
+    const ordinals = [];
+    if (realFrames <= maxPool) {
+        for (let k = 0; k < realFrames; k++) {
+            ordinals.push(k);
+        }
+    } else {
+        for (let i = 0; i < maxPool; i++) {
+            ordinals.push(Math.round((i * (realFrames - 1)) / (maxPool - 1)));
+        }
+    }
+
+    const frames = [];
+    const bitmapCache = new Map();
+    for (const ordinal of ordinals) {
+        const imgIdx = Math.floor(ordinal / cellsPerImage);
+        const cell = ordinal % cellsPerImage;
+        let bitmap = bitmapCache.get(imgIdx);
+        if (!bitmap) {
+            bitmap = await loadStoryboardBitmap(d.image[imgIdx]);
+            bitmapCache.set(imgIdx, bitmap);
+        }
+        const col = cell % xLen;
+        const row = Math.floor(cell / xLen);
+        const canvas = document.createElement('canvas');
+        canvas.width = frameWidth;
+        canvas.height = frameHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, col * frameWidth, row * frameHeight, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
+        // 有权威时间轴就用它；否则按真实帧数估算
+        let frameTime = Math.round(ordinal * interval);
+        if (frameTimes && ordinal < frameTimes.length) {
+            frameTime = frameTimes[ordinal];
+        }
+        frames.push({
+            dataURL: canvas.toDataURL('image/jpeg', 0.8),
+            t: frameTime
+        });
+    }
+    for (const bitmap of bitmapCache.values()) {
+        bitmap.close();
+    }
+    return frames;
+}
+
+/**
  * 用 Youtube-transcript.js 提取 youtube 视频字幕
  * @returns 
  */
 async function extractYoutubeSubtitles(url, format) {
     try {
-        const subtitles = await YoutubeTranscript.fetchTranscript(url, {lang: 'en'});
+        // 不指定语言，优先取视频自带的第一条字幕轨（很多中文视频只有 zh 自动字幕，
+        // 硬指定 'en' 会因 languageCode 不匹配而失败）
+        let subtitles;
+        try {
+            subtitles = await YoutubeTranscript.fetchTranscript(url);
+        } catch (firstError) {
+            // 兜底：再尝试英文轨道
+            subtitles = await YoutubeTranscript.fetchTranscript(url, {lang: 'en'});
+        }
         const formattedSubtitles = youtubeSubtitlesJSONToFormat(subtitles, format);
         return formattedSubtitles;
     } catch (error) {
         console.error('Error fetching subtitles:', error);
-        throw new Error('视频字幕获取失败，原因：字幕获取接口暂不可用！');
+        throw new Error('视频字幕获取失败：该视频可能没有字幕（含自动字幕），或 YouTube 字幕接口暂时不可用（需代理/登录）。');
     }
 }
 

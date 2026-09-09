@@ -10,6 +10,7 @@ const ACTION_COPY_PAGE_CONTENT = 'copyPageContent';
 const ACTION_COPY_PURE_PAGE_CONTENT = 'copyPurePageContent';
 const ACTION_DOWNLOAD_SUBTITLES = 'downloadSubtitles';
 const ACTION_GET_PAGE_URL = 'getPageURL';
+const ACTION_CAPTURE_VIDEO_FRAMES = 'captureVideoFrames';
 
 // default tips
 // 将在初始化时替换为当前语言的版本
@@ -116,6 +117,7 @@ const DEFAULT_LLM_URLS = [
 const IMAGE_SUPPORT_MODELS = [
   'gpt-5', 'gpt-5-codex',  'gpt-5-mini', 'gpt-5-nano', 'gpt-4.1', 
   'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash',
+  'deepseek-v4-flash-vision-exp',
   'openai/gpt-5', 'openai/gpt-5-codex', 'openai/gpt-5-mini', 'openai/gpt-5-nano',
   'google/gemini-2.5-pro', 'google/gemini-2.5-flash', 'google/gemini-2.5-flash-lite', 'google/gemini-2.0-flash-001',
   'anthropic/claude-opus-4.1', 'anthropic/claude-sonnet-4',
@@ -217,6 +219,7 @@ const MODEL_LIST = {
     { value: "gemini-2.0-flash", display: "Gemini 2.0 Flash", provider: PROVIDER_GOOGLE },
     { value: "deepseek-chat", display: "Deepseek Chat", provider: PROVIDER_DEEPSEEK },
     { value: "deepseek-reasoner", display: "Deepseek Reasoner", provider: PROVIDER_DEEPSEEK },
+    { value: "deepseek-v4-flash-vision-exp", display: "Deepseek V4 Flash Vision", provider: PROVIDER_DEEPSEEK },
     { value: "yi-lightning", display: "Yi Lightning", provider: PROVIDER_YI },
     { value: "yi-vision-v2", display: "Yi Vision V2", provider: PROVIDER_YI },
     { value: "kimi-k2-0905-preview", display: "Kimi K2 0905", provider: PROVIDER_MOONSHOT },
@@ -295,6 +298,22 @@ const DEFAULT_PROMPTS = {
 9. 给出本次摘要后，后续的对话请忽略本次任务指令，遵循 system 指令即可。
 
 你要摘要的内容如下：\n\n`,
+
+  VISUAL_SUMMARY_PROMPT: `
+你这次的任务是理解一组从视频中按时间顺序抽取的画面，并总结该视频的内容。
+这类视频可能没有语音字幕，画面中的文字（贴字、标题、图表文字、字幕等）是理解内容的关键，请仔细阅读每一张画面中的文字。
+
+具体要求如下：
+1. 使用"# 视频画面总结"作为主标题。
+2. 将总结分为"## 内容概要"和"## 时间线要点"两个部分。
+3. "内容概要"部分：概述视频的主题、整体结构和核心内容。
+4. "时间线要点"部分：按收到图片的顺序逐张总结，每条用"图N"开头（图1、图2 … 图N 即你收到的第 1、2 … N 张图片），简要概括该画面的关键内容。**不要自行标注具体时间**，时间由系统在整理时统一添加，你只需保证"图N"编号与图片顺序一一对应。
+5. 逐字读取并转述画面中出现的重要文字，不要遗漏关键信息。
+6. 画面不清晰或文字无法辨认时，请基于上下文合理推断，并避免编造细节。
+7. 请使用 Markdown 格式输出，保证结构清晰易读。
+8. 你的思考过程（reasoning）和最终回答都必须使用中文。
+
+画面时间戳如下：\n\n`,
 
   DIRECT_TRANSLATE_PROMPT: `
 你是一位精通各国语言的专业翻译，你能将用户输入的任何内容翻译成 {language} 语言。
@@ -446,6 +465,7 @@ const DEFAULT_PROMPTS = {
 // Initialize prompt constants with default values
 let SYSTEM_PROMPT = DEFAULT_PROMPTS.SYSTEM_PROMPT;
 let SUMMARY_PROMPT = DEFAULT_PROMPTS.SUMMARY_PROMPT;
+let VISUAL_SUMMARY_PROMPT = DEFAULT_PROMPTS.VISUAL_SUMMARY_PROMPT;
 let DIRECT_TRANSLATE_PROMPT = DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
 let SUBTITLE_TRANSLATE_PROMPT = DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
 let DICTION_PROMPT = DEFAULT_PROMPTS.DICTION_PROMPT;
@@ -471,6 +491,7 @@ function loadPromptTemplates() {
       // Update prompt constants with stored values or defaults
       SYSTEM_PROMPT = result.system_prompt || DEFAULT_PROMPTS.SYSTEM_PROMPT;
       SUMMARY_PROMPT = result.summary_prompt || DEFAULT_PROMPTS.SUMMARY_PROMPT;
+      VISUAL_SUMMARY_PROMPT = result.visual_summary_prompt || DEFAULT_PROMPTS.VISUAL_SUMMARY_PROMPT;
       DIRECT_TRANSLATE_PROMPT = result.direct_translate_prompt || DEFAULT_PROMPTS.DIRECT_TRANSLATE_PROMPT;
       SUBTITLE_TRANSLATE_PROMPT = result.subtitle_translate_prompt || DEFAULT_PROMPTS.SUBTITLE_TRANSLATE_PROMPT;
       DICTION_PROMPT = result.diction_prompt || DEFAULT_PROMPTS.DICTION_PROMPT;

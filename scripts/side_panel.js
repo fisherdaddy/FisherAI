@@ -1,4 +1,11 @@
 /**
+ * 对话持久化 & 导出
+ */
+const CHAT_SNAPSHOT_KEY = 'chat_snapshot';
+let messageLog = [];
+let chatSaveTimer = null;
+
+/**
  * 初始化国际化支持
  */
 async function initI18n() {
@@ -138,7 +145,7 @@ function showRecommandContent() {
 /**
  * 定义清空并加载内容的函数
  */
-async function clearAndGenerate(model, provider, inputText, base64Images) {
+async function clearAndGenerate(model, provider, inputText, base64Images, logEntry, options) {
   // 隐藏初始推荐内容
   hideRecommandContent();
 
@@ -146,8 +153,18 @@ async function clearAndGenerate(model, provider, inputText, base64Images) {
   const contentDiv = document.querySelector('.chat-content');
   contentDiv.innerHTML = '';
 
+  // 重置对话历史：摘要/翻译是单发任务，避免上一个视频/页面的内容混入新任务的上下文
+  initChatHistory();
+
+  // 重置消息日志并落盘清空态，避免重开侧窗时恢复旧对话
+  messageLog = [];
+  if (logEntry) {
+    messageLog.push(logEntry);
+  }
+  scheduleChatSnapshotSave();
+
   // generate
-  await chatLLMAndUIUpdate(model, provider, inputText, base64Images);
+  await chatLLMAndUIUpdate(model, provider, inputText, base64Images, options);
 }
 
 /**
@@ -156,8 +173,9 @@ async function clearAndGenerate(model, provider, inputText, base64Images) {
  * @param {string} provider 
  * @param {string} inputText 
  * @param {Array} base64Images 
+ * @param {object} options 可选覆盖项（如 maxTokens）
  */
-async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
+async function chatLLMAndUIUpdate(model, provider, inputText, base64Images, options) {
   // loading
   displayLoading();
 
@@ -176,8 +194,47 @@ async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
   }
     
   try {
-    const completeText = await chatWithLLM(model, provider, inputText, base64Images, CHAT_TYPE);
-    createCopyButton(completeText);
+    const completeText = await chatWithLLM(model, provider, inputText, base64Images, CHAT_TYPE, options);
+    // 后处理：如画面总结等，把"图N"替换成真实时间
+    let finalText = completeText;
+    if (options && typeof options.postProcess === 'function') {
+      finalText = options.postProcess(completeText);
+    }
+    if (finalText !== completeText) {
+      // 流式期间已渲染未映射内容，覆盖为最终映射后的文本
+      const contentDiv = document.querySelector('.chat-content');
+      const lastDiv = contentDiv.lastElementChild;
+      if (lastDiv && lastDiv.classList && lastDiv.classList.contains('ai-message')) {
+        const thinkingBlock = lastDiv.querySelector('.thinking-block');
+        const sanitized = stripImageArtifacts(finalText);
+        if (thinkingBlock) {
+          let regularContent = lastDiv.querySelector('.regular-content');
+          if (!regularContent) {
+            regularContent = document.createElement('div');
+            regularContent.className = 'regular-content';
+            lastDiv.appendChild(regularContent);
+          }
+          regularContent.innerHTML = marked.parse(sanitized);
+        } else {
+          lastDiv.innerHTML = marked.parse(sanitized);
+        }
+        if (typeof renderMathInElement === 'function') {
+          renderMathInElement(lastDiv, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+          });
+        }
+      }
+    }
+    createCopyButton(finalText);
+    // 记录 AI 回答并立即落盘（回答完成后点 X 关闭侧窗也不丢）
+    if (finalText && finalText.trim()) {
+      messageLog.push({ role: 'assistant', text: finalText });
+    }
+    saveChatSnapshot();
   } catch (error) {
     hiddenLoadding();
     console.error('请求异常:', error);
@@ -185,6 +242,7 @@ async function chatLLMAndUIUpdate(model, provider, inputText, base64Images) {
       context: '生成回答',
       defaultMessage: '暂时无法生成回答，请稍后再试或检查模型配置。'
     });
+    scheduleChatSnapshotSave();
   } finally {
     // submit & generating button
     showSubmitBtnAndHideGenBtn();
@@ -542,6 +600,322 @@ function getPageTitle() {
 }
 
 /**
+ * 保存当前对话快照（聊天DOM + 对话历史 + 消息日志）
+ */
+function saveChatSnapshot() {
+  const contentDiv = document.querySelector('.chat-content');
+  if (!contentDiv) {
+    return;
+  }
+  const histories = collectHistoriesForSave();
+  const snapshot = {
+    savedAt: Date.now(),
+    chatHTML: contentDiv.innerHTML,
+    openaiHistory: histories.openai,
+    geminiHistory: histories.gemini,
+    messageLog: messageLog.slice()
+  };
+  chrome.storage.local.set({ [CHAT_SNAPSHOT_KEY]: snapshot }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('保存对话快照失败:', chrome.runtime.lastError);
+    }
+  });
+}
+
+/**
+ * 防抖落盘：流式输出期间频繁调用，间隔 800ms 真正写入
+ */
+function scheduleChatSnapshotSave() {
+  if (chatSaveTimer) {
+    clearTimeout(chatSaveTimer);
+  }
+  chatSaveTimer = setTimeout(() => {
+    chatSaveTimer = null;
+    saveChatSnapshot();
+  }, 800);
+}
+
+/**
+ * 清空持久化的对话快照
+ */
+function clearChatSnapshot() {
+  chrome.storage.local.remove(CHAT_SNAPSHOT_KEY);
+}
+
+/**
+ * 恢复对话快照
+ */
+function restoreChatSnapshot() {
+  chrome.storage.local.get(CHAT_SNAPSHOT_KEY, (result) => {
+    const snapshot = result && result[CHAT_SNAPSHOT_KEY];
+    if (!snapshot || typeof snapshot.chatHTML !== 'string' || !snapshot.chatHTML) {
+      return;
+    }
+    hideRecommandContent();
+    const contentDiv = document.querySelector('.chat-content');
+    contentDiv.innerHTML = snapshot.chatHTML;
+    messageLog = Array.isArray(snapshot.messageLog) ? snapshot.messageLog : [];
+    restoreHistoriesFromSnapshot(snapshot.openaiHistory, snapshot.geminiHistory);
+    rebindCopyButtons();
+    contentDiv.scrollTop = contentDiv.scrollHeight;
+  });
+}
+
+/**
+ * 恢复出来的复制按钮默认没有事件，重新绑定
+ */
+function rebindCopyButtons() {
+  const contentDiv = document.querySelector('.chat-content');
+  contentDiv.querySelectorAll('.icon-copy').forEach(btn => {
+    btn.style.display = 'block';
+    btn.onclick = () => {
+      const messageDiv = btn.closest('.ai-message') || btn.parentElement;
+      const text = (messageDiv ? messageDiv.innerText : '').trim();
+      navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = rightSvgString;
+        setTimeout(() => {
+          btn.innerHTML = original;
+        }, 2000);
+      }).catch(err => {
+        console.error('复制失败:', err);
+      });
+    };
+  });
+}
+
+/**
+ * 导出当前对话为 Markdown 文件下载
+ */
+async function exportChatAsMarkdown() {
+  let body = '';
+  if (messageLog.length > 0) {
+    body = messageLog.map(entry => {
+      const heading = entry.role === 'user' ? '## 用户' : '## AI';
+      return `${heading}\n\n${entry.text}`;
+    }).join('\n\n');
+  } else {
+    // 没有消息日志时回退为从 DOM 提取文本
+    const contentDiv = document.querySelector('.chat-content');
+    const parts = [];
+    contentDiv.querySelectorAll('.user-message, .ai-message').forEach(el => {
+      const heading = el.classList.contains('user-message') ? '## 用户' : '## AI';
+      const text = el.innerText.trim();
+      if (text) {
+        parts.push(`${heading}\n\n${text}`);
+      }
+    });
+    body = parts.join('\n\n');
+  }
+
+  if (!body.trim()) {
+    let emptyMessage = '暂无内容可导出';
+    try {
+      const currentLang = await window.i18n.getCurrentLanguage();
+      const messages = await window.i18n.getMessages(['export_empty'], currentLang);
+      emptyMessage = messages.export_empty || emptyMessage;
+    } catch (error) {
+      // 使用默认文案
+    }
+    alert(emptyMessage);
+    return;
+  }
+
+  let pageUrl = '';
+  try {
+    pageUrl = await getCurrentURL();
+  } catch (error) {
+    // 页面地址获取失败时留空
+  }
+
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+  const markdown = `# FisherAI 对话导出\n\n- 页面: ${pageUrl || '（未知）'}\n- 导出时间: ${stamp}\n\n---\n\n${body}\n`;
+
+  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `FisherAI-chat-${stamp.replace(/[: ]/g, '-')}.md`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * 从数组中按时序均匀抽取 count 个元素
+ */
+function uniformSampleFrames(frames, count) {
+  if (frames.length <= count) {
+    return frames;
+  }
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(frames[Math.round((i * (frames.length - 1)) / (count - 1))]);
+  }
+  return result;
+}
+
+/**
+ * 计算画面的 8x8 灰度均值哈希（用于变化检测去重）
+ */
+function averageHashOfFrame(dataURL) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 8;
+        canvas.height = 8;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 8, 8);
+        const data = ctx.getImageData(0, 0, 8, 8).data;
+        const gray = new Array(64);
+        let sum = 0;
+        for (let i = 0; i < 64; i++) {
+          gray[i] = 0.299 * data[i * 4] + 0.587 * data[i * 4 + 1] + 0.114 * data[i * 4 + 2];
+          sum += gray[i];
+        }
+        const avg = sum / 64;
+        resolve(gray.map(v => (v >= avg ? 1 : 0)));
+      } catch (error) {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataURL;
+  });
+}
+
+function hammingDistance(a, b) {
+  if (!a || !b || a.length !== b.length) {
+    return 64;
+  }
+  let distance = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      distance++;
+    }
+  }
+  return distance;
+}
+
+/**
+ * 画面去重：与上一保留帧的哈希距离 < threshold 则丢弃；保留帧上限 maxKeep
+ */
+async function deduplicateFrames(frames, maxKeep, threshold) {
+  const kept = [];
+  let lastHash = null;
+  for (const frame of frames) {
+    const hash = await averageHashOfFrame(frame.dataURL);
+    if (!lastHash || hammingDistance(hash, lastHash) >= threshold) {
+      kept.push(frame);
+      lastHash = hash;
+    }
+  }
+  if (kept.length > maxKeep) {
+    return uniformSampleFrames(kept, maxKeep);
+  }
+  return kept;
+}
+
+/**
+ * 生成画面时间戳列表（mm:ss）
+ */
+function formatFrameTimestamps(frames) {
+  return frames.map((f, index) => {
+    const total = Math.round(f.t || 0);
+    const mm = String(Math.floor(total / 60)).padStart(2, '0');
+    const ss = String(total % 60).padStart(2, '0');
+    return `第${index + 1}张:${mm}:${ss}`;
+  }).join('、');
+}
+
+/**
+ * 把该帧的时间点（mm:ss）以水印形式印到图片左下角，
+ * 让模型逐张读图时直接看到时间，避免"数图片对应时间"的关联错误
+ */
+function stampFrameTimestamp(frame) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const total = Math.round(frame.t || 0);
+        const mm = String(Math.floor(total / 60)).padStart(2, '0');
+        const ss = String(total % 60).padStart(2, '0');
+        const label = `${mm}:${ss}`;
+        const fontSize = Math.max(28, Math.round(canvas.width * 0.08));
+        ctx.font = `bold ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+        ctx.textBaseline = 'bottom';
+        const pad = Math.round(canvas.width * 0.03);
+        const textWidth = ctx.measureText(label).width;
+        const boxHeight = fontSize * 1.35;
+        const boxY = canvas.height - pad - boxHeight;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(pad, boxY, textWidth + fontSize * 0.5, boxHeight);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(label, pad + fontSize * 0.25, canvas.height - pad);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch (error) {
+        resolve(frame.dataURL);
+      }
+    };
+    img.onerror = () => resolve(frame.dataURL);
+    img.src = frame.dataURL;
+  });
+}
+
+/**
+ * 把模型输出中的“图N”替换为该帧的真实时间（[mm:ss]），时间由代码精确控制，模型无法虚标
+ */
+function mapFigureTimes(text, frames) {
+  const times = frames.map(f => {
+    const total = Math.round(f.t || 0);
+    const mm = String(Math.floor(total / 60)).padStart(2, '0');
+    const ss = String(total % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
+  });
+  return text.replace(/图\s*(\d+)/g, (match, number) => {
+    const idx = parseInt(number, 10) - 1;
+    if (idx >= 0 && idx < times.length) {
+      return `**[${times[idx]}]**`;
+    }
+    return match;
+  });
+}
+
+/**
+ * 让 content script 从页面播放器抓帧（B站预览图不可用时的兜底）
+ */
+function captureFramesFromPage(expectedDuration) {
+  return new Promise((resolve, reject) => {
+    const queryOptions = { active: true, currentWindow: true };
+    chrome.tabs.query(queryOptions, ([tab]) => {
+      if (!tab) {
+        reject(new Error('没有活动的标签页'));
+        return;
+      }
+      chrome.tabs.sendMessage(tab.id, { action: ACTION_CAPTURE_VIDEO_FRAMES, expectedDuration: expectedDuration || 0 }, function(response) {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else if (response && Array.isArray(response.frames) && response.frames.length > 0) {
+          resolve(response.frames);
+        } else {
+          reject(new Error(response && response.error ? response.error : '抓帧失败'));
+        }
+      });
+    });
+  });
+}
+
+/**
  * 初始化结果页面
  */
 function initResultPage() {
@@ -682,8 +1056,7 @@ function initResultPage() {
     });
 
     // 清空历史记录逻辑
-    var label = document.getElementById('newchat-label');
-    label.addEventListener('click', function() {
+    function startNewChat() {
       // 清空聊天记录
       const contentDiv = document.querySelector('.chat-content');
       contentDiv.innerHTML = '';
@@ -693,9 +1066,20 @@ function initResultPage() {
       updatePreviewAreaVisibility();
       // 清空历史记录
       initChatHistory();
+      // 清空持久化快照与消息日志
+      messageLog = [];
+      clearChatSnapshot();
       // 展示推荐内容
       showRecommandContent();
-    });
+    }
+    var label = document.getElementById('newchat-label');
+    label.addEventListener('click', startNewChat);
+
+    // 头部显式"新聊天"按钮（与底部图标按钮行为一致）
+    var newChatBtn = document.getElementById('my-extension-newchat-btn');
+    if (newChatBtn) {
+      newChatBtn.addEventListener('click', startNewChat);
+    }
 
     // 摘要逻辑
     var summaryButton = document.querySelector('#my-extension-summary-btn');
@@ -732,91 +1116,116 @@ function initResultPage() {
           context: '智能摘要',
           defaultMessage: '暂时无法生成摘要，请稍后重试。'
         });
+        scheduleChatSnapshotSave();
         return;
       }
 
-      await clearAndGenerate(model, provider, SUMMARY_PROMPT + inputText, null);
+      await clearAndGenerate(model, provider, SUMMARY_PROMPT + inputText, null, { role: 'user', text: `[智能摘要] ${currentURL}` });
     });
 
-    // 网页翻译
-    var translateButton = document.querySelector('#my-extension-translate-btn');
-    translateButton.addEventListener('click', async function() {
+    // 画面总结逻辑（视觉模型读取视频画面，适配贴字/无字幕视频）
+    var visualSummaryButton = document.querySelector('#my-extension-visual-summary-btn');
+    visualSummaryButton.addEventListener('click', async function() {
       const modelSelection = document.getElementById('model-selection');
       const model = modelSelection.value;
       const selectedOption = modelSelection.options[modelSelection.selectedIndex];
       const provider = selectedOption.dataset.provider;
       const apiKeyValid = await verifyApiKeyConfigured(provider);
-      if(!apiKeyValid) {
+      if (!apiKeyValid) {
         return;
       }
-      let inputText = '';
+      // 当前模型必须支持图片输入
+      const imageSupportModels = window.IMAGE_SUPPORT_MODELS || IMAGE_SUPPORT_MODELS;
+      if (!imageSupportModels.includes(model)) {
+        displayErrorMessage(new Error('当前模型不支持视觉输入'), {
+          context: '画面总结',
+          defaultMessage: '当前选择的模型不支持图片输入，请切换到一个视觉模型（例如 Deepseek V4 Flash Vision）后再试。'
+        });
+        scheduleChatSnapshotSave();
+        return;
+      }
       const currentURL = await getCurrentURL();
+      if (!isVideoUrl(currentURL)) {
+        displayErrorMessage(new Error('当前页面不是视频页'), {
+          context: '画面总结',
+          defaultMessage: '当前页面不是视频页面，请先打开一个视频。'
+        });
+        scheduleChatSnapshotSave();
+        return;
+      }
 
       try {
-        if(isVideoUrl(currentURL)) {
-          // 视频翻译
-          displayLoading('正在获取字幕...');
-          inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
-        } else if(isPDFUrl(currentURL)) {
-          // PDF 翻译
-          displayLoading('正在提取PDF内容...');
-          inputText = await extractPDFText(currentURL);
+        displayLoading('正在抽取视频画面...');
+        let frames = [];
+        let seekErrorMsg = '';
+        let videoDuration = 0;
+        if (currentURL.includes('bilibili.com')) {
+          // 短视频（<=3分钟）优先播放器抓帧：时间戳精确、画质更高；失败回退预览图
+          let preferSeek = false;
+          try {
+            const videoInfo = await getBilibiliVideoInfo(currentURL);
+            videoDuration = videoInfo.duration || 0;
+            preferSeek = videoDuration > 0 && videoDuration <= 180;
+          } catch (error) {
+            // 拿不到时长就不做区分，直接走预览图
+          }
+          if (preferSeek) {
+            try {
+              frames = await captureFramesFromPage(videoDuration);
+            } catch (error) {
+              console.warn('播放器抓帧失败，回退到 B站 预览图:', error);
+              const msg = String((error && error.message) || error || '');
+              if (/Receiving end does not exist|Extension context invalidated|cannot be accessed|No receiver|接收端/i.test(msg)) {
+                displayErrorMessage(new Error(msg), {
+                  context: '画面总结',
+                  defaultMessage: '页面脚本已失效：扩展更新后需要刷新当前视频页面（按 F5），然后再次点击"画面总结"。'
+                });
+                scheduleChatSnapshotSave();
+                return;
+              }
+              seekErrorMsg = msg;
+            }
+          }
+          if (!frames || frames.length === 0) {
+            // 抓帧不可用则静默使用预览图；时间统一由代码在结果中精确标注，不再依赖模型读时间
+            console.warn('播放器抓帧不可用，改用 B站 预览图:', seekErrorMsg || '未返回画面');
+            displayLoading('正在抽取视频画面...');
+            frames = await fetchBilibiliStoryboardFrames(currentURL);
+          }
         } else {
-          // 网页翻译
-          displayLoading('正在提取网页内容...');
-          inputText = await fetchPageContent();
+          frames = await captureFramesFromPage(0);
         }
-      } catch(error) {
-        hiddenLoadding();
-        console.error('网页翻译失败', error);
-        displayErrorMessage(error, {
-          context: '网页翻译',
-          defaultMessage: '暂时无法翻译当前页面，请稍后重试。'
+        if (!frames || frames.length === 0) {
+          throw new Error('未能从视频中抽取到画面');
+        }
+        if (frames.length > 120) {
+          frames = uniformSampleFrames(frames, 120);
+        }
+        frames = await deduplicateFrames(frames, 16, 12);
+        if (!frames || frames.length === 0) {
+          throw new Error('画面去重后没有可用帧');
+        }
+        displayLoading('正在分析画面...');
+        // 把时间水印直接印到每张图上，避免模型"数图对应时间"出错
+        const stampedFrames = [];
+        for (const f of frames) {
+          stampedFrames.push(await stampFrameTimestamp(f));
+        }
+        const inputText = VISUAL_SUMMARY_PROMPT + '各画面对应时间点：' + formatFrameTimestamps(frames) + '\n';
+        await clearAndGenerate(model, provider, inputText, stampedFrames, { role: 'user', text: `[画面总结] ${currentURL}` }, {
+          maxTokens: 16384,
+          postProcess: (text) => mapFigureTimes(text, frames)
         });
-        return;
-      }
-
-      const translatePrompt = await getTranslatePrompt();
-
-      await clearAndGenerate(model, provider, translatePrompt + inputText, null);
-    });
-
-    // 视频翻译
-    var videoTranslateButton = document.querySelector('#my-extension-videotrans-btn');
-    videoTranslateButton.addEventListener('click', async function() {
-      const modelSelection = document.getElementById('model-selection');
-      const model = modelSelection.value;
-      const selectedOption = modelSelection.options[modelSelection.selectedIndex];
-      const provider = selectedOption.dataset.provider;
-      const apiKeyValid = await verifyApiKeyConfigured(provider);
-      if(!apiKeyValid) {
-        return;
-      }
-      const currentURL = await getCurrentURL();
-      if(!isVideoUrl(currentURL)) {
-        return;
-      }
-
-      let inputText = '';
-      try {
-        // 视频翻译
-        displayLoading('正在获取字幕...');
-        inputText = await extractSubtitles(currentURL, FORMAT_TEXT);
-      } catch(error) {
+      } catch (error) {
         hiddenLoadding();
-        console.error('视频翻译失败', error);
+        console.error('画面总结失败', error);
         displayErrorMessage(error, {
-          context: '视频翻译',
-          defaultMessage: '暂时无法翻译当前视频，请稍后再试。'
+          context: '画面总结',
+          defaultMessage: '暂时无法总结视频画面，请稍后重试。'
         });
-        return;
+        scheduleChatSnapshotSave();
       }
-
-      const subTitleTransPrompt = await getSubTitleTransPrompt();
-
-      await clearAndGenerate(model, provider, subTitleTransPrompt + inputText, null);
     });
-
 
     // 停止生成逻辑
     var cancelBtn = document.querySelector('#my-extension-generate-btn');
@@ -974,6 +1383,28 @@ function initResultPage() {
       });
     }
 
+    // 导出 Markdown 逻辑
+    var downloadButton = document.querySelector('.my-extension-download-btn');
+    if (downloadButton) {
+      downloadButton.addEventListener('click', function() {
+        exportChatAsMarkdown();
+      });
+      // 按钮提示文案国际化（失败时保留 HTML 中的硬编码标题）
+      try {
+        window.i18n.getCurrentLanguage().then(lang => {
+          return window.i18n.getMessages(['export_md'], lang);
+        }).then(messages => {
+          if (messages && messages.export_md) {
+            downloadButton.title = messages.export_md;
+          }
+        }).catch(() => {
+          // 使用硬编码标题
+        });
+      } catch (error) {
+        // 使用硬编码标题
+      }
+    }
+
     // 对话逻辑
     var userInput = document.getElementById('my-extension-user-input');
     var submitButton = document.getElementById('my-extension-submit-btn');
@@ -1035,6 +1466,7 @@ function initResultPage() {
                 <div class="message-content">${contextContent}</div>
               `;
               contentDiv.appendChild(selectedTextDiv);
+              messageLog.push({ role: 'user', text: `${labelText}\n${contextContent}` });
             }
 
             // 创建用户问题div
@@ -1068,6 +1500,10 @@ function initResultPage() {
 
             const contentDiv = document.querySelector('.chat-content');
             contentDiv.appendChild(userQuestionDiv);
+
+            // 记录用户提问并防抖落盘
+            messageLog.push({ role: 'user', text: originalUserText });
+            scheduleChatSnapshotSave();
 
             // 构造content
             let newInputText = '';
@@ -1554,6 +1990,14 @@ async function requestCurrentPageState() {
  */ 
 document.addEventListener('DOMContentLoaded', function() {
   initResultPage();
+
+  // 恢复上次关闭侧窗前的对话
+  restoreChatSnapshot();
+
+  // 侧窗关闭/隐藏瞬间再落盘一次，尽量覆盖防抖空窗期
+  window.addEventListener('pagehide', function() {
+    saveChatSnapshot();
+  });
   
   // 添加清除按钮事件监听
   const clearBtn = document.getElementById('clear-selected-btn');

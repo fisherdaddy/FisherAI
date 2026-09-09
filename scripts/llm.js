@@ -86,6 +86,55 @@ function initChatHistory() {
   geminiDialogueHistory = []
 }
 
+// 将对话历史投影为可持久化的纯文本结构（剥离 base64 图片等大对象）
+function sanitizeOpenAIEntryForSave(entry) {
+  let content = entry.content;
+  if (Array.isArray(content)) {
+    content = content
+      .filter(part => part && part.type === 'text' && typeof part.text === 'string')
+      .map(part => part.text)
+      .join('\n');
+  }
+  return {
+    role: entry.role,
+    content: typeof content === 'string' ? content : ''
+  };
+}
+
+function sanitizeGeminiEntryForSave(entry) {
+  const parts = [];
+  (entry.parts || []).forEach(part => {
+    if (part && typeof part.text === 'string') {
+      parts.push({ text: part.text });
+    }
+  });
+  return { role: entry.role, parts };
+}
+
+// 收集可持久化的对话历史（保留 system 首条，其余只留最近若干条，防止超配额）
+function collectHistoriesForSave() {
+  const maxEntries = 40;
+  const openai = dialogueHistory.map(sanitizeOpenAIEntryForSave);
+  const gemini = geminiDialogueHistory.map(sanitizeGeminiEntryForSave);
+  const trim = (arr) => {
+    if (arr.length <= maxEntries) {
+      return arr;
+    }
+    return [arr[0], ...arr.slice(-(maxEntries - 1))];
+  };
+  return { openai: trim(openai), gemini: trim(gemini) };
+}
+
+// 从快照恢复对话历史
+function restoreHistoriesFromSnapshot(openaiHistory, geminiHistory) {
+  if (Array.isArray(openaiHistory) && openaiHistory.length > 0) {
+    dialogueHistory = openaiHistory;
+  }
+  if (Array.isArray(geminiHistory) && geminiHistory.length > 0) {
+    geminiDialogueHistory = geminiHistory;
+  }
+}
+
 
 /**
  * 根据不同的模型，选择对应的接口地址
@@ -167,8 +216,8 @@ function createRequestParams(additionalHeaders, body) {
   currentController = controller;
   headers = {...headers, ...additionalHeaders};
 
-  // 设置80秒超时
-  const timeoutId = setTimeout(() => controller.abort(), 180000);
+  // 设置10分钟超时（视觉推理等长任务需要更长时间，避免思考未完成就被中断）
+  const timeoutId = setTimeout(() => controller.abort(), 600000);
 
   return {
     method: 'POST',
@@ -188,7 +237,7 @@ function createRequestParams(additionalHeaders, body) {
  * @param {string} type 
  * @returns 
  */
-async function chatWithLLM(model, provider, inputText, base64Images, type) {
+async function chatWithLLM(model, provider, inputText, base64Images, type, options) {
   // 处理URL和API密钥
   var {baseUrl, apiKey} = await getBaseUrlAndApiKey(provider);
 
@@ -225,14 +274,14 @@ async function chatWithLLM(model, provider, inputText, base64Images, type) {
   let result = { completeText: '', tools: [] };
   if(provider === PROVIDER_GOOGLE) {
     baseUrl = baseUrl.replace('{MODEL_NAME}', model).replace('{API_KEY}', apiKey);
-    result = await chatWithGemini(baseUrl, type, provider);
+    result = await chatWithGemini(baseUrl, type, provider, options);
   } else {
-    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider);
+    result = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider, options);
   }
 
   if(result.tools.length > 0) {
     while(result.tools.length > 0) {
-      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type, provider);
+      result = await parseFunctionCalling(result, baseUrl, apiKey, model, type, provider, options);
     }
   } else {
     if(result.completeText.length > 0) {
@@ -245,7 +294,7 @@ async function chatWithLLM(model, provider, inputText, base64Images, type) {
 }
 
 
-async function parseFunctionCalling(result, baseUrl, apiKey, model, type, provider) {
+async function parseFunctionCalling(result, baseUrl, apiKey, model, type, provider, options) {
 
   if(result.completeText.length > 0) {
     // 将 AI 回答更新到对话历史
@@ -449,9 +498,9 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type, provid
 
     let newResult = { completeText: '', tools: [] };
     if(provider === PROVIDER_GOOGLE) {
-      newResult = await chatWithGemini(baseUrl, type, provider);
+      newResult = await chatWithGemini(baseUrl, type, provider, options);
     } else {
-      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider);
+      newResult = await chatWithOpenAIFormat(baseUrl, apiKey, model, type, provider, options);
     }
 
     return newResult;
@@ -468,7 +517,7 @@ async function parseFunctionCalling(result, baseUrl, apiKey, model, type, provid
  * @param {string} type 
  * @returns 
  */
-async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider) {
+async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider, options) {
   let isFisherAI = false;
 
   if(provider.includes(PROVIDER_FISHERAI)) {
@@ -476,10 +525,11 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider) 
   }
   
   const { temperature, topP, maxTokens, frequencyPenalty, presencePenalty } = await getModelParameters();
+  const effectiveMaxTokens = (options && options.maxTokens) || maxTokens;
 
   const body = {
     model: modelName,
-    max_tokens: maxTokens,
+    max_tokens: effectiveMaxTokens,
     stream: true,
     messages: dialogueHistory,
     tools: []
@@ -544,14 +594,14 @@ async function chatWithOpenAIFormat(baseUrl, apiKey, modelName, type, provider) 
  * @param {string} provider
  * @returns 
  */
-async function chatWithGemini(baseUrl, type, provider) {
+async function chatWithGemini(baseUrl, type, provider, options) {
   const { temperature, topP, maxTokens } = await getModelParameters();
 
   const body = {
     contents: geminiDialogueHistory,
     systemInstruction: geminiSystemPrompt,
     generationConfig: {
-      maxOutputTokens: maxTokens,
+      maxOutputTokens: (options && options.maxTokens) || maxTokens,
       temperature: temperature,
       topP: topP
     },
@@ -964,6 +1014,7 @@ async function parseAndUpdateChatContent(response, type, provider) {
     let isInThinkingMode = false;
     let thinkingContent = '';
     let thinkingBlockCreated = false;
+    let finishReason = null;
     
     try {
       while (true) {
@@ -1050,6 +1101,11 @@ async function parseAndUpdateChatContent(response, type, provider) {
                     }
                   });
                 }
+
+                // 记录结束原因（用于检测 max_tokens 截断）
+                if (choice.finish_reason) {
+                  finishReason = choice.finish_reason;
+                }
               });
             }
             
@@ -1060,7 +1116,7 @@ async function parseAndUpdateChatContent(response, type, provider) {
                 thinkingBlockCreated = true;
                 // 创建思考区块的HTML，添加折叠/展开功能
                 const thinkingBlockHTML = `
-                  <div class="thinking-block">
+                  <div class="thinking-block collapsed">
                     <div class="thinking-header" onclick="this.parentNode.classList.toggle('collapsed')">
                       <div class="thinking-header-left">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="thinking-icon">
@@ -1110,7 +1166,7 @@ async function parseAndUpdateChatContent(response, type, provider) {
                 thinkingBlockCreated = true;
                 // 创建思考区块的HTML，添加折叠/展开功能
                 const thinkingBlockHTML = `
-                  <div class="thinking-block">
+                  <div class="thinking-block collapsed">
                     <div class="thinking-header" onclick="this.parentNode.classList.toggle('collapsed')">
                       <div class="thinking-header-left">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="thinking-icon">
@@ -1202,6 +1258,22 @@ async function parseAndUpdateChatContent(response, type, provider) {
         // generate
         if(completeText.length > 0) {
           updateChatContent(completeText, type);
+        }
+
+        // 思考阶段也要防抖落盘，避免长思考期间关闭侧窗丢失进度
+        if (type === CHAT_TYPE && thinkingContent && thinkingContent.trim().length > 0) {
+          if (typeof window.scheduleChatSnapshotSave === 'function') {
+            window.scheduleChatSnapshotSave();
+          }
+        }
+      }
+
+      // 检测 max_tokens 截断
+      if (finishReason === 'length') {
+        if (completeText && completeText.trim()) {
+          completeText += '\n\n> ⚠️ 输出因长度限制被截断，可在模型参数中调大"最大 tokens"。';
+        } else {
+          throw new Error('输出因长度限制被截断（思考过长），请在模型参数中调大"最大 tokens"后重试');
         }
       }
     } catch(error) {
@@ -1329,6 +1401,11 @@ function updateChatContent(completeText, type) {
 
     if (completeText && completeText.trim().length > 0) {
       autoCollapseSerpApiCards(lastDiv);
+    }
+
+    // 流式输出期间通知侧窗面板防抖落盘当前对话
+    if (typeof window.scheduleChatSnapshotSave === 'function') {
+      window.scheduleChatSnapshotSave();
     }
 
     if (isAtBottom) {
